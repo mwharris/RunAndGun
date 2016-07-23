@@ -1,0 +1,19 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\FirstPersonController.cs">
+    <Files>
+      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="324" Column="67" />
+      <File FileName="Assets\Scripts\ShootController.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\FXManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\NetworkManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\NetworkCharacter.cs" Line="1" Column="1" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore>
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\FirstPersonController.cs" line="333" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\FirstPersonController.cs" line="319" column="1" />
+    </BreakpointStore>
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
