@@ -7,6 +7,7 @@ public class FXManager : MonoBehaviour {
 	public GameObject defaultHitEffect;
 	public GameObject redHitEffect;
 	public GameObject enemyHitEffect;
+	public GameObject deathEffect;
 	public AudioSource aSource;
 	public AudioClip[] footstepSounds;   
 	public AudioClip gunShot;
@@ -46,6 +47,13 @@ public class FXManager : MonoBehaviour {
 	}
 
 	[PunRPC]
+	void DeathFX(Vector3 pos)
+	{
+		//Show some death effects
+		Instantiate(deathEffect, pos, Quaternion.identity);
+	}
+
+	[PunRPC]
 	void FootstepFX(Vector3 pos)
 	{
 		AudioClip clipToPlay;
@@ -59,6 +67,40 @@ public class FXManager : MonoBehaviour {
 		footstepSounds[n] = footstepSounds[0];
 		footstepSounds[0] = clipToPlay;
 	}
+
+	/*
+	[PunRPC]
+	void FootstepFX(Vector3 pos, bool isWallRunning)
+	{
+		AudioClip clipToPlay;
+
+		//Pick & play a random footstep sound from the array,
+		AudioClip[] soundsToUse;
+		if(isWallRunning)
+		{
+			soundsToUse = wallRunSounds;
+		}
+		else
+		{
+			soundsToUse = footstepSounds;
+		}
+		int n = Random.Range(1, soundsToUse.Length);
+		clipToPlay = soundsToUse[n];
+		AudioSource.PlayClipAtPoint(clipToPlay, pos);
+
+		//Move picked sound to index 0 so it's not picked next time
+		if(isWallRunning)
+		{
+			wallRunSounds[n] = wallRunSounds[0];
+			wallRunSounds[0] = clipToPlay;
+		}
+		else
+		{
+			footstepSounds[n] = footstepSounds[0];
+			footstepSounds[0] = clipToPlay;
+		}
+	}
+	*/
 
 	[PunRPC]
 	void LandingFX(Vector3 pos)

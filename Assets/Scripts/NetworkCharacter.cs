@@ -13,7 +13,6 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 	private Vector3 bodyScale = Vector3.zero;
 	private Vector3 bodyPos = Vector3.zero;
 	private Quaternion weaponRot = Quaternion.identity;
-	private Vector3 weaponLPos = Vector3.zero;
 	private Vector3 weaponPos = Vector3.zero;
 
 	void Awake()
@@ -35,7 +34,7 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			body.transform.position = Vector3.Lerp(body.transform.position, bodyPos, 0.1f);
 			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, 0.1f);
 			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, 0.1f);
-			//playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, weaponLPos, 0.1f);
+			/*
 			if(isCrouching){
 				Vector3 lerpLPos = new Vector3(playerCamera.transform.localPosition.x, 1.8f, playerCamera.transform.localPosition.z);
 				playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, lerpLPos, 0.1f);
@@ -45,6 +44,7 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 				playerCamera.transform.localPosition = Vector3.Lerp(playerCamera.transform.localPosition, lerpLPos, 0.1f);
 					//new Vector3(playerCamera.transform.localPosition.x, 2.5f, playerCamera.transform.localPosition.z);
 			}
+			*/
 		}
 	}
 
@@ -59,10 +59,8 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			stream.SendNext(body.transform.position);
 			stream.SendNext(playerCamera.transform.rotation);
 			stream.SendNext(playerCamera.transform.position);
-			stream.SendNext(playerCamera.transform.localPosition);
-			if(photonView.isMine){
-				stream.SendNext(fpcScript.isCrouching);
-			}
+			//stream.SendNext(playerCamera.transform.localPosition);
+			//stream.SendNext(fpcScript.isCrouching);
 		}
 		else
 		{
@@ -73,10 +71,7 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			bodyPos = (Vector3) stream.ReceiveNext();
 			weaponRot = (Quaternion) stream.ReceiveNext();
 			weaponPos = (Vector3) stream.ReceiveNext();
-			weaponLPos = (Vector3) stream.ReceiveNext();
-			if(!photonView.isMine){
-				isCrouching = (bool) stream.ReceiveNext();
-			}
+			//isCrouching = (bool) stream.ReceiveNext();
 		}
 	}
 }

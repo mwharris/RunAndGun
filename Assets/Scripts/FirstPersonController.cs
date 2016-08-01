@@ -17,12 +17,20 @@ public class FirstPersonController : MonoBehaviour {
 	public GameObject playerBody;
 	public bool isCrouching = false;
 
+	/// WALL-RUNNING VARIABLES //////////////////
+	private float cameraTotalRotation = 0f;
+	private float cameraRotAmount = 15f;
+	private float cameraRotZ = 0;
 	private bool wallRunRight = false;
 	private bool wallRunLeft = false;
-	private Vector3 wallRunHitPoint; 
-	private Vector3 wallRunHitNormal; 
 	private Vector3 wallRunDirection;
-	private float cameraZRot = 0;
+	private Vector3 wallRunNormal;
+	private bool wallJumpDirectionSet = false;
+	private bool wallRunningDisabled = false;
+	private float wallRunTimer = 0.0f;
+	private float wallRunMax = 2.0f;
+	////////////////////////////////////////////
+
 	private float crouchMovementSpeed;
 	private bool isSprinting = false;
 	private bool startedSprinting = false;
@@ -116,11 +124,7 @@ public class FirstPersonController : MonoBehaviour {
 		//Move the char controller
 		cc.Move(velocity * Time.deltaTime);
 	}
-
-	//Handle any mouse input to rotate our camera view
-	float totalRotation = 0f;
-	float rotAmount = 20f;
-	float rotZ = 0;
+		
 	void handleMouseInput()
 	{
 		//Left-Right rotation based on the mouse
@@ -135,28 +139,32 @@ public class FirstPersonController : MonoBehaviour {
 		//Rotate our camera to the left or right if we are wall-running
 		if(wallRunLeft || wallRunRight)
 		{
-			if(totalRotation < rotAmount)
+			if(cameraTotalRotation < cameraRotAmount)
 			{
 				float currentAngle = playerCamera.transform.localRotation.eulerAngles.z;
 				if(wallRunLeft)
 				{
-					rotZ = currentAngle - (Time.deltaTime * 50);
+					cameraRotZ = currentAngle - (Time.deltaTime * 100);
 				}
 				else
 				{
-					rotZ = currentAngle + (Time.deltaTime * 50);
+					cameraRotZ = currentAngle + (Time.deltaTime * 100);
 				}
-				totalRotation += Time.deltaTime * 50;
+				cameraTotalRotation += Time.deltaTime * 100;
+			}
+			else if(cameraTotalRotation > cameraRotAmount)
+			{
+				cameraTotalRotation = cameraRotAmount;
 			}
 		}
 		else 
 		{
-			totalRotation = 0f;
-			rotZ = 0;
+			cameraTotalRotation = 0f;
+			cameraRotZ = 0;
 		}
 
 		//Rotate the camera using Euler angles
-		playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, rotZ);
+		playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
 	}
 
 	//Handle any WASD or arrow key movement
@@ -189,16 +197,18 @@ public class FirstPersonController : MonoBehaviour {
 			}
 
 			//Get the movement input and apply movement speed based on crouching, sprinting, or standing
+			forwardSpeed = Input.GetAxis("Vertical");
+			sideSpeed = Input.GetAxis("Horizontal");
 			if(isCrouching)
 			{
-				forwardSpeed = Input.GetAxis("Vertical") * crouchMovementSpeed;
-				sideSpeed = Input.GetAxis("Horizontal") * crouchMovementSpeed;
+				forwardSpeed *= crouchMovementSpeed;
+				sideSpeed *= crouchMovementSpeed;
 				headBobScript.enabled = false;
 			}
 			else if(isSprinting)
 			{
-				forwardSpeed = Input.GetAxis("Vertical") * movementSpeed * 1.5f;
-				sideSpeed = Input.GetAxis("Horizontal") * movementSpeed * 1.5f;
+				forwardSpeed *= movementSpeed * 1.5f;
+				sideSpeed *= movementSpeed * 1.5f;
 				headBobScript.enabled = true;
 				//Mark ourselves as started sprinting if we're moving while sprinting
 				if(forwardSpeed != 0 || sideSpeed != 0)
@@ -208,8 +218,8 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			else
 			{
-				forwardSpeed = Input.GetAxis("Vertical") * movementSpeed;
-				sideSpeed = Input.GetAxis("Horizontal") * movementSpeed;
+				forwardSpeed *= movementSpeed;
+				sideSpeed *= movementSpeed;
 				headBobScript.enabled = false;
 			}
 
@@ -217,7 +227,7 @@ public class FirstPersonController : MonoBehaviour {
 			if(forwardSpeed != 0 || sideSpeed != 0)
 			{
 				//Increase footstep rate
-				PlayFootStepAudio(isSprinting);
+				PlayFootStepAudio(isSprinting, false);
 			}
 
 			//Add the x / z movement
@@ -232,6 +242,7 @@ public class FirstPersonController : MonoBehaviour {
 				velocity += sideSpeed * transform.right * Time.deltaTime;
 			}
 		}
+		//Air / Wall-running movement
 		else
 		{
 			//Disable head bob
@@ -241,12 +252,15 @@ public class FirstPersonController : MonoBehaviour {
 			if(wallRunLeft || wallRunRight)
 			{
 				//The velocity should be equal to our velocity when we started wall-running
-				velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
+				if(!wallJumpDirectionSet)
+				{
+					velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
+				}
 				//W will speed up movement slightly and S will slow down movement slightly
 				float scaleVal = 0.0f;
 				if(Input.GetKey(KeyCode.W))
 				{
-					scaleVal = 1.25f;
+					scaleVal = 1.5f;
 				}
 				if(Input.GetKey(KeyCode.S))
 				{
@@ -260,6 +274,8 @@ public class FirstPersonController : MonoBehaviour {
 					velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
 					velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
 				}
+				//Play footstep FX while wall-running
+				PlayFootStepAudio(false, true);
 			}
 			else
 			{
@@ -305,129 +321,119 @@ public class FirstPersonController : MonoBehaviour {
 		}
 	}
 
+	//Helper function to check the rules for activating wall-running
+	private bool checkActivateWallRunRules(RaycastHit vHit, RaycastHit rHit, RaycastHit lHit, bool isGrounded)
+	{
+		if(!isGrounded && !wallRunningDisabled)
+		{
+			//We hit a wall we were heading towards
+			if(vHit.collider != null)
+			{
+				return true;
+			}
+			//We aren't heading towards a wall, but we are close to one we can wall-run on,
+			//AND we hit a button towards the wall.
+			else if((lHit.collider != null && Input.GetKey(KeyCode.A)) || (rHit.collider != null && Input.GetKey(KeyCode.D)))
+			{
+				return true;
+			}
+		}
+		return false;
+	}
+		
+	//Helper function to check the rules for de-activating wall-running
+	private bool checkDeactivateWallRunRules(RaycastHit vHit, RaycastHit rHit, RaycastHit lHit, RaycastHit bHit, bool isGrounded)
+	{
+		//If we're not holding forward, we touched the ground, or none of our raycasts hit a wall, break wall-running
+		if(wallRunTimer <= 0 || cc.isGrounded || (rHit.collider == null && lHit.collider == null && bHit.collider == null))
+		{
+			return true;
+		}
+		return false;
+	}
 
 	//Raycast outwards from the player to detect walls.  If either are hit while the player is in the air,
 	//active the wall-running state.  
 	void handleWallRunning()
 	{
-		bool wallRunning = false;
-
-		//Shoot a ray in the direction that our velocity it heading, ignore y-velocity
-		RaycastHit hit;
+		//Raycast in several directions to see if we are wall-running
+		RaycastHit vHit;
+		RaycastHit rHit;
+		RaycastHit lHit;
+		RaycastHit bHit;
 		Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-		Physics.Raycast(playerBody.transform.position, pushDir, out hit, 1.5f);
-		if(hit.collider != null && cc.isGrounded == false)
+		Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1.5f);
+		Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1.5f);
+		Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1.5f);
+		Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
+
+		if(!wallRunLeft && !wallRunRight)
 		{
-			//Mark us in the wall-running state
-			wallRunning = true;
-
-			//Raycast in all directions to see which side we are running on
-			RaycastHit rHit;
-			RaycastHit lHit;
-			RaycastHit bHit;
-			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1.5f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1.5f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
-
-			//Right raycast
-			if(rHit.collider != null || Input.GetKeyDown(KeyCode.D))
+			//Check the rules for activating wall-running
+			if(checkActivateWallRunRules(vHit, rHit, lHit, cc.isGrounded))
 			{
-				//Flag wall-running state
-				wallRunRight = true;
-				//Rotate camera slightly
-				cameraZRot = 20f;
-				//Store the hit point information
-				wallRunDirection = Vector3.ProjectOnPlane(velocity, rHit.normal);
-				//Reset the jump counter
-				jumps = 2;
+				//Start the timer
+				wallRunTimer = wallRunMax;
+
+				//Right raycast
+				if(rHit.collider != null || Input.GetKeyDown(KeyCode.D))
+				{
+					//Play a networked landing sound
+					fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
+					//Flag wall-running state
+					wallRunRight = true;
+					//Store the hit point information
+					wallRunDirection = Vector3.ProjectOnPlane(velocity, rHit.normal);
+					wallJumpDirectionSet = false;
+					wallRunNormal = rHit.normal;
+					//Reset the jump counter
+					jumps = 2;
+				}
+
+				//Left raycast
+				if(lHit.collider != null || Input.GetKeyDown(KeyCode.A))
+				{
+					//Play a networked landing sound
+					fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
+					//Flag wall-running state
+					wallRunLeft = true;
+					//Store the hit point
+					wallRunDirection = Vector3.ProjectOnPlane(velocity, lHit.normal);
+					wallJumpDirectionSet = false;
+					wallRunNormal = lHit.normal;
+					//Reset the jump counter
+					jumps = 2;
+				}
 			}
-			else if(cc.isGrounded || rHit.collider == null)
+			else
 			{
-				//Deactivate wall-running
 				wallRunRight = false;
-			}
-
-			//Left raycast
-			if(lHit.collider != null || Input.GetKeyDown(KeyCode.A))
-			{
-				//Flag wall-running state
-				wallRunLeft = true;
-				//Rotate camera slightly
-				cameraZRot = -20f;
-				//Store the hit point
-				wallRunDirection = Vector3.ProjectOnPlane(velocity, lHit.normal);
-				//Reset the jump counter
-				jumps = 2;
-			}
-			else if(cc.isGrounded || lHit.collider == null)
-			{
-				//Deactivate wall-running
 				wallRunLeft = false;
+				wallRunTimer = 0.0f;
+				//Disabled wall-running until we hit the ground
+				if(cc.isGrounded)
+				{
+					wallRunningDisabled = false;
+				}
 			}
 		}
-		else
+		//Check if we should de-activate wall-running
+		else if(checkDeactivateWallRunRules(vHit, rHit, lHit, bHit, cc.isGrounded))
 		{
 			wallRunRight = false;
 			wallRunLeft = false;
+			wallRunTimer = 0.0f;
+			//If we're grounded then don't disabled wall-running
+			if(!cc.isGrounded)
+			{
+				wallRunningDisabled = true;
+			}
 		}
-
-		/*
-		//Right raycast
-		if(rHit.collider != null && cc.isGrounded == false && Input.GetKeyDown(KeyCode.D))
+		//Decrement the wallRunTimer
+		else 
 		{
-			//Flag wall-running state
-			wallRunRight = true;
-			//Rotate camera slightly
-			cameraZRot = 20f;
-			//Store the hit point information
-			wallRunDirection = Vector3.ProjectOnPlane(velocity, rHit.normal);
-			//Reset the jump counter
-			jumps = 2;
+			wallRunTimer -= Time.deltaTime;
 		}
-		else if(cc.isGrounded || rHit.collider == null)
-		{
-			//Deactivate wall-running
-			wallRunRight = false;
-		}
-
-		//Left raycast
-		if(lHit.collider != null && cc.isGrounded == false && Input.GetKeyDown(KeyCode.A))
-		{
-			//Flag wall-running state
-			wallRunLeft = true;
-			//Rotate camera slightly
-			cameraZRot = -20f;
-			//Store the hit point
-			wallRunDirection = Vector3.ProjectOnPlane(velocity, lHit.normal);
-			//Reset the jump counter
-			jumps = 2;
-		}
-		else if(cc.isGrounded || lHit.collider == null)
-		{
-			//Deactivate wall-running
-			wallRunLeft = false;
-		}
-		*/
-
-		/*
-		//Back raycast
-		if(bHit.collider != null && cc.isGrounded == false && Input.GetKeyDown(KeyCode.S))
-		{
-			//Flag wall-running state
-			wallRunLeft = true;
-			//Rotate camera slightly
-			cameraZRot = -20f;
-			//Store the hit point
-			wallRunDirection = Vector3.ProjectOnPlane(velocity, lHit.normal);
-			//Reset the jump counter
-			jumps = 2;
-		}
-		else if(cc.isGrounded || lHit.collider == null)
-		{
-			//Deactivate wall-running
-			wallRunLeft = false;
-		}
-		*/
 	}
 
 	//Push the player upwards if we jumped
@@ -515,23 +521,42 @@ public class FirstPersonController : MonoBehaviour {
 	{
 		//The direction we want to rotate the velocity towards
 		Vector3 targetDir;
-		float degrees;
+		//The angle we want to jump relative to the wall
+		float degrees = 0f;
+		//Depending on the button held and our wall-running side, increase the angle
 		if(wallRunLeft)
 		{
+			if(Input.GetKey(KeyCode.D))
+			{
+				degrees = 45f;
+			}
+			else if(Input.GetKey(KeyCode.W))
+			{
+				degrees = 70f;
+			}
 			targetDir = transform.right;
-			degrees = 45f;
 		}
 		else
 		{
+			if(Input.GetKey(KeyCode.A))
+			{
+				degrees = 45f;
+			}
+			else if(Input.GetKey(KeyCode.W))
+			{
+				degrees = 70f;
+			}
 			targetDir = -transform.right;
-			degrees = 45f;
 		}
 		//Reset the y-velocity for rotation calculations
 		velocity.y = 0;
 		//Convert degress to radians
 		float radians = degrees * Mathf.Deg2Rad;
+		//Scale the normal of the wall we're running on
+		Vector3 dir = wallRunNormal * 14f;
 		//Rotate the current velocity towards the target direction the amount of radians determined above
-		velocity = Vector3.RotateTowards(velocity, targetDir, radians, 0.0f);
+		velocity = Vector3.RotateTowards(dir, velocity, radians, 0.0f);
+		velocity *= 1.2f;
 		//Jump upwards
 		velocity.y = jumpSpeed;
 	}
@@ -597,14 +622,14 @@ public class FirstPersonController : MonoBehaviour {
 		velocity.y = jumpSpeed;
 	}
 
-	private void PlayFootStepAudio(bool isSprinting)
+	private void PlayFootStepAudio(bool isSprinting, bool isWallRunning)
 	{
-		if (!cc.isGrounded && !aSource.isPlaying)
+		if (!cc.isGrounded && !isWallRunning && !aSource.isPlaying)
 		{
 			return;
 		}
 
-		if((!isSprinting && walkTimer <= 0) || (isSprinting && runTimer <= 0))
+		if((!isSprinting && walkTimer <= 0) || ((isSprinting || isWallRunning) && runTimer <= 0) )
 		{
 			//Reset the audio timer
 			walkTimer = origWalkTimer;

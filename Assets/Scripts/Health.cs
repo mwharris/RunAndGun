@@ -13,6 +13,7 @@ public class Health : MonoBehaviour {
 	private float respawnTimer = 3f;
 	private float flashSpeed = 5f;
 	private Color flashColor = new Color(1.0f, 0f, 0f, 0.2f);
+	private FXManager fxManager;
 
 	void Start () 
 	{
@@ -22,6 +23,8 @@ public class Health : MonoBehaviour {
 		damageImage = GameObject.FindGameObjectWithTag("DamageImage").GetComponent<Image>();
 		//Grab a reference to the audio source for hurt sounds
 		aSource = this.transform.GetComponent<AudioSource>();
+		//Initialize a reference to the FXManager
+		fxManager = GameObject.FindObjectOfType<FXManager>();
 	}
 
 	void Update()
@@ -59,6 +62,9 @@ public class Health : MonoBehaviour {
 		else if(this.transform.GetComponent<PhotonView>().isMine){
 			//Respawn this player if it is ours
 			if(gameObject.tag == "Player"){
+				//Play effects on death
+				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
+				fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);
 				//Get a reference to our NetworkManager in order to manipulate variables
 				NetworkManager nm = GameObject.FindObjectOfType<NetworkManager>();
 				//Enable the lobby camera so we don't get a blank screen
