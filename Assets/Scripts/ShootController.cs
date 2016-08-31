@@ -26,11 +26,13 @@ public class ShootController : MonoBehaviour
 	private float hitIndicatorTimerMax;
 	private FXManager fxManager;
 	private float cooldownTimer;
+	private float cooldownTimerMax = 0.315f;
 	private PhotonView pView;
 
 	void Start()
 	{
-		cooldownTimer = 20.0f;
+		//Initialize timers
+		cooldownTimer = 0.0f;
 		hitIndicatorTimerMax = 0.3f;
 		hitIndicatorTimer = hitIndicatorTimerMax;
 
@@ -82,7 +84,7 @@ public class ShootController : MonoBehaviour
 				//Only fire if there are bullets in the clip
 				if(bulletCount > 0){
 					//Reset the shot timer
-					cooldownTimer = 20.0f;
+					cooldownTimer = cooldownTimerMax;
 
 					//Decrement the bullet counter
 					bulletCount--;
@@ -169,7 +171,7 @@ public class ShootController : MonoBehaviour
 		}
 
 		//Decrement the cooldown timer
-		cooldownTimer--;
+		cooldownTimer -= Time.deltaTime;
 	}
 
 	//Helper function to reload our weapon

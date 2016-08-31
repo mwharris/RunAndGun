@@ -2,13 +2,14 @@
 using System.Collections;
 
 public class FirstPersonController : MonoBehaviour {
-	//75,5,0,0,60,8
-	public float movementSpeed = 10.0f;
+	//private float movementSpeed = 60.0f;
+	private float movementSpeed = 0.96f;
+	//private float movementSpeed = 1.98f;
 	public float mouseSensitivity = 5.0f;
 	public float verticalRotation = 0f;
 	public float verticalVelocity = 0f;
 	public float upDownRange = 60.0f;
-	public float jumpSpeed = 5f;
+	private float jumpSpeed = 8f;
 	public float walkTimer = 0f;
 	public float runTimer = 0f;
 	public Camera playerCamera;
@@ -238,8 +239,10 @@ public class FirstPersonController : MonoBehaviour {
 			} 
 			else 
 			{
-				velocity += forwardSpeed * transform.forward * Time.deltaTime;
-				velocity += sideSpeed * transform.right * Time.deltaTime;
+				velocity += forwardSpeed * transform.forward;
+				velocity += sideSpeed * transform.right;
+				//velocity += forwardSpeed * transform.forward * Time.deltaTime;
+				//velocity += sideSpeed * transform.right * Time.deltaTime;
 			}
 		}
 		//Air / Wall-running movement
@@ -285,11 +288,13 @@ public class FirstPersonController : MonoBehaviour {
 				//Add the x / z movement
 				if(forwardSpeed != 0 && allowAirMovement)
 				{
-					velocity += forwardSpeed * transform.forward * Time.deltaTime;
+					velocity += forwardSpeed * transform.forward;
+					//velocity += forwardSpeed * transform.forward * Time.deltaTime;
 				} 
 				if(sideSpeed != 0 && allowAirMovement) 
 				{
-					velocity += sideSpeed * transform.right * Time.deltaTime;
+					velocity += sideSpeed * transform.right;
+					//velocity += sideSpeed * transform.right * Time.deltaTime;
 				}
 			}
 		}
@@ -304,6 +309,7 @@ public class FirstPersonController : MonoBehaviour {
 			if(!cc.isGrounded)
 			{
 				//Add gravity only when we aren't on the ground
+				//velocity += Physics.gravity;
 				velocity += Physics.gravity * Time.deltaTime;
 			} 
 			else 
@@ -317,6 +323,7 @@ public class FirstPersonController : MonoBehaviour {
 		//If we're wall-running, lower the gravity to simulate it
 		else if(!cc.isGrounded)
 		{
+			//velocity += (Physics.gravity/4);
 			velocity += (Physics.gravity/4) * Time.deltaTime;
 		}
 	}
@@ -467,7 +474,7 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			else
 			{
-				//Determine if  we jumped straight upwards
+				//Determine if we jumped straight upwards
 				if(velocity.x == 0 && velocity.z == 0){
 					allowAirMovement = true;
 				} else {

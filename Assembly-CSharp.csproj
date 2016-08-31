@@ -117,6 +117,7 @@
      <Compile Include="Assets\IMPORTED\PhotonChatApi\IChatClientListener.cs" />
      <Compile Include="Assets\IMPORTED\Plugins\WebSocket\WebSocket.cs" />
      <Compile Include="Assets\MainMenu.cs" />
+     <Compile Include="Assets\Scripts\FPSDisplay.cs" />
      <Compile Include="Assets\Scripts\FXManager.cs" />
      <Compile Include="Assets\Scripts\FirstPersonController.cs" />
      <Compile Include="Assets\Scripts\Health.cs" />
