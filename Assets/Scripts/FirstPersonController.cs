@@ -75,7 +75,7 @@ public class FirstPersonController : MonoBehaviour {
 		//Initialize a reference to the FXManager
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Initialize a reference to HeadBob script
-		headBobScript = playerCamera.GetComponent<MyHeadBob>();
+		//headBobScript = playerCamera.GetComponent<MyHeadBob>();
 		//Set camera height variables
 		standardCamHeight = 2.5f;
 		standardBodyScale = 1.5f;
@@ -204,13 +204,13 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				forwardSpeed *= crouchMovementSpeed;
 				sideSpeed *= crouchMovementSpeed;
-				headBobScript.enabled = false;
+				//headBobScript.enabled = false;
 			}
 			else if(isSprinting)
 			{
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
-				headBobScript.enabled = true;
+				//headBobScript.enabled = true;
 				//Mark ourselves as started sprinting if we're moving while sprinting
 				if(forwardSpeed != 0 || sideSpeed != 0)
 				{
@@ -221,7 +221,7 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				forwardSpeed *= movementSpeed;
 				sideSpeed *= movementSpeed;
-				headBobScript.enabled = false;
+				//headBobScript.enabled = false;
 			}
 
 			//Play sprinting FX while sprinting
@@ -249,7 +249,7 @@ public class FirstPersonController : MonoBehaviour {
 		else
 		{
 			//Disable head bob
-			headBobScript.enabled = false;
+			//headBobScript.enabled = false;
 
 			//If we're wall-running
 			if(wallRunLeft || wallRunRight)

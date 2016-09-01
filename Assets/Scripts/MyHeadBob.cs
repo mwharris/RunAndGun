@@ -3,46 +3,37 @@ using System.Collections;
 
 public class MyHeadBob : MonoBehaviour {
 
-	private float timer = 0.0f;
-	public float bobbingSpeed = 0.18f;
-	public float bobbingAmount = 0.2f;
-	public float midpoint = 2.0f;
+	public Vector3 restPosition; //local position where your camera would rest when it's not bobbing.
+	public float transitionSpeed = 20f; //smooths out the transition from moving to not moving.
+	public float bobSpeed = 4.8f; //how quickly the player's head bobs.
+	public float bobAmount = 0.1f; //how dramatic the bob is. Increasing this in conjunction with bobSpeed gives a nice effect for sprinting.
+
+	float timer = Mathf.PI / 2; //initialized as this value because this is where sin = 1. So, this will make the camera always start at the crest of the sin wave, simulating someone picking up their foot and starting to walk--you experience a bob upwards when you start walking as your foot pushes off the ground, the left and right bobs come as you walk.
+	Vector3 camPos;
 
 	void Update()
 	{
-		float waveSlice = 0.0f;
-		float horizontal = Input.GetAxis("Horizontal");
-		float vertical = Input.GetAxis("Vertical");
+		camPos = transform.localPosition;
+		print("X: " + camPos.x + ", Y: " + camPos.y + ", Z: " + camPos.z);
+		if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0) //moving
+		{
+			timer += bobSpeed * Time.deltaTime;
 
-		Vector3 cSharpConversion = transform.localPosition;
+			//use the timer value to set the position
+			Vector3 newPosition = new Vector3(Mathf.Cos(timer) * bobAmount, restPosition.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosition.z); //abs val of y for a parabolic path
+			camPos = newPosition;
+			transform.localPosition = camPos;
+		}
+		else
+		{
+			timer = Mathf.PI / 2; //reinitialize
 
-		if(Mathf.Abs(horizontal) == 0 && Mathf.Abs(vertical) == 0)
-		{
-			timer = 0.0f;
-		}
-		else 
-		{
-			waveSlice = Mathf.Sin(timer);
-			timer = timer + bobbingSpeed;
-			if(timer > Mathf.PI * 2)
-			{
-				timer = timer - (Mathf.PI * 2);
-			}
-		}
-
-		if(waveSlice != 0)
-		{
-			float translateChange = waveSlice * bobbingAmount;
-			float totalAxes = Mathf.Abs(horizontal) + Mathf.Abs(vertical);
-			totalAxes = Mathf.Clamp(totalAxes, 0.0f, 1.0f);
-			translateChange = totalAxes * translateChange;
-			cSharpConversion.y = midpoint + translateChange;
-		}
-		else 
-		{
-			cSharpConversion.y = midpoint;
+			Vector3 newPosition = new Vector3(Mathf.Lerp(camPos.x, restPosition.x, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.y, restPosition.y, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.z, restPosition.z, transitionSpeed * Time.deltaTime)); //transition smoothly from walking to stopping.
+			camPos = newPosition;
+			transform.localPosition = camPos;
 		}
 
-		transform.localPosition = cSharpConversion;
+		if (timer > Mathf.PI * 2) //completed a full cycle on the unit circle. Reset to 0 to avoid bloated values.
+			timer = 0;
 	}
 }
