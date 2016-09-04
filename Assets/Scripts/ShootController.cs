@@ -61,6 +61,11 @@ public class ShootController : MonoBehaviour
 		{
 			recoilAnim.SetBool("Shoot", false);
 		}
+		//Reset the reload animation
+		if(recoilAnim.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
+		{
+			recoilAnim.SetBool("Reload", false);
+		}
 
 		//Hide the hit indicators from last frame
 		HideHitIndicator();
@@ -183,7 +188,8 @@ public class ShootController : MonoBehaviour
 		bulletCount = magazineCapacity;
 		//Play a sound
 		aSource.PlayOneShot(reloadClip);
-		//TODO: Play an animation
+		//Play the reload animation
+		recoilAnim.SetBool("Reload", true);
 	}
 
 	//Helper function to show the gun FX
