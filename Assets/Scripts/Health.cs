@@ -6,6 +6,7 @@ public class Health : MonoBehaviour {
 
 	public float hitPoints = 100f;
 	public AudioClip[] hurtSounds; 
+	public GameObject deathCam;
 
 	private AudioSource aSource;
 	private Image damageImage;
@@ -65,11 +66,14 @@ public class Health : MonoBehaviour {
 				//Play effects on death
 				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
 				fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);
+				//Spawn a death camera
+				GameObject dCam = (GameObject) Instantiate(deathCam, transform.position, Quaternion.identity);
+				dCam.SetActive(true);
 				//Get a reference to our NetworkManager in order to manipulate variables
 				NetworkManager nm = GameObject.FindObjectOfType<NetworkManager>();
 				//Enable the lobby camera so we don't get a blank screen
-				nm.lobbyCamera.gameObject.SetActive(true);
-				GameObject.FindGameObjectWithTag("Reticle").GetComponent<Image>().enabled = false;
+				//nm.lobbyCamera.gameObject.SetActive(true);
+				//GameObject.FindGameObjectWithTag("Reticle").GetComponent<Image>().enabled = false;
 				//Start our respawn timer
 				nm.respawnTimer = respawnTimer;
 			}

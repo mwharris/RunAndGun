@@ -4,6 +4,7 @@ using System.Collections;
 public class MyHeadBob : MonoBehaviour {
 
 	public Vector3 restPosition; //local position where your camera would rest when it's not bobbing.
+	public Vector3 crouchPosition; //local position where your camera would rest when the player is crouching.
 	public float transitionSpeed = 20f; //smooths out the transition from moving to not moving.
 	public float bobSpeed = 4.8f; //how quickly the player's head bobs.
 	public float bobAmount = 0.1f; //how dramatic the bob is. Increasing this in conjunction with bobSpeed gives a nice effect for sprinting.
@@ -14,7 +15,6 @@ public class MyHeadBob : MonoBehaviour {
 	void Update()
 	{
 		camPos = transform.localPosition;
-		print("X: " + camPos.x + ", Y: " + camPos.y + ", Z: " + camPos.z);
 		if (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0) //moving
 		{
 			timer += bobSpeed * Time.deltaTime;
@@ -28,9 +28,11 @@ public class MyHeadBob : MonoBehaviour {
 		{
 			timer = Mathf.PI / 2; //reinitialize
 
-			Vector3 newPosition = new Vector3(Mathf.Lerp(camPos.x, restPosition.x, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.y, restPosition.y, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.z, restPosition.z, transitionSpeed * Time.deltaTime)); //transition smoothly from walking to stopping.
-			camPos = newPosition;
-			transform.localPosition = camPos;
+			if(restPosition != transform.localPosition && crouchPosition != transform.localPosition){
+				Vector3 newPosition = new Vector3(Mathf.Lerp(camPos.x, restPosition.x, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.y, restPosition.y, transitionSpeed * Time.deltaTime), Mathf.Lerp(camPos.z, restPosition.z, transitionSpeed * Time.deltaTime)); //transition smoothly from walking to stopping.
+				camPos = newPosition;
+				transform.localPosition = camPos;
+			}
 		}
 
 		if (timer > Mathf.PI * 2) //completed a full cycle on the unit circle. Reset to 0 to avoid bloated values.
