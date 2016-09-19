@@ -13,6 +13,7 @@ public class NetworkManager : MonoBehaviour {
 
 	private string username;
 	private GameObject[] spawnPoints;
+	private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
 
 	// Use this for initialization
 	void Start () 
@@ -39,7 +40,7 @@ public class NetworkManager : MonoBehaviour {
 	public void Connect () 
 	{
 		//Set the player's username
-		PhotonNetwork.player.name = username;
+		PhotonNetwork.playerName = SetUsername(name);
 
 		//Unique string to identify our connection
 		PhotonNetwork.ConnectUsingSettings("RunNGunFPS");
@@ -50,7 +51,7 @@ public class NetworkManager : MonoBehaviour {
 
 	public void ConnectOffline(){
 		//Set the player's username
-		PhotonNetwork.player.name = username;
+		PhotonNetwork.playerName = SetUsername(name);
 
 		//Mark this session as offline and create
 		PhotonNetwork.offlineMode = true;
@@ -69,8 +70,6 @@ public class NetworkManager : MonoBehaviour {
 	//Callback for Lobby join success
 	void OnJoinedLobby()
 	{
-		//print("ATTEMPTING TO JOIN RANDOM ROOM...");
-
 		//Immediately join a random room once we join the lobby
 		PhotonNetwork.JoinRandomRoom();
 	}
@@ -78,8 +77,6 @@ public class NetworkManager : MonoBehaviour {
 	//Callback for failure of JoinRandomRoom()
 	void OnPhotonRandomJoinFailed()
 	{
-		//print("NO ROOMS EXIST - CREATING A ROOM");
-
 		//Create a new room since one does not exist
 		PhotonNetwork.CreateRoom(null);
 	}
@@ -87,8 +84,6 @@ public class NetworkManager : MonoBehaviour {
 	//Callback for successfully joining a room
 	void OnJoinedRoom()
 	{
-		//print("ROOM JOINED");
-
 		//Spawn the local player
 		SpawnPlayer();
 	}
@@ -105,6 +100,7 @@ public class NetworkManager : MonoBehaviour {
 
 		//Instantiate the player across all clients
 		GameObject myPlayer = PhotonNetwork.Instantiate("Player", spawnPos, spawnRot, 0);
+		myPlayer.name = username;
 
 		//Enable local player controls
 		myPlayer.GetComponent<FirstPersonController>().enabled = true;
@@ -130,8 +126,20 @@ public class NetworkManager : MonoBehaviour {
 		#endif
 	}
 
-	public void SetUsername(string name)
+	public string SetUsername(string name)
 	{
-		username = name;
+		string returnName = "";
+
+		if(name == null || name == "")
+		{
+			//Generate a random string of 10 characters
+			for(int i = 0; i < 10; i++)
+			{
+				name += glyphs[Random.Range(0, glyphs.Length)]; 
+			}
+		}
+
+		//Set the username
+		return name;
 	}
 }

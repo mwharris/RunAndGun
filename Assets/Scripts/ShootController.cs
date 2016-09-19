@@ -52,6 +52,9 @@ public class ShootController : MonoBehaviour
 
 		//Default the bullet count to the max magazin capacity
 		bulletCount = magazineCapacity;
+
+		//Get the attached PhotonView
+		pView = GetComponent<PhotonView>();
 	}
 
 	void Update() 
@@ -137,7 +140,7 @@ public class ShootController : MonoBehaviour
 							PhotonView pv = h.GetComponent<PhotonView>();
 							if(pv != null)
 							{
-								pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage);
+								pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name);
 							}
 						} 
 

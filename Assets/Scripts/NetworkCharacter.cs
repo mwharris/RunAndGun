@@ -47,7 +47,6 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			stream.SendNext(body.transform.position);
 			stream.SendNext(playerCamera.transform.rotation);
 			stream.SendNext(playerCamera.transform.position);
-			//stream.SendNext(playerCamera.transform.localPosition);
 		}
 		else
 		{

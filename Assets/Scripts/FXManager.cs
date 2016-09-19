@@ -14,6 +14,7 @@ public class FXManager : MonoBehaviour {
 	public AudioClip landingSound; 
 	public AudioClip doubleJumpSound;   
 	public AudioClip hitSound;
+	public AudioClip[] deathSounds; 
 
 	[PunRPC]
 	void BulletFX(Vector3 startPos, Vector3 endPos, bool hitEnemy, bool hitRed)
@@ -51,6 +52,21 @@ public class FXManager : MonoBehaviour {
 	{
 		//Show some death effects
 		Instantiate(deathEffect, pos, Quaternion.identity);
+		//Play a sound
+		PlayDeathSound(pos);
+	}
+
+	void PlayDeathSound(Vector3 pos)
+	{
+		AudioClip clipToPlay;
+		//Pick & play a random footstep sound from the array,
+		int n = Random.Range(1, deathSounds.Length);
+		clipToPlay = deathSounds[n];
+		//Play our gun shot
+		AudioSource.PlayClipAtPoint(clipToPlay, pos);
+		//Move picked sound to index 0 so it's not picked next time
+		deathSounds[n] = deathSounds[0];
+		deathSounds[0] = clipToPlay;
 	}
 
 	[PunRPC]

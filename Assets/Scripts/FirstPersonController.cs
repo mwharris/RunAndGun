@@ -86,8 +86,27 @@ public class FirstPersonController : MonoBehaviour {
 		//Calculate the movement speed while crouched
 		crouchMovementSpeed = movementSpeed/2;
 	}
-	
+
 	void Update () {
+		///////////// TODO: REMOVE THESE RAYCAST TEST LINES //////////////
+		Vector3 r = transform.right*5;
+		Vector3 l = -transform.right*5;
+		Vector3 f = transform.forward*5;
+		Vector3 fr = Vector3.RotateTowards(transform.forward, transform.right, 45 * Mathf.Deg2Rad, 10)*5;
+		Vector3 fl = Vector3.RotateTowards(transform.forward, -transform.right, 45 * Mathf.Deg2Rad, 10)*5;
+		Vector3 b = -transform.forward*5;
+		Vector3 br = Vector3.RotateTowards(-transform.forward, transform.right, 45 * Mathf.Deg2Rad, 10)*5;
+		Vector3 bl = Vector3.RotateTowards(-transform.forward, -transform.right, 45 * Mathf.Deg2Rad, 10)*5;
+		Debug.DrawRay(transform.position, new Vector3(r.x, r.y + 5, r.z));
+		Debug.DrawRay(transform.position, new Vector3(l.x, l.y + 5, l.z));
+		Debug.DrawRay(transform.position, new Vector3(f.x, f.y + 5, f.z));
+		Debug.DrawRay(transform.position, new Vector3(fr.x, fr.y + 5, fr.z));
+		Debug.DrawRay(transform.position, new Vector3(fl.x, fl.y + 5, fl.z));
+		Debug.DrawRay(transform.position, new Vector3(b.x, b.y + 5, b.z));
+		Debug.DrawRay(transform.position, new Vector3(br.x, br.y + 5, br.z));
+		Debug.DrawRay(transform.position, new Vector3(bl.x, bl.y + 5, bl.z));
+		////////////////////////////////////////////////////////////////
+
 		//Handle any mouse input that occurred
 		handleMouseInput();
 
