@@ -1,19 +1,16 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\NetworkManager.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\DeathCamScript.cs">
     <Files>
-      <File FileName="Assets\Scripts\NetworkManager.cs" Line="132" Column="3" />
-      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="46" Column="29" />
-      <File FileName="Assets\Scripts\Health.cs" Line="199" Column="29" />
-      <File FileName="Assets\Scripts\ShootController.cs" Line="146" Column="7" />
-      <File FileName="Assets\Scripts\DeathCamScript.cs" Line="13" Column="16" />
-      <File FileName="Assets\Scripts\NetworkCharacter.cs" Line="19" Column="25" />
+      <File FileName="Assets\Scripts\DeathCamScript.cs" Line="29" Column="25" />
+      <File FileName="Assets\Scripts\NetworkManager.cs" Line="115" Column="8" />
+      <File FileName="Assets\Scripts\Health.cs" Line="140" Column="63" />
+      <File FileName="Assets\Scripts\ShootController.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="307" column="1" />
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\NetworkCharacter.cs" line="30" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="308" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />

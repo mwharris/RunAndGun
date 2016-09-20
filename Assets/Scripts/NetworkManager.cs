@@ -40,7 +40,7 @@ public class NetworkManager : MonoBehaviour {
 	public void Connect () 
 	{
 		//Set the player's username
-		PhotonNetwork.playerName = SetUsername(name);
+		PhotonNetwork.playerName = username;
 
 		//Unique string to identify our connection
 		PhotonNetwork.ConnectUsingSettings("RunNGunFPS");
@@ -51,7 +51,7 @@ public class NetworkManager : MonoBehaviour {
 
 	public void ConnectOffline(){
 		//Set the player's username
-		PhotonNetwork.playerName = SetUsername(name);
+		PhotonNetwork.playerName = username;
 
 		//Mark this session as offline and create
 		PhotonNetwork.offlineMode = true;
@@ -126,10 +126,8 @@ public class NetworkManager : MonoBehaviour {
 		#endif
 	}
 
-	public string SetUsername(string name)
+	public void SetUsername(string name)
 	{
-		string returnName = "";
-
 		if(name == null || name == "")
 		{
 			//Generate a random string of 10 characters
@@ -138,8 +136,7 @@ public class NetworkManager : MonoBehaviour {
 				name += glyphs[Random.Range(0, glyphs.Length)]; 
 			}
 		}
-
 		//Set the username
-		return name;
+		username = name;
 	}
 }

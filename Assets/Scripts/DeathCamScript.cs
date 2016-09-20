@@ -10,7 +10,7 @@ public class DeathCamScript : MonoBehaviour {
 	void Start() 
 	{
 		//Initialize the timer
-		timer = 5.0f;
+		timer = 1.5f;
 		//Find the target we are trying to look at
 		target = FindTarget(targetName);
 	}
@@ -24,8 +24,13 @@ public class DeathCamScript : MonoBehaviour {
 			//Check if time is up
 			if(timer <= 0)
 			{
-				//Look at the killer
-				this.transform.LookAt(target.transform);
+				//Get the vector of the direction to the killer
+				Vector3 dirVector = target.transform.position - this.transform.position;
+				//Get the quaternion
+				Quaternion quat = Quaternion.LookRotation(dirVector);
+				//Rotate towards the killer
+				//transform.rotation = quat;
+				transform.rotation = Quaternion.Lerp(transform.rotation, quat, 0.2f);
 			}
 		}
 	}

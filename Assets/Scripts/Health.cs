@@ -137,6 +137,7 @@ public class Health : MonoBehaviour {
 				//Spawn a death camera and set it active, pointing
 				GameObject dCam = (GameObject) Instantiate(deathCam, dCamLoc, Quaternion.identity);
 				dCam.SetActive(true);
+				dCam.transform.LookAt(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z));
 				//Attach a script to the camera
 				DeathCamScript deathCamScript = dCam.AddComponent<DeathCamScript>();
 				deathCamScript.targetName = enemyPhotonName;
