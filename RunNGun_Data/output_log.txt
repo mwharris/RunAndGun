@@ -18,16 +18,16 @@ Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll (this message is harmless)
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
-- Completed reload, in  0.111 seconds
+- Completed reload, in  0.136 seconds
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.dll (this message is harmless)
 desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 0.820153 ms
+UnloadTime: 0.857429 ms
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 1f38 -> priority: 1 
+  Thread -> id: 1990 -> priority: 1 
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/PhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/.\PhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/PhotonCryptoPlugin

@@ -15,6 +15,7 @@ public class Health : MonoBehaviour {
 	private float flashSpeed = 5f;
 	private Color flashColor = new Color(1.0f, 0f, 0f, 0.2f);
 	private FXManager fxManager;
+	private GameObject deathOverlay;
 
 	void Start () 
 	{
@@ -26,11 +27,17 @@ public class Health : MonoBehaviour {
 		aSource = this.transform.GetComponent<AudioSource>();
 		//Initialize a reference to the FXManager
 		fxManager = GameObject.FindObjectOfType<FXManager>();
+		//Get a reference to the death overlay
+		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
 	}
 
 	void Update()
 	{
-		damageImage.color = Color.Lerp(damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
+		//Slowly make the screen red the more hurt we are
+		if(this.transform.GetComponent<PhotonView>().isMine){
+			damageImage.color = new Color(1.0f, 0f, 0f, ((100 - currentHitPoints) / 100));
+		}
+		//damageImage.color = Color.Lerp(damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
 	}
 
 	[PunRPC]
@@ -41,7 +48,8 @@ public class Health : MonoBehaviour {
 		//If this is our local player
 		if(this.transform.GetComponent<PhotonView>().isMine){
 			//Display a damage image
-			damageImage.color = flashColor;
+			//flashColor = new Color(1.0f, 0f, 0f, hitPoints / 100);
+			//damageImage.color = flashColor;
 			//Play a sound indicating we were shot
 			PlayHurtSound();
 		} 
@@ -66,13 +74,12 @@ public class Health : MonoBehaviour {
 				//Play effects on death
 				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
 				fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);
+				//Gray out the screen and display killer
+				ShowDeathOverlay(enemyPhotonName);
 				//Get a reference to our NetworkManager in order to manipulate variables
 				NetworkManager nm = GameObject.FindObjectOfType<NetworkManager>();
 				//Handle spawning a Death Camera
 				HandleKillCam(enemyPhotonName);
-				//Enable the lobby camera so we don't get a blank screen
-				//nm.lobbyCamera.gameObject.SetActive(true);
-				//GameObject.FindGameObjectWithTag("Reticle").GetComponent<Image>().enabled = false;
 				//Start our respawn timer
 				nm.respawnTimer = respawnTimer;
 			}
@@ -188,6 +195,16 @@ public class Health : MonoBehaviour {
 		//Move picked sound to index 0 so it's not picked next time
 		hurtSounds[n] = hurtSounds[0];
 		hurtSounds[0] = clipToPlay;
+	}
+
+	void ShowDeathOverlay(string enemyName)
+	{
+		//Unhide death overlay components
+		deathOverlay.transform.GetChild(0).GetComponent<Image>().enabled = true;
+		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+		deathOverlay.transform.GetChild(2).GetComponent<Text>().enabled = true;
+		//Update the killer's name text
+		deathOverlay.transform.GetChild(2).GetComponent<Text>().text = enemyName;
 	}
 		
 	//Suicide button for testing respawn

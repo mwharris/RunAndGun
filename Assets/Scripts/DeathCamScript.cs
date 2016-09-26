@@ -1,38 +1,59 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class DeathCamScript : MonoBehaviour {
 
-	public float timer = 0.0f;
+	public float lookTimer = 0.0f;
+	public float lifeTimer = 0.0f;
 	public string targetName;
 	public GameObject target;
 
+	private GameObject deathOverlay;
+
 	void Start() 
 	{
-		//Initialize the timer
-		timer = 1.5f;
+		//Initialize the look timer
+		lookTimer = 0.5f;
+		//Initialize the death timer
+		lifeTimer = 3.0f;
+		//Get a reference to the death overlay
+		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
 		//Find the target we are trying to look at
 		target = FindTarget(targetName);
 	}
 
 	void Update () 
 	{
-		if(target != null)
+		//Decrement the timers
+		lookTimer -= Time.deltaTime;
+		lifeTimer -= Time.deltaTime;
+		//Check if we should start looking at the killer
+		if(lookTimer <= 0 && target != null)
 		{
-			//Decrement the timer
-			timer -= Time.deltaTime;
-			//Check if time is up
-			if(timer <= 0)
-			{
-				//Get the vector of the direction to the killer
-				Vector3 dirVector = target.transform.position - this.transform.position;
-				//Get the quaternion
-				Quaternion quat = Quaternion.LookRotation(dirVector);
-				//Rotate towards the killer
-				//transform.rotation = quat;
-				transform.rotation = Quaternion.Lerp(transform.rotation, quat, 0.2f);
-			}
+			//Get the vector of the direction to the killer
+			Vector3 dirVector = target.transform.position - this.transform.position;
+			//Get the quaternion
+			Quaternion quat = Quaternion.LookRotation(dirVector);
+			//Rotate towards the killer
+			transform.rotation = Quaternion.Lerp(transform.rotation, quat, 0.2f);
 		}
+		//Check if we should turn this camera off
+		if(lifeTimer <= 0)
+		{
+			//Hide the gray screen and show the player's camera
+			HideDeathOverlay();
+			//Destroy this camera
+			Destroy(this.gameObject);
+		}
+	}
+
+	void HideDeathOverlay()
+	{
+		//Hide death overlay components
+		deathOverlay.transform.GetChild(0).GetComponent<Image>().enabled = false;
+		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+		deathOverlay.transform.GetChild(2).GetComponent<Text>().enabled = false;
 	}
 
 	GameObject FindTarget(string targetName)
