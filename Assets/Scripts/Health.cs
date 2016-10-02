@@ -1,5 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
+using UnityStandardAssets.ImageEffects;
 using System.Collections;
 
 public class Health : MonoBehaviour {
@@ -7,15 +9,21 @@ public class Health : MonoBehaviour {
 	public float hitPoints = 100f;
 	public AudioClip[] hurtSounds; 
 	public GameObject deathCam;
+	public Camera lobbyCam;
 
 	private AudioSource aSource;
 	private Image damageImage;
 	private float currentHitPoints;
-	private float respawnTimer = 3f;
-	private float flashSpeed = 5f;
+	private float respawnTimer = 6f;
+	private float flashSpeed = 2f;
 	private Color flashColor = new Color(1.0f, 0f, 0f, 0.2f);
 	private FXManager fxManager;
 	private GameObject deathOverlay;
+	private Grayscale gScale;
+	private float regenTimer = 5.0f;
+	private float regenTimerMax = 5.0f;
+	private float regenRate = 4.0f;
+	private bool regenerating = false;
 
 	void Start () 
 	{
@@ -29,34 +37,67 @@ public class Health : MonoBehaviour {
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Get a reference to the death overlay
 		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
+		//Get a reference to the grayscale effect for when we get hit
+		gScale = this.transform.GetComponentInChildren<Grayscale>();
 	}
 
 	void Update()
 	{
-		//Slowly make the screen red the more hurt we are
-		if(this.transform.GetComponent<PhotonView>().isMine){
-			damageImage.color = new Color(1.0f, 0f, 0f, ((100 - currentHitPoints) / 100));
+		if(this.transform.GetComponent<PhotonView>().isMine)
+		{
+			//Decrement the Regen timer
+			regenTimer -= Time.deltaTime;
+			//If we aren't regenerating
+			if(regenTimer <= 0)
+			{
+				RegenHealth();
+			}
+			//Slowly make the screen red the more hurt we are
+			Color newColor = new Color(1.0f, 0f, 0f, ((100 - currentHitPoints) / 100));
+			damageImage.color = Color.Lerp(damageImage.color, newColor, flashSpeed * Time.deltaTime);
+			//If we are close to death also apply grayscale
+			gScale.effectAmount = ((100F - currentHitPoints) / 100F);
 		}
-		//damageImage.color = Color.Lerp(damageImage.color, Color.clear, flashSpeed * Time.deltaTime);
+	}
+
+	void RegenHealth()
+	{
+		//Mark us as regenerating
+		regenerating = true;
+		//Slowly start regenerating health over time
+		if(currentHitPoints < hitPoints)
+		{
+			currentHitPoints += regenRate * Time.deltaTime;
+		}
+		//Make sure we don't go over max HP
+		if(currentHitPoints > hitPoints)
+		{
+			currentHitPoints = hitPoints;
+		}	
 	}
 
 	[PunRPC]
 	public void TakeDamage(float damage, string enemyPhotonName) 
 	{
 		currentHitPoints -= damage;
-
 		//If this is our local player
-		if(this.transform.GetComponent<PhotonView>().isMine){
-			//Display a damage image
-			//flashColor = new Color(1.0f, 0f, 0f, hitPoints / 100);
-			//damageImage.color = flashColor;
+		if(this.transform.GetComponent<PhotonView>().isMine)
+		{
 			//Play a sound indicating we were shot
 			PlayHurtSound();
 		} 
-
+		//Die if our HP is below 0
 		if(currentHitPoints <= 0)
 		{
 			Die(enemyPhotonName);
+		}
+		//If we didn't die, we're regenerating, and we were shot
+		if(currentHitPoints > 0 && regenerating == true)
+		{
+			//Stop regenerating
+			regenerating = false;
+			//Restart the timer
+			regenTimer = regenTimerMax;
 		}
 	}
 
@@ -76,12 +117,8 @@ public class Health : MonoBehaviour {
 				fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);
 				//Gray out the screen and display killer
 				ShowDeathOverlay(enemyPhotonName);
-				//Get a reference to our NetworkManager in order to manipulate variables
-				NetworkManager nm = GameObject.FindObjectOfType<NetworkManager>();
 				//Handle spawning a Death Camera
 				HandleKillCam(enemyPhotonName);
-				//Start our respawn timer
-				nm.respawnTimer = respawnTimer;
 			}
 			//Delete it over the network
 			PhotonNetwork.Destroy(this.gameObject);
@@ -148,6 +185,7 @@ public class Health : MonoBehaviour {
 				//Attach a script to the camera
 				DeathCamScript deathCamScript = dCam.AddComponent<DeathCamScript>();
 				deathCamScript.targetName = enemyPhotonName;
+				deathCamScript.lobbyCamera = lobbyCam;
 				//Exit loop
 				break;
 			}
@@ -200,11 +238,10 @@ public class Health : MonoBehaviour {
 	void ShowDeathOverlay(string enemyName)
 	{
 		//Unhide death overlay components
-		deathOverlay.transform.GetChild(0).GetComponent<Image>().enabled = true;
+		deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
 		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
-		deathOverlay.transform.GetChild(2).GetComponent<Text>().enabled = true;
 		//Update the killer's name text
-		deathOverlay.transform.GetChild(2).GetComponent<Text>().text = enemyName;
+		deathOverlay.transform.GetChild(1).GetComponent<Text>().text = enemyName;
 	}
 		
 	//Suicide button for testing respawn
@@ -216,6 +253,17 @@ public class Health : MonoBehaviour {
 			{
 				Die(this.gameObject.name);
 			}
+			if(GUI.Button(new Rect(Screen.width-200, 0, 100, 40), "Damage!"))
+			{
+				TakeDamage(25, ""); 
+			}
+			if(regenerating && hitPoints > currentHitPoints)
+			{
+				if(GUI.Button(new Rect(Screen.width-300, 0, 100, 40), "REGEN!"))
+				{
+					//
+				}
+			}	
 		}
 	}
 }

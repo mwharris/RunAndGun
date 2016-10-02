@@ -8,9 +8,11 @@ public class NetworkManager : MonoBehaviour {
 	public Camera lobbyCamera;
 	public bool offlineMode;
 	public float respawnTimer = 0f;
+	public bool respawnAvailable;
 	public GameObject menu;
 	public GameObject ammoUI;
 
+	private GameObject respawnOverlay;
 	private string username;
 	private GameObject[] spawnPoints;
 	private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
@@ -20,18 +22,21 @@ public class NetworkManager : MonoBehaviour {
 	{
 		//Get the list of spawn points for the players
 		spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
+		//Get a reference to the respawn overlay
+		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
 	}
 
 	void Update()
 	{
-		if(respawnTimer > 0)
+		//If we're sitting at the respawn screen
+		if(respawnAvailable)
 		{
-			//Reduce the respawn timer every frame
-			respawnTimer -= Time.deltaTime;
-
-			//Respawn the player if our respawn timer has run out
-			if(respawnTimer <= 0)
+			//Prompt the user to hit space
+			if(Input.GetKey(KeyCode.Space))
 			{
+				//Reset the flag
+				respawnAvailable = false;
+				//Respawn the player
 				SpawnPlayer();
 			}
 		}
@@ -90,6 +95,9 @@ public class NetworkManager : MonoBehaviour {
 
 	void SpawnPlayer()
 	{
+		//Make sure the respawn overlay is hidden
+		HideRespawnOverlay();
+
 		//Randomly choose a spawn point for the player
 		if(spawnPoints == null){
 			Debug.Log("SPAWN POINTS ARE NULL IN SpawnPlayer()");
@@ -107,6 +115,7 @@ public class NetworkManager : MonoBehaviour {
 		myPlayer.GetComponent<ShootController>().enabled = true;
 		myPlayer.GetComponentInChildren<Camera>().enabled = true;
 		myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
+		myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
 
 		//Enable the displayed ammo counter
 		ammoUI.SetActive(true);
@@ -116,6 +125,13 @@ public class NetworkManager : MonoBehaviour {
 
 		//Disable the lobby camera
 		lobbyCamera.gameObject.SetActive(false);
+	}
+
+	void HideRespawnOverlay()
+	{
+		//Show respawn overlay components
+		respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = false;
+		respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
 	}
 
 	public void ExitGame(){

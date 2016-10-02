@@ -7,7 +7,7 @@ public class ShootController : MonoBehaviour
 {
 
 	public GameObject gun;
-	public Animator recoilAnim;
+	public Animator animator;
 	public Camera playerCamera;
 	public AudioSource aSource;
 
@@ -59,104 +59,23 @@ public class ShootController : MonoBehaviour
 
 	void Update() 
 	{
-		//Reset the recoil animation
-		if(recoilAnim.GetCurrentAnimatorStateInfo(0).IsName("Recoil"))
-		{
-			recoilAnim.SetBool("Shoot", false);
-		}
 		//Reset the reload animation
-		if(recoilAnim.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
+		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
 		{
-			recoilAnim.SetBool("Reload", false);
+			animator.SetBool("Reload", false);
 		}
-
 		//Hide the hit indicators from last frame
 		HideHitIndicator();
-
-		/*
-		//TEST CODE FOR GETTING SHOT
-		if(Input.GetButtonDown("Fire2"))
-		{
-			CmdHitPlayer(this.gameObject);
-		}
-		*/
-
 		//Make sure we aren't reloading
 		if(reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
-
-			//Determine if we fired (left mouse)
+			//Determine if we try to shoot the weapon
 			if(Input.GetKeyDown(KeyCode.Mouse0) && cooldownTimer <= 0)
 			{
 				//Only fire if there are bullets in the clip
 				if(bulletCount > 0){
-					//Reset the shot timer
-					cooldownTimer = cooldownTimerMax;
-
-					//Decrement the bullet counter
-					bulletCount--;
-
-					//Play the recoil animation
-					recoilAnim.SetBool("Shoot", true);
-
-					//Shoot a Ray and find the closest thing we hit that isn't ourselves
-					Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-					Vector3 hitPoint = Vector3.zero;
-					Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
-
-					//Check if we hit a red object
-					bool hitRed = false;
-					if(hitTransform != null && hitTransform.tag == "Red")
-					{
-						hitRed = true;
-					}
-
-					//Flag to show if we hit an enemy or not
-					bool hitEnemy = false;
-
-					//Make sure we actually hit something
-					if(hitTransform != null)
-					{
-						//Determine if the object we hit has hit points
-						Health h = hitTransform.GetComponent<Health>();
-						//If we did not find an object with health
-						if(h == null)
-						{
-							//Loop through it's parents and try to find one that has health
-							while(hitTransform.parent && h == null)
-							{
-								hitTransform = hitTransform.parent;
-								h = hitTransform.GetComponent<Health>();
-							}
-						}
-						//Check if we eventually found an object with health
-						if(h != null)
-						{
-							//Show the hit indicator
-							hitEnemy = true;
-							ShowHitIndicator();
-							//Use an RPC to send damage over the network
-							PhotonView pv = h.GetComponent<PhotonView>();
-							if(pv != null)
-							{
-								pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name);
-							}
-						} 
-
-						//Show some bullet FX
-						if(fxManager != null)
-						{
-							GunFX(hitPoint, hitEnemy, hitRed);
-						}
-					}
-					//Hit nothing, show bull FX anyway
-					else if(fxManager != null)
-					{
-						//Make the FX reach a certain distance from the camera
-						hitPoint = playerCamera.transform.position + (playerCamera.transform.forward * 100f);
-						GunFX(hitPoint, hitEnemy, hitRed);
-					}
+					Shoot();
 				}
 				//If the clip is empty, reload instead
 				else 
@@ -164,7 +83,6 @@ public class ShootController : MonoBehaviour
 					Reload();
 				}
 			}
-
 			//Reload if 'R' is pressed OR we tried to shoot while the clip is empty
 			if(Input.GetKeyDown(KeyCode.R))
 			{
@@ -177,9 +95,80 @@ public class ShootController : MonoBehaviour
 			//Decrement the reload timer if we are reloading
 			reloadTimer -= Time.deltaTime;
 		}
-
 		//Decrement the cooldown timer
 		cooldownTimer -= Time.deltaTime;
+	}
+
+	//Handle everything that needs to be done to fire a weapon
+	void Shoot()
+	{
+		//Reset the shot timer
+		cooldownTimer = cooldownTimerMax;
+
+		//Decrement the bullet counter
+		bulletCount--;
+
+		//Play the recoil animation
+		animator.SetBool("Shoot", true);
+		StartCoroutine(WaitForRecoilDone(0.08f));
+
+		//Shoot a Ray and find the closest thing we hit that isn't ourselves
+		Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
+		Vector3 hitPoint = Vector3.zero;
+		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
+
+		//Check if we hit a red object
+		bool hitRed = false;
+		if(hitTransform != null && hitTransform.tag == "Red")
+		{
+			hitRed = true;
+		}
+
+		//Flag to show if we hit an enemy or not
+		bool hitEnemy = false;
+
+		//Make sure we actually hit something
+		if(hitTransform != null)
+		{
+			//Determine if the object we hit has hit points
+			Health h = hitTransform.GetComponent<Health>();
+			//If we did not find an object with health
+			if(h == null)
+			{
+				//Loop through it's parents and try to find one that has health
+				while(hitTransform.parent && h == null)
+				{
+					hitTransform = hitTransform.parent;
+					h = hitTransform.GetComponent<Health>();
+				}
+			}
+			//Check if we eventually found an object with health
+			if(h != null)
+			{
+				//Show the hit indicator
+				hitEnemy = true;
+				ShowHitIndicator();
+				//Use an RPC to send damage over the network
+				PhotonView pv = h.GetComponent<PhotonView>();
+				if(pv != null)
+				{
+					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name);
+				}
+			} 
+
+			//Show some bullet FX
+			if(fxManager != null)
+			{
+				GunFX(hitPoint, hitEnemy, hitRed);
+			}
+		}
+		//Hit nothing, show bull FX anyway
+		else if(fxManager != null)
+		{
+			//Make the FX reach a certain distance from the camera
+			hitPoint = playerCamera.transform.position + (playerCamera.transform.forward * 100f);
+			GunFX(hitPoint, hitEnemy, hitRed);
+		}
 	}
 
 	//Helper function to reload our weapon
@@ -192,7 +181,7 @@ public class ShootController : MonoBehaviour
 		//Play a sound
 		aSource.PlayOneShot(reloadClip);
 		//Play the reload animation
-		recoilAnim.SetBool("Reload", true);
+		animator.SetBool("Reload", true);
 	}
 
 	//Helper function to show the gun FX
@@ -203,6 +192,7 @@ public class ShootController : MonoBehaviour
 		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, wd.transform.position, hitPoint, hitEnemy, hitRed);
 	}
 
+	//Raycast in a line and find the closest object hit
 	Transform FindClosestHitInfo(Ray ray, out Vector3 hitPoint)
 	{
 		Transform closestHit = null;
@@ -228,10 +218,10 @@ public class ShootController : MonoBehaviour
 		return closestHit;
 	}
 
+	//Display the hit indicators
 	void ShowHitIndicator()
 	{
 		hitIndicatorTimer = hitIndicatorTimerMax;
-
 		//Show them all
 		foreach (Transform child in hitIndicator.transform)
 		{
@@ -239,11 +229,10 @@ public class ShootController : MonoBehaviour
 		}
 	}
 
-
+	//Hide the hit indicators after some time
 	void HideHitIndicator()
 	{
 		hitIndicatorTimer -= Time.deltaTime;
-
 		//Show them all
 		if(hitIndicatorTimer <= 0)
 		{
@@ -252,5 +241,12 @@ public class ShootController : MonoBehaviour
 				child.gameObject.SetActive(false);
 			}
 		}
+	}
+
+	//Wait until the animation is done to allow shooting
+	public IEnumerator WaitForRecoilDone(float time)
+	{
+		yield return new WaitForSeconds(time);
+		animator.SetBool("Shoot", false);
 	}
 }

@@ -8,8 +8,11 @@ public class DeathCamScript : MonoBehaviour {
 	public float lifeTimer = 0.0f;
 	public string targetName;
 	public GameObject target;
+	public Camera lobbyCamera;
 
 	private GameObject deathOverlay;
+	private GameObject respawnOverlay;
+	private NetworkManager nm;
 
 	void Start() 
 	{
@@ -19,8 +22,12 @@ public class DeathCamScript : MonoBehaviour {
 		lifeTimer = 3.0f;
 		//Get a reference to the death overlay
 		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
+		//Get a reference to the respawn overlay
+		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
 		//Find the target we are trying to look at
 		target = FindTarget(targetName);
+		//Get a reference to our NetworkManager in order to manipulate variables
+		nm = GameObject.FindObjectOfType<NetworkManager>();
 	}
 
 	void Update () 
@@ -43,17 +50,29 @@ public class DeathCamScript : MonoBehaviour {
 		{
 			//Hide the gray screen and show the player's camera
 			HideDeathOverlay();
+			//Show the respawn overlay
+			ShowRespawnOverlay();
+			//Make the Lobby Camera active
+			lobbyCamera.gameObject.SetActive(true);
+			//Set the respawn screen active
+			nm.respawnAvailable = true;
 			//Destroy this camera
 			Destroy(this.gameObject);
 		}
 	}
 
+	void ShowRespawnOverlay()
+	{
+		//Show respawn overlay components
+		respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = true;
+		respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+	}
+
 	void HideDeathOverlay()
 	{
 		//Hide death overlay components
-		deathOverlay.transform.GetChild(0).GetComponent<Image>().enabled = false;
+		deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
 		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
-		deathOverlay.transform.GetChild(2).GetComponent<Text>().enabled = false;
 	}
 
 	GameObject FindTarget(string targetName)
