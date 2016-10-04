@@ -30,6 +30,7 @@ public class FirstPersonController : MonoBehaviour {
 	private bool wallRunningDisabled = false;
 	private float wallRunTimer = 0.0f;
 	private float wallRunMax = 2.0f;
+	private bool test = false;
 	////////////////////////////////////////////
 
 	private float crouchMovementSpeed;
@@ -106,6 +107,11 @@ public class FirstPersonController : MonoBehaviour {
 		Debug.DrawRay(transform.position, new Vector3(br.x, br.y + 5, br.z));
 		Debug.DrawRay(transform.position, new Vector3(bl.x, bl.y + 5, bl.z));
 		////////////////////////////////////////////////////////////////
+
+		if (test) 
+		{
+			test = false;
+		}
 
 		//Handle any mouse input that occurred
 		handleMouseInput();
@@ -359,7 +365,7 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			//We aren't heading towards a wall, but we are close to one we can wall-run on,
 			//AND we hit a button towards the wall.
-			else if((lHit.collider != null && Input.GetKey(KeyCode.A)) || (rHit.collider != null && Input.GetKey(KeyCode.D)))
+			else if((lHit.collider != null && Input.GetKeyDown(KeyCode.A)) || (rHit.collider != null && Input.GetKeyDown(KeyCode.D)))
 			{
 				return true;
 			}
@@ -548,7 +554,7 @@ public class FirstPersonController : MonoBehaviour {
 		//The direction we want to rotate the velocity towards
 		Vector3 targetDir;
 		//The angle we want to jump relative to the wall
-		float degrees = 0f;
+		float degrees = 45f;
 		//Depending on the button held and our wall-running side, increase the angle
 		if(wallRunLeft)
 		{
@@ -559,6 +565,9 @@ public class FirstPersonController : MonoBehaviour {
 			else if(Input.GetKey(KeyCode.W))
 			{
 				degrees = 70f;
+			}
+			if (Input.GetKey (KeyCode.A)) {
+				test = true;
 			}
 			targetDir = transform.right;
 		}
@@ -571,6 +580,9 @@ public class FirstPersonController : MonoBehaviour {
 			else if(Input.GetKey(KeyCode.W))
 			{
 				degrees = 70f;
+			}
+			if (Input.GetKey (KeyCode.D)) {
+				test = true;
 			}
 			targetDir = -transform.right;
 		}
