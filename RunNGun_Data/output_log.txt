@@ -18,16 +18,16 @@ Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll (this message is harmless)
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
-- Completed reload, in  0.279 seconds
+- Completed reload, in  0.134 seconds
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.dll (this message is harmless)
 desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.551558 ms
+UnloadTime: 0.818529 ms
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: b88 -> priority: 1 
+  Thread -> id: e00 -> priority: 1 
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/PhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/.\PhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/PhotonCryptoPlugin
@@ -40,7 +40,3 @@ Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/libPhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/.\libPhotonCryptoPlugin
 Fallback handler could not load library C:/Users/Spanky/Documents/PlaycraftUnity/RunNGun/RunNGun_Data/Mono/libPhotonCryptoPlugin
-Operation failed: OperationResponse 225: ReturnCode: 32760 (No match found). Parameters: {}
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 37)
-
