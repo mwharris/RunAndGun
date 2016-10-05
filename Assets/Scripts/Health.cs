@@ -24,6 +24,7 @@ public class Health : MonoBehaviour {
 	private float regenTimerMax = 5.0f;
 	private float regenRate = 4.0f;
 	private bool regenerating = false;
+	private PhotonView pView;
 
 	void Start () 
 	{
@@ -39,6 +40,8 @@ public class Health : MonoBehaviour {
 		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
 		//Get a reference to the grayscale effect for when we get hit
 		gScale = this.transform.GetComponentInChildren<Grayscale>();
+		//Get the attached PhotonView
+		pView = GetComponent<PhotonView>();
 	}
 
 	void Update()
@@ -120,6 +123,8 @@ public class Health : MonoBehaviour {
 				//Handle spawning a Death Camera
 				HandleKillCam(enemyPhotonName);
 			}
+			//Send out a notification this player was killed
+			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.name, enemyPhotonName);
 			//Delete it over the network
 			PhotonNetwork.Destroy(this.gameObject);
 		}

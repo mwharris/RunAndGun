@@ -1,4 +1,5 @@
 ﻿using UnityEngine;
+using UnityEngine.UI;
 using System.Collections;
 
 public class FXManager : MonoBehaviour {
@@ -15,6 +16,22 @@ public class FXManager : MonoBehaviour {
 	public AudioClip doubleJumpSound;   
 	public AudioClip hitSound;
 	public AudioClip[] deathSounds; 
+
+	[PunRPC]
+	void KillNotification(string deadPlayerName, string killerName)
+	{
+		//Only show notification for ourselves
+		if(!this.transform.GetComponent<PhotonView>().isMine) 
+		{
+			//Get a reference to the overlay
+			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
+			//Set the name of the person we killed
+			killOverlay.transform.GetChild(1).GetComponent<Text>().text = deadPlayerName;
+			//Show the contents of the overlay
+			killOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
+			killOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+		}
+	}
 
 	[PunRPC]
 	void BulletFX(Vector3 startPos, Vector3 endPos, bool hitEnemy, bool hitRed)

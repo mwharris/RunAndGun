@@ -288,7 +288,12 @@ public class FirstPersonController : MonoBehaviour {
 				float scaleVal = 0.0f;
 				if(Input.GetKey(KeyCode.W))
 				{
-					scaleVal = 1.5f;
+					//Scale the Vector up to 14 units if we're holding forward
+					Vector3 nVelocity = new Vector3(velocity.x, 0, velocity.z);
+					nVelocity = nVelocity * 14;
+					nVelocity.y = velocity.y;
+					velocity = nVelocity;
+					//scaleVal = 1.5f;
 				}
 				if(Input.GetKey(KeyCode.S))
 				{
@@ -299,9 +304,10 @@ public class FirstPersonController : MonoBehaviour {
 				{
 					velocity.x *= scaleVal;
 					velocity.z *= scaleVal;
-					velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
-					velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
 				}
+				//Make sure we don't move too fast
+				velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
+				velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
 				//Play footstep FX while wall-running
 				PlayFootStepAudio(false, true);
 			}
@@ -348,8 +354,17 @@ public class FirstPersonController : MonoBehaviour {
 		//If we're wall-running, lower the gravity to simulate it
 		else if(!cc.isGrounded)
 		{
-			//velocity += (Physics.gravity/4);
-			velocity += (Physics.gravity/4) * Time.deltaTime;
+			//Slow our descent
+			if(velocity.y <= 0)
+			{
+				//velocity += (Physics.gravity/4);
+				velocity += (Physics.gravity/4) * Time.deltaTime;
+			}
+			//Otherwise use normal gravity
+			else 
+			{
+				velocity += (Physics.gravity/1.5f) * Time.deltaTime;
+			}
 		}
 	}
 
@@ -365,7 +380,7 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			//We aren't heading towards a wall, but we are close to one we can wall-run on,
 			//AND we hit a button towards the wall.
-			else if((lHit.collider != null && Input.GetKeyDown(KeyCode.A)) || (rHit.collider != null && Input.GetKeyDown(KeyCode.D)))
+			else if((lHit.collider != null && Input.GetKey(KeyCode.A)) || (rHit.collider != null && Input.GetKey(KeyCode.D)))
 			{
 				return true;
 			}
