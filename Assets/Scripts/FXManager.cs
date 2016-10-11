@@ -17,11 +17,33 @@ public class FXManager : MonoBehaviour {
 	public AudioClip hitSound;
 	public AudioClip[] deathSounds; 
 
+	private float killOverlayTimer = 0.0f;
+
+	void Update()
+	{
+		//Decrement the timer if we are showing the killer overlay
+		if(killOverlayTimer > 0)
+		{
+			killOverlayTimer -= Time.deltaTime;
+		}
+		else
+		{
+			//Get a reference to the overlay
+			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
+			//Hide the contents of the overlay
+			killOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
+			killOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+		}
+	}
+
 	[PunRPC]
 	void KillNotification(string deadPlayerName, string killerName)
 	{
+		//Find our player
+		GameObject ourPlayer = FindOurPlayer();
+
 		//Only show notification for ourselves
-		if(!this.transform.GetComponent<PhotonView>().isMine) 
+		if(ourPlayer != null && ourPlayer.GetComponent<PhotonView>().owner.name == killerName) 
 		{
 			//Get a reference to the overlay
 			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
@@ -30,7 +52,25 @@ public class FXManager : MonoBehaviour {
 			//Show the contents of the overlay
 			killOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
 			killOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+			//Put the overlay on a timer
+			killOverlayTimer = 3.0f;
 		}
+	}
+
+	//Iterate through the players and find ours
+	private GameObject FindOurPlayer()
+	{
+		//Get all players
+		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+		//Loop through and find the player we are controlling
+		foreach(GameObject currPlayer in players)
+		{
+			if(currPlayer.GetComponent<PhotonView>().isMine) 
+			{
+				return currPlayer;
+			}
+		}
+		return null;
 	}
 
 	[PunRPC]

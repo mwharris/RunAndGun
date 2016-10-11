@@ -566,8 +566,6 @@ public class FirstPersonController : MonoBehaviour {
 	 */
 	private void WallJump()
 	{
-		//The direction we want to rotate the velocity towards
-		Vector3 targetDir;
 		//The angle we want to jump relative to the wall
 		float degrees = 45f;
 		//Depending on the button held and our wall-running side, increase the angle
@@ -584,7 +582,6 @@ public class FirstPersonController : MonoBehaviour {
 			if (Input.GetKey (KeyCode.A)) {
 				test = true;
 			}
-			targetDir = transform.right;
 		}
 		else
 		{
@@ -599,7 +596,6 @@ public class FirstPersonController : MonoBehaviour {
 			if (Input.GetKey (KeyCode.D)) {
 				test = true;
 			}
-			targetDir = -transform.right;
 		}
 		//Reset the y-velocity for rotation calculations
 		velocity.y = 0;

@@ -6,7 +6,7 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 	public Camera playerCamera;
 	public GameObject body;
 
-	private FirstPersonController fpcScript;
+	//private FirstPersonController fpcScript;
 	private Vector3 realPos = Vector3.zero;
 	private Quaternion realRot = Quaternion.identity;
 	private Vector3 bodyScale = Vector3.zero;
@@ -16,9 +16,11 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 
 	void Awake()
 	{
+		/*
 		if(photonView.isMine){
 			fpcScript = this.gameObject.GetComponent<FirstPersonController>();
 		}
+		*/
 	}
 
 	void Update()

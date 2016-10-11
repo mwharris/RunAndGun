@@ -14,9 +14,7 @@ public class Health : MonoBehaviour {
 	private AudioSource aSource;
 	private Image damageImage;
 	private float currentHitPoints;
-	private float respawnTimer = 6f;
 	private float flashSpeed = 2f;
-	private Color flashColor = new Color(1.0f, 0f, 0f, 0.2f);
 	private FXManager fxManager;
 	private GameObject deathOverlay;
 	private Grayscale gScale;
