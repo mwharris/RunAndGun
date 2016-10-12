@@ -90,6 +90,7 @@ public class FirstPersonController : MonoBehaviour {
 
 	void Update () {
 		///////////// TODO: REMOVE THESE RAYCAST TEST LINES //////////////
+		/*
 		Vector3 r = transform.right*5;
 		Vector3 l = -transform.right*5;
 		Vector3 f = transform.forward*5;
@@ -106,7 +107,12 @@ public class FirstPersonController : MonoBehaviour {
 		Debug.DrawRay(transform.position, new Vector3(b.x, b.y + 5, b.z));
 		Debug.DrawRay(transform.position, new Vector3(br.x, br.y + 5, br.z));
 		Debug.DrawRay(transform.position, new Vector3(bl.x, bl.y + 5, bl.z));
+		*/
 		////////////////////////////////////////////////////////////////
+		Debug.DrawRay(transform.position, transform.right);
+		Debug.DrawRay(transform.position, -transform.right);
+		Debug.DrawRay(transform.position, transform.forward);
+		Debug.DrawRay(transform.position, -transform.forward);
 
 		if (test) 
 		{
@@ -289,11 +295,16 @@ public class FirstPersonController : MonoBehaviour {
 				if(Input.GetKey(KeyCode.W))
 				{
 					//Scale the Vector up to 14 units if we're holding forward
-					Vector3 nVelocity = new Vector3(velocity.x, 0, velocity.z);
+					//Vector3 nVelocity = new Vector3(velocity.x, 0, velocity.z);
+					//nVelocity = nVelocity * 14;
+					//nVelocity.y = velocity.y;
+					//velocity = nVelocity;
+					//scaleVal = 1.5f;
+					Vector3 blah = new Vector3(velocity.x, 0, velocity.z);
+					Vector3 nVelocity = blah.normalized;
 					nVelocity = nVelocity * 14;
 					nVelocity.y = velocity.y;
 					velocity = nVelocity;
-					//scaleVal = 1.5f;
 				}
 				if(Input.GetKey(KeyCode.S))
 				{
@@ -409,10 +420,10 @@ public class FirstPersonController : MonoBehaviour {
 		RaycastHit lHit;
 		RaycastHit bHit;
 		Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-		Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1.5f);
-		Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1.5f);
-		Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1.5f);
-		Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
+		Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 2f);
+		Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 2f);
+		Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 2f);
+		Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 2f);
 
 		if(!wallRunLeft && !wallRunRight)
 		{
