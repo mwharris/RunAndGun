@@ -36,7 +36,6 @@ C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEditor.UI.x
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEngine.Networking.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEditor.Networking.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEditor.TreeEditor.xml
-C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\Photon3Unity3D.pdb
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\Photon3Unity3D.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\obj\Debug\Assembly-CSharp-Editor.csprojResolveAssemblyReference.cache
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\obj\Debug\Assembly-CSharp-Editor.dll

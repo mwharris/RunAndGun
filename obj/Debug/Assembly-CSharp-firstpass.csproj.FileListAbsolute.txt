@@ -18,7 +18,6 @@ C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEngine.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEditor.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEngine.UI.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\UnityEngine.Networking.xml
-C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\Photon3Unity3D.pdb
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Temp\bin\Debug\Photon3Unity3D.xml
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\obj\Debug\Assembly-CSharp-firstpass.dll
 C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\obj\Debug\Assembly-CSharp-firstpass.pdb
