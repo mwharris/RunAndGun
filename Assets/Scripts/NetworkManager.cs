@@ -46,10 +46,10 @@ public class NetworkManager : MonoBehaviour {
 	{
 		//Set the player's username
 		PhotonNetwork.playerName = username;
-
+		//Mark this session as online
+		PhotonNetwork.offlineMode = false;
 		//Unique string to identify our connection
 		PhotonNetwork.ConnectUsingSettings("RunNGunFPS");
-
 		//Hide the main menu
 		menu.SetActive(false);
 	}
@@ -57,11 +57,10 @@ public class NetworkManager : MonoBehaviour {
 	public void ConnectOffline(){
 		//Set the player's username
 		PhotonNetwork.playerName = username;
-
-		//Mark this session as offline and create
+		//Mark this session as offline
 		PhotonNetwork.offlineMode = true;
+		//Unique string to identify our connection
 		PhotonNetwork.CreateRoom("OfflineRoom");
-
 		//Hide the main menu
 		menu.SetActive(false);
 	}
@@ -97,34 +96,43 @@ public class NetworkManager : MonoBehaviour {
 	{
 		//Make sure the respawn overlay is hidden
 		HideRespawnOverlay();
-
 		//Randomly choose a spawn point for the player
-		if(spawnPoints == null){
-			Debug.Log("SPAWN POINTS ARE NULL IN SpawnPlayer()");
-		}
 		int spawnNum = Random.Range(0, spawnPoints.Length);
 		Vector3 spawnPos = spawnPoints[spawnNum].transform.position;
 		Quaternion spawnRot = spawnPoints[spawnNum].transform.rotation;
-
 		//Instantiate the player across all clients
 		GameObject myPlayer = PhotonNetwork.Instantiate("Player", spawnPos, spawnRot, 0);
 		myPlayer.name = username;
-
 		//Enable local player controls
 		myPlayer.GetComponent<FirstPersonController>().enabled = true;
 		myPlayer.GetComponent<ShootController>().enabled = true;
 		myPlayer.GetComponentInChildren<Camera>().enabled = true;
 		myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
 		myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
-
 		//Enable the displayed ammo counter
 		ammoUI.SetActive(true);
-
 		//Enable the camera reticle
 		GameObject.FindGameObjectWithTag("Reticle").GetComponent<Image>().enabled = true;
-
 		//Disable the lobby camera
 		lobbyCamera.gameObject.SetActive(false);
+	}
+
+	public void Disconnect()
+	{
+		//Disconnect from the game if we are in Multiplayer mode
+		if(!PhotonNetwork.offlineMode && PhotonNetwork.connected)
+		{
+			PhotonNetwork.Disconnect();
+		}
+		else if(PhotonNetwork.offlineMode)
+		{
+			PhotonNetwork.LeaveRoom();
+			Destroy(GameObject.FindGameObjectWithTag("Player"));
+		}
+		//Enable the lobby camera
+		lobbyCamera.gameObject.SetActive(true);
+		//Show the main menu
+		menu.SetActive(true);
 	}
 
 	void HideRespawnOverlay()
