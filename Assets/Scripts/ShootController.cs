@@ -28,6 +28,7 @@ public class ShootController : MonoBehaviour
 	private float cooldownTimer;
 	private float cooldownTimerMax = 0.315f;
 	private PhotonView pView;
+	private GameManager gm;
 
 	void Start()
 	{
@@ -38,7 +39,8 @@ public class ShootController : MonoBehaviour
 
 		//Initialize a reference to the FXManager
 		fxManager = GameObject.FindObjectOfType<FXManager>();
-
+		//Initialize a reference to the GameManager
+		gm = GameObject.FindObjectOfType<GameManager>();
 		//Initialize a reference to the Hit Indicators
 		hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
 
@@ -65,9 +67,9 @@ public class ShootController : MonoBehaviour
 			animator.SetBool("Reload", false);
 		}
 		//Hide the hit indicators from last frame
-		HideHitIndicator();
+		HideHitIndicator();			
 		//Make sure we aren't reloading
-		if(reloadTimer <= 0) {
+		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
 			//Determine if we try to shoot the weapon

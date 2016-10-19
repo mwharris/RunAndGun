@@ -7,7 +7,9 @@ public class MenuController : MonoBehaviour {
 
 	private bool paused = false;
 	private GameObject pauseMenu;
+	private GameObject eventSystem;
 	private NetworkManager nm;
+	private GameManager gm;
 
 	void Start()
 	{
@@ -15,6 +17,10 @@ public class MenuController : MonoBehaviour {
 		pauseMenu = GameObject.FindGameObjectWithTag("PauseMenu");
 		//Initialize a reference to the NetworkManager
 		nm = GameObject.FindObjectOfType<NetworkManager>();
+		//Initialize a reference to the GameManager
+		gm = GameObject.FindObjectOfType<GameManager>();
+		//Find the event system
+		eventSystem = GameObject.Find("EventSystem");
 	}
 
 	void Update () {
@@ -29,14 +35,18 @@ public class MenuController : MonoBehaviour {
 	{
 		//Flip the flag
 		paused = !paused;
-		//Show/Hide the Paused menu accordingly
+		//Deselect any buttons that may have carried over
+		eventSystem.GetComponent<UnityEngine.EventSystems.EventSystem>().SetSelectedGameObject(null);
+		//Show/Hide the Paused menu accordingly and update Game State
 		if(paused)
 		{
 			ShowPauseMenu();
+			gm.ChangeGameState(GameManager.GameState.paused);
 		}
 		else 
 		{
 			HidePauseMenu();
+			gm.ChangeGameState(GameManager.GameState.playing);
 		}
 		//If we are navigating to the Main Menu
 		if(mainMenu)
@@ -66,6 +76,9 @@ public class MenuController : MonoBehaviour {
 
 	void HidePauseMenu()
 	{
+		//Lock the mouse cursor
+		Cursor.lockState = CursorLockMode.Locked;
+		//Hide all elements
 		Transform panel = pauseMenu.transform.GetChild(0);
 		Transform menuButton = panel.GetChild(2);
 		Transform closeButton = panel.GetChild(3);

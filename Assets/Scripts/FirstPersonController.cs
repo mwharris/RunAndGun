@@ -2,21 +2,65 @@
 using System.Collections;
 
 public class FirstPersonController : MonoBehaviour {
-	//private float movementSpeed = 60.0f;
-	private float movementSpeed = 0.96f;
-	//private float movementSpeed = 1.98f;
+	public Camera playerCamera;   
+	public GameObject playerBody;
+	private CharacterController cc;
+	private GameObject gunObj;
+	public AudioClip jumpSound;  
+	private AudioSource aSource;    
+
+	/// MOUSE CONTROL VARIABLES ////////////////
 	public float mouseSensitivity = 5.0f;
+	public float horizontalRotation = 0f;
 	public float verticalRotation = 0f;
 	public float verticalVelocity = 0f;
 	public float upDownRange = 60.0f;
-	private float jumpSpeed = 8f;
+	////////////////////////////////////////////
+
+	/// TIMERS /////////////////////////////////
 	public float walkTimer = 0f;
 	public float runTimer = 0f;
-	public Camera playerCamera;
-	public AudioClip jumpSound;         
-	public CharacterController charController;
-	public GameObject playerBody;
-	public bool isCrouching = false;
+	private float origWalkTimer;
+	private float origRunTimer;
+	////////////////////////////////////////////
+
+	/// VELOCITY VARIABLES /////////////////////
+	private Vector3 velocity;
+	//private float movementSpeed = 60.0f;
+	private float movementSpeed = 0.96f;
+	//private float movementSpeed = 1.98f;
+	private float jumpSpeed = 8f;
+	private float forwardSpeed;
+	private float sideSpeed;
+	private int jumps;
+	private bool isSprinting = false;
+	private bool startedSprinting = false;
+	private bool wasAirborne;
+	private bool allowAirMovement = false;
+	////////////////////////////////////////////
+
+	/// MOVEMENT FLAGS /////////////////////
+	private bool isWDown = false;
+	private bool isWPressed = false;
+	private bool isADown = false;
+	private bool isAPressed = false;
+	private bool isSDown = false;
+	private bool isSPressed = false;
+	private bool isDDown = false;
+	private bool isDPressed = false;
+	private bool isShiftDown = false;
+	private bool isShiftPressed = false;
+	private bool isCTRLDown = false;
+	private bool isCTRLPressed = false;
+	private bool isSpaceDown = false;
+	private bool isSpacePressed = false;
+	////////////////////////////////////////
+
+	/// IMPORTED SCRIPTS //////////////////
+	private FXManager fxManager;
+	private MyHeadBob headBobScript;
+	private GameManager gm;
+	////////////////////////////////////////////
 
 	/// WALL-RUNNING VARIABLES //////////////////
 	private float cameraTotalRotation = 0f;
@@ -33,33 +77,19 @@ public class FirstPersonController : MonoBehaviour {
 	private float wallRunMax = 2.0f;
 	////////////////////////////////////////////
 
-	private float crouchMovementSpeed;
-	private bool isSprinting = false;
-	private bool startedSprinting = false;
-	private float origWalkTimer;
-	private float origRunTimer;
-	private bool wasAirborne;
-	private bool allowAirMovement = false;
-	private AudioSource aSource;
-	private CharacterController cc;
-	private GameObject gunObj;
-	private Vector3 velocity;
-	private float forwardSpeed;
-	private float sideSpeed;
-	private int jumps;
-	private FXManager fxManager;
-	private MyHeadBob headBobScript;
-
-	//Variables for crouching
+	// CROUCHING VARIABLES 	////////////////////
+	public bool isCrouching = false;
 	public float crouchCamHeight;
 	public float crouchBodyScale;
 	public float crouchBodyPos;
+	private float crouchMovementSpeed;
 	private float crouchDeltaHeight;
 	private float crouchDeltaScale;
 	private float crouchDeltaPos;
 	private float standardCamHeight;
 	private float standardBodyScale;
 	private float standardBodyPos;
+	////////////////////////////////////////////
 
 	void Start () {
 		//Initialize a reference to the character controller component
@@ -77,6 +107,8 @@ public class FirstPersonController : MonoBehaviour {
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Initialize a reference to HeadBob script
 		headBobScript = playerCamera.GetComponent<MyHeadBob>();
+		//Initialize a reference to the GameManager
+		gm = GameObject.FindObjectOfType<GameManager>();
 		//Set camera height variables
 		standardCamHeight = 2.5f;
 		standardBodyScale = 1.5f;
@@ -113,6 +145,9 @@ public class FirstPersonController : MonoBehaviour {
 		Debug.DrawRay(transform.position, -transform.right);
 		Debug.DrawRay(transform.position, transform.forward);
 		Debug.DrawRay(transform.position, -transform.forward);
+
+		//Gather all mouse and keyboard inputs if we aren't paused
+		gatherInputs();
 
 		//Handle any mouse input that occurred
 		handleMouseInput();
@@ -151,16 +186,62 @@ public class FirstPersonController : MonoBehaviour {
 		//Move the char controller
 		cc.Move(velocity * Time.deltaTime);
 	}
+
+	void gatherInputs()
+	{
+		//Only gather user input if we're not paused
+		if(gm.GetGameState() == GameManager.GameState.playing)
+		{
+			//Mouse look inputs
+			horizontalRotation = Input.GetAxis("Mouse X") * mouseSensitivity;
+			verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+			//Keyboard movement inputs
+			forwardSpeed = Input.GetAxis("Vertical");
+			sideSpeed = Input.GetAxis("Horizontal");
+			isWDown = Input.GetKeyDown(KeyCode.W);
+			isWPressed = Input.GetKey(KeyCode.W);
+			isADown = Input.GetKeyDown(KeyCode.A);
+			isAPressed = Input.GetKey(KeyCode.A);
+			isSDown = Input.GetKeyDown(KeyCode.S);
+			isSPressed = Input.GetKey(KeyCode.S);
+			isDDown = Input.GetKeyDown(KeyCode.D);
+			isDPressed = Input.GetKey(KeyCode.D);
+			//Crouch and Sprint
+			isCTRLDown = Input.GetKeyDown(KeyCode.LeftControl);
+			isCTRLPressed = Input.GetKey(KeyCode.LeftControl);
+			isShiftDown = Input.GetKeyDown(KeyCode.LeftShift);
+			isShiftPressed = Input.GetKey(KeyCode.LeftShift);
+			//Jump
+			isSpaceDown = Input.GetKeyDown(KeyCode.Space);
+			isSpacePressed = Input.GetKey(KeyCode.Space);
+		}
+		//Reset all flags if we're paused
+		else
+		{
+			forwardSpeed = 0;
+			sideSpeed = 0;
+			isWDown = false;
+			isWPressed = false;
+			isADown = false;
+			isAPressed = false;
+			isSDown = false;
+			isSPressed = false;
+			isDDown = false;
+			isDPressed = false;
+			isCTRLDown = false;
+			isCTRLPressed = false;
+			isShiftDown = false;
+			isShiftPressed = false;
+			isSpaceDown = false;
+			isSpacePressed = false;
+		}
+	}
 		
 	void handleMouseInput()
 	{
-		//Left-Right rotation based on the mouse
-		float rotLeftRight = Input.GetAxis("Mouse X") * mouseSensitivity;
-		transform.Rotate(0, rotLeftRight, 0);
-
-		//Up-Down rotation based on the mouse
-		verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
-		//Clamp the range so we don't look too far up or down
+		//Rotate the player based on the mouse input
+		transform.Rotate(0, horizontalRotation, 0);
+		//Clamp the up and down mouse range so we don't look too far in one direction
 		verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
 
 		//Rotate our camera to the left or right if we are wall-running
@@ -205,7 +286,7 @@ public class FirstPersonController : MonoBehaviour {
 		if(cc.isGrounded)
 		{
 			//Activate sprinting if shift was pressed
-			if(Input.GetKeyDown(KeyCode.LeftShift))
+			if(isShiftDown)
 			{
 				//Flag us as sprinting
 				ToggleSprint();
@@ -216,16 +297,14 @@ public class FirstPersonController : MonoBehaviour {
 				}
 			}
 			//If we are not holding forward and we already started sprinting
-			else if(!Input.GetKey(KeyCode.W) && startedSprinting && isSprinting)
+			else if(!isWPressed && startedSprinting && isSprinting)
 			{
 				//Deactive sprinting
 				isSprinting = false;
 				startedSprinting = false;
 			}
 
-			//Get the movement input and apply movement speed based on crouching, sprinting, or standing
-			forwardSpeed = Input.GetAxis("Vertical");
-			sideSpeed = Input.GetAxis("Horizontal");
+			//Apply movement speed based on crouching, sprinting, or standing
 			if(isCrouching)
 			{
 				forwardSpeed *= crouchMovementSpeed;
@@ -284,7 +363,7 @@ public class FirstPersonController : MonoBehaviour {
 				velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
 				//W will speed up movement slightly and S will slow down movement slightly
 				float scaleVal = 0.0f;
-				if(Input.GetKey(KeyCode.W))
+				if(isWPressed)
 				{
 					//Scale the Vector up to 14 units if we're holding forward
 					//Vector3 nVelocity = new Vector3(velocity.x, 0, velocity.z);
@@ -298,7 +377,7 @@ public class FirstPersonController : MonoBehaviour {
 					nVelocity.y = velocity.y;
 					velocity = nVelocity;
 				}
-				if(Input.GetKey(KeyCode.S))
+				if(isSPressed)
 				{
 					scaleVal = 0.75f;
 				}
@@ -317,8 +396,8 @@ public class FirstPersonController : MonoBehaviour {
 			else
 			{
 				//Get the movement input
-				forwardSpeed = Input.GetAxis("Vertical") * (movementSpeed/10);
-				sideSpeed = Input.GetAxis("Horizontal") * (movementSpeed/10);
+				forwardSpeed = forwardSpeed * (movementSpeed/10);
+				sideSpeed = sideSpeed * (movementSpeed/10);
 				//Add the x / z movement
 				if(forwardSpeed != 0 && allowAirMovement)
 				{
@@ -581,8 +660,8 @@ public class FirstPersonController : MonoBehaviour {
 			//Reset our air movement flag
 			allowAirMovement = false;
 		}
-		//Read the jump input
-		if(Input.GetButtonDown("Jump") && jumps > 0)
+
+		if(isSpaceDown && jumps > 0)
 		{
 			//Decrement our jumps so we can only jump twice
 			jumps--;
@@ -633,15 +712,15 @@ public class FirstPersonController : MonoBehaviour {
 	{
 		//If the player is holding left or right at the time of the jump,
 		//apply a force in the direction they are pressing.
-		if(Input.GetKey(KeyCode.S))
+		if(isSPressed)
 		{
 			velocity = velocity + (-transform.forward * 7);
 		}
-		if(Input.GetKey(KeyCode.A))
+		if(isAPressed)
 		{
 			velocity = velocity + (-transform.right * 7);
 		}
-		if(Input.GetKey(KeyCode.D))
+		if(isDPressed)
 		{
 			velocity = velocity + (transform.right * 7);
 		}
@@ -660,22 +739,22 @@ public class FirstPersonController : MonoBehaviour {
 		//Depending on the button held and our wall-running side, increase the angle
 		if(wallRunningLeft)
 		{
-			if(Input.GetKey(KeyCode.D))
+			if(isDPressed)
 			{
 				degrees = 45f;
 			}
-			else if(Input.GetKey(KeyCode.W))
+			else if(isWPressed)
 			{
 				degrees = 70f;
 			}
 		}
 		else
 		{
-			if(Input.GetKey(KeyCode.A))
+			if(isAPressed)
 			{
 				degrees = 45f;
 			}
-			else if(Input.GetKey(KeyCode.W))
+			else if(isWPressed)
 			{
 				degrees = 70f;
 			}
@@ -703,12 +782,12 @@ public class FirstPersonController : MonoBehaviour {
 		//Determine our target jump direction based on player input
 		bool buttonPushed = false;
 		Vector3 targetDir = velocity;
-		if(Input.GetKey(KeyCode.S))
+		if(isSPressed)
 		{
 			targetDir = -transform.forward;
 			buttonPushed = true;
 		}
-		if(Input.GetKey(KeyCode.A))
+		if(isAPressed)
 		{
 			if(buttonPushed)
 			{
@@ -720,7 +799,7 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			buttonPushed = true;
 		}
-		if(Input.GetKey(KeyCode.D))
+		if(isDPressed)
 		{
 			if(buttonPushed)
 			{
@@ -732,7 +811,7 @@ public class FirstPersonController : MonoBehaviour {
 			}
 			buttonPushed = true;
 		}
-		if(Input.GetKey(KeyCode.W))
+		if(isWPressed)
 		{
 			if(buttonPushed)
 			{
@@ -825,7 +904,7 @@ public class FirstPersonController : MonoBehaviour {
 	private void handleCrouching()
 	{
 		//Crouching
-		if(Input.GetKeyDown(KeyCode.LeftControl))
+		if(isCTRLDown)
 		{
 			ToggleCrouch();
 		}
