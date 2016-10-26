@@ -361,6 +361,16 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				//The velocity should be in the direction parallel to the wall
 				velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
+				if(initWallRun)
+				{
+					//Reset the y velocity if we're falling but we've activated wall-running
+					if(velocity.y < 0)
+					{
+						velocity.y = 0;	
+					}
+					//Marked that we're done initializing the wall-run
+					initWallRun = false;
+				}
 				//W will speed up movement slightly and S will slow down movement slightly
 				float scaleVal = 0.0f;
 				if(isWPressed)
@@ -550,8 +560,6 @@ public class FirstPersonController : MonoBehaviour {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
-			//No longer need to run these steps
-			initWallRun = false;
 		}
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && (wallRunningLeft || wallRunningRight))
