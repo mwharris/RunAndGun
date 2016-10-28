@@ -143,6 +143,7 @@ public class Health : MonoBehaviour {
 		Vector3 bl = Vector3.RotateTowards(-transform.forward, -transform.right, 45 * Mathf.Deg2Rad, 5)*5;
 
 		//Loop until we find a place suitable for the death camera
+		bool force = false;
 		while(true)
 		{
 			//Raycast in a direction we want to try and spawn the camera
@@ -165,7 +166,10 @@ public class Health : MonoBehaviour {
 			//Forward-left
 			else if(currPos == 7){ camDirection = fl; }
 			//End if we operated too long
-			else { break; }
+			else { 
+				camDirection = new Vector3(transform.position.x, transform.position.y - 5, transform.position.z);
+				force = true;
+			}
 				
 			//Add a height to the expected camera direction
 			camDirection = new Vector3(camDirection.x, camDirection.y + 5, camDirection.z);
@@ -176,11 +180,14 @@ public class Health : MonoBehaviour {
 			Transform hitTransform = FindClosestHitInfo(ray, out hitPoints);
 
 			//If we hit nothing
-			if(hitTransform == null)
+			if(hitTransform == null || force)
 			{
 				//Make a Vector3 location and rotation for the death camera
 				Vector3 dCamLoc = transform.position;
-				dCamLoc = dCamLoc + camDirection;
+				if(!force)
+				{
+					dCamLoc = dCamLoc + camDirection;
+				}
 				//Spawn a death camera and set it active, pointing
 				GameObject dCam = (GameObject) Instantiate(deathCam, dCamLoc, Quaternion.identity);
 				dCam.SetActive(true);

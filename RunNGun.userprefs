@@ -1,22 +1,19 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\FirstPersonController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\FXManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="363" Column="80" />
+      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="531" Column="6" />
       <File FileName="Assets\Scripts\ShootController.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\MenuController.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Health.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\NetworkManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\FXManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\Health.cs" Line="188" Column="5" />
+      <File FileName="Assets\Scripts\DeathCamScript.cs" Line="60" Column="1" />
+      <File FileName="Assets\Scripts\FXManager.cs" Line="34" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="363" column="1" />
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="60" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="370" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="11" column="1" />
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\NetworkManager.cs" line="48" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\NetworkManager.cs" line="123" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>

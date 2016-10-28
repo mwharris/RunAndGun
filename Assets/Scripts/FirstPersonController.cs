@@ -512,7 +512,7 @@ public class FirstPersonController : MonoBehaviour {
 			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1f);
 			//Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
 
-			if(rHit.collider != null)
+			if(rHit.collider != null && rHit.collider.tag != "Player")
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
@@ -524,7 +524,7 @@ public class FirstPersonController : MonoBehaviour {
 				wallRunningRight = true;
 				return rHit;
 			}
-			else if(lHit.collider != null)
+			else if(lHit.collider != null && lHit.collider.tag != "Player")
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
