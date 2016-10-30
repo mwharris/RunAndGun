@@ -145,6 +145,8 @@ public class FirstPersonController : MonoBehaviour {
 		Debug.DrawRay(transform.position, -transform.right);
 		Debug.DrawRay(transform.position, transform.forward);
 		Debug.DrawRay(transform.position, -transform.forward);
+		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+		Debug.DrawRay(transform.position, testV);
 
 		//Gather all mouse and keyboard inputs if we aren't paused
 		gatherInputs();
@@ -502,17 +504,31 @@ public class FirstPersonController : MonoBehaviour {
 			&& ( (wallRunning && wallRunTimer > 0) || !wallRunning) )
 		{
 			//Raycast in several directions to see if we are wall-running
-			//RaycastHit vHit;
+			RaycastHit vHit;
 			RaycastHit rHit;
 			RaycastHit lHit;
 			//RaycastHit bHit;
-			//Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-			//Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1.5f);
+			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
+			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1f);
 			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1f);
 			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1f);
 			//Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
 
-			if(rHit.collider != null && rHit.collider.tag != "Player")
+			//Check the angle between our velocity any wall we may have impacted
+			bool rightGood = false;
+			bool leftGood = false;
+			Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+			if(Vector3.Angle(testV, rHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
+			{
+				rightGood = true;	
+			}
+			if(Vector3.Angle(testV, lHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
+			{
+				leftGood = true;
+			}
+
+			//Check if we should activate wall-running
+			if((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible")
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
@@ -524,7 +540,7 @@ public class FirstPersonController : MonoBehaviour {
 				wallRunningRight = true;
 				return rHit;
 			}
-			else if(lHit.collider != null && lHit.collider.tag != "Player")
+			else if((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible")
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
