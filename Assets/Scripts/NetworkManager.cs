@@ -16,6 +16,7 @@ public class NetworkManager : MonoBehaviour {
 	private string username;
 	private GameObject[] spawnPoints;
 	private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
+	private GameManager gm;
 
 	// Use this for initialization
 	void Start () 
@@ -24,6 +25,8 @@ public class NetworkManager : MonoBehaviour {
 		spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
 		//Get a reference to the respawn overlay
 		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
+		//Initialize a reference to the GameManager
+		gm = GameObject.FindObjectOfType<GameManager>();
 	}
 
 	void Update()
@@ -52,6 +55,8 @@ public class NetworkManager : MonoBehaviour {
 		PhotonNetwork.ConnectUsingSettings("RunNGunFPS");
 		//Hide the main menu
 		menu.SetActive(false);
+		//Mark our Game State as playing
+		gm.ChangeGameState(GameManager.GameState.playing);
 	}
 
 	public void ConnectOffline(){
@@ -63,6 +68,8 @@ public class NetworkManager : MonoBehaviour {
 		PhotonNetwork.CreateRoom("OfflineRoom");
 		//Hide the main menu
 		menu.SetActive(false);
+		//Mark our Game State as playing
+		gm.ChangeGameState(GameManager.GameState.playing);
 	}
 
 	void OnGUI()
@@ -133,6 +140,10 @@ public class NetworkManager : MonoBehaviour {
 		lobbyCamera.gameObject.SetActive(true);
 		//Show the main menu
 		menu.SetActive(true);
+		//Unlock the cursor
+		Cursor.lockState = CursorLockMode.None;
+		//Mark our Game State as none
+		gm.ChangeGameState(GameManager.GameState.none);
 	}
 
 	void HideRespawnOverlay()

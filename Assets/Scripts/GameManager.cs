@@ -13,7 +13,7 @@ public class GameManager : MonoBehaviour {
 	void Start() 
 	{
 		//Immediately set us to the playing state
-		gameState = GameState.playing;
+		gameState = GameState.none;
 	}
 
 	//Return the current game state

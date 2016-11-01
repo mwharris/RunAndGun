@@ -71,3 +71,4 @@ C:\Users\RUSTY2\Documents\RunAndGun\Temp\bin\Debug\UnityEngine.Networking.xml
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp.csprojResolveAssemblyReference.cache
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp.dll
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp.pdb
+C:\Users\RUSTY2\Documents\RunAndGun\Temp\bin\Debug\Photon3Unity3D.xml

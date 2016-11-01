@@ -68,3 +68,4 @@ C:\Users\RUSTY2\Documents\RunAndGun\Temp\bin\Debug\UnityEngine.Networking.xml
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp-firstpass.csprojResolveAssemblyReference.cache
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp-firstpass.dll
 C:\Users\RUSTY2\Documents\RunAndGun\obj\Debug\Assembly-CSharp-firstpass.pdb
+C:\Users\RUSTY2\Documents\RunAndGun\Temp\bin\Debug\Photon3Unity3D.xml

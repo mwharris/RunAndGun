@@ -25,9 +25,15 @@ public class MenuController : MonoBehaviour {
 
 	void Update () {
 		//Toggle the pause menu when ESC key is pressed
-		if(Input.GetKeyDown(KeyCode.Escape))
+		if((gm.GetGameState() == GameManager.GameState.playing || gm.GetGameState() == GameManager.GameState.paused) 
+			&& Input.GetKeyDown(KeyCode.P))
 		{
 			TogglePauseMenu(false);
+		}
+		//Lock the cursor if L was hit
+		if(gm.GetGameState () == GameManager.GameState.playing && Input.GetKeyDown (KeyCode.L)) 
+		{
+			Cursor.lockState = CursorLockMode.Locked;
 		}
 	}
 
@@ -58,6 +64,9 @@ public class MenuController : MonoBehaviour {
 
 	void ShowPauseMenu()
 	{
+		//Unlock the mouse cursor
+		Cursor.lockState = CursorLockMode.None;
+		//Show all elements
 		Transform panel = pauseMenu.transform.GetChild(0);
 		Transform menuButton = panel.GetChild(2);
 		Transform closeButton = panel.GetChild(3);
