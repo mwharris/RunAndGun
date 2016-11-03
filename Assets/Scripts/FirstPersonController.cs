@@ -60,6 +60,7 @@ public class FirstPersonController : MonoBehaviour {
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
 	private GameManager gm;
+	private MenuController mc;
 	////////////////////////////////////////////
 
 	/// WALL-RUNNING VARIABLES //////////////////
@@ -75,6 +76,8 @@ public class FirstPersonController : MonoBehaviour {
 	private float wallRunningDisabledTimer = 0.0f;
 	private float wallRunTimer = 0.0f;
 	private float wallRunMax = 2.0f;
+	private string lastWallName = "";
+	private bool wallJumped = false;
 	////////////////////////////////////////////
 
 	// CROUCHING VARIABLES 	////////////////////
@@ -103,12 +106,11 @@ public class FirstPersonController : MonoBehaviour {
 		//Keep track of how long our walk audio delay should be
 		origWalkTimer = walkTimer;
 		origRunTimer = runTimer;
-		//Initialize a reference to the FXManager
+		//Initialize a reference to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
-		//Initialize a reference to HeadBob script
 		headBobScript = playerCamera.GetComponent<MyHeadBob>();
-		//Initialize a reference to the GameManager
 		gm = GameObject.FindObjectOfType<GameManager>();
+		mc = GameObject.FindObjectOfType<MenuController>();
 		//Set camera height variables
 		standardCamHeight = 2.5f;
 		standardBodyScale = 1.5f;
@@ -121,26 +123,7 @@ public class FirstPersonController : MonoBehaviour {
 	}
 
 	void Update () {
-		///////////// TODO: REMOVE THESE RAYCAST TEST LINES //////////////
-		/*
-		Vector3 r = transform.right*5;
-		Vector3 l = -transform.right*5;
-		Vector3 f = transform.forward*5;
-		Vector3 fr = Vector3.RotateTowards(transform.forward, transform.right, 45 * Mathf.Deg2Rad, 10)*5;
-		Vector3 fl = Vector3.RotateTowards(transform.forward, -transform.right, 45 * Mathf.Deg2Rad, 10)*5;
-		Vector3 b = -transform.forward*5;
-		Vector3 br = Vector3.RotateTowards(-transform.forward, transform.right, 45 * Mathf.Deg2Rad, 10)*5;
-		Vector3 bl = Vector3.RotateTowards(-transform.forward, -transform.right, 45 * Mathf.Deg2Rad, 10)*5;
-		Debug.DrawRay(transform.position, new Vector3(r.x, r.y + 5, r.z));
-		Debug.DrawRay(transform.position, new Vector3(l.x, l.y + 5, l.z));
-		Debug.DrawRay(transform.position, new Vector3(f.x, f.y + 5, f.z));
-		Debug.DrawRay(transform.position, new Vector3(fr.x, fr.y + 5, fr.z));
-		Debug.DrawRay(transform.position, new Vector3(fl.x, fl.y + 5, fl.z));
-		Debug.DrawRay(transform.position, new Vector3(b.x, b.y + 5, b.z));
-		Debug.DrawRay(transform.position, new Vector3(br.x, br.y + 5, br.z));
-		Debug.DrawRay(transform.position, new Vector3(bl.x, bl.y + 5, bl.z));
-		*/
-		////////////////////////////////////////////////////////////////
+		//Test stuff
 		Debug.DrawRay(transform.position, transform.right);
 		Debug.DrawRay(transform.position, -transform.right);
 		Debug.DrawRay(transform.position, transform.forward);
@@ -148,27 +131,22 @@ public class FirstPersonController : MonoBehaviour {
 		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 		Debug.DrawRay(transform.position, testV);
 
+		//Update the mou
+		gatherOptions();
 		//Gather all mouse and keyboard inputs if we aren't paused
 		gatherInputs();
-
 		//Handle any mouse input that occurred
 		handleMouseInput();
-
 		//Handle crouching
 		handleCrouching();
-
 		//Handle the movement of the player
 		handleMovement();
-
 		//Apply gravity
 		handleGravity();
-
 		//Handle jumping of the player
 		handleJumping();
-
 		//Handle the player wall-running
 		handleWallRunning();
-
 		//Set a flag if we're airborne this frame
 		if(!cc.isGrounded)
 		{
@@ -178,15 +156,23 @@ public class FirstPersonController : MonoBehaviour {
 		{
 			wasAirborne = false;
 		}
-
 		//Linear drag along the X and Z while grounded
-		if(cc.isGrounded){
+		if(cc.isGrounded)
+		{
 			velocity.x *= 0.9f;
 			velocity.z *= 0.9f;
 		}
-
 		//Move the char controller
 		cc.Move(velocity * Time.deltaTime);
+	}
+
+	void gatherOptions()
+	{
+		//Set some variables based on Optons menu
+		if(mc.mouseSensitivity != null && mc.mouseSensitivity > 0)
+		{
+			mouseSensitivity = mc.mouseSensitivity;
+		}
 	}
 
 	void gatherInputs()
@@ -462,38 +448,6 @@ public class FirstPersonController : MonoBehaviour {
 		}
 	}
 
-	/*
-	//Helper function to check the rules for activating wall-running
-	private bool checkActivateWallRunRules(RaycastHit vHit, RaycastHit rHit, RaycastHit lHit, bool isGrounded)
-	{
-		if(!isGrounded && !wallRunningDisabled)
-		{
-			//We hit a wall we were heading towards
-			if(vHit.collider != null)
-			{
-				return true;
-			}
-			//We aren't heading towards a wall, but we are close to one we can wall-run on, AND we hit a button towards the wall.
-			else if((lHit.collider != null && Input.GetKey(KeyCode.A)) || (rHit.collider != null && Input.GetKey(KeyCode.D)))
-			{
-				return true;
-			}
-		}
-		return false;
-	}
-		
-	//Helper function to check the rules for de-activating wall-running
-	private bool checkDeactivateWallRunRules(RaycastHit vHit, RaycastHit rHit, RaycastHit lHit, RaycastHit bHit, bool isGrounded)
-	{
-		//If we're not holding forward, we touched the ground, or none of our raycasts hit a wall, break wall-running
-		if(wallRunTimer <= 0 || cc.isGrounded || (rHit.collider == null && lHit.collider == null && bHit.collider == null))
-		{
-			return true;
-		}
-		return false;
-	}
-	*/
-
 	//Perform raycast to check wall-running rules; return the hit location
 	RaycastHit DoWallRunCheck(bool isGrounded)
 	{
@@ -528,7 +482,8 @@ public class FirstPersonController : MonoBehaviour {
 			}
 
 			//Check if we should activate wall-running
-			if((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible")
+			if((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible" 
+				&& ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped))
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
@@ -538,9 +493,12 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
 				wallRunningRight = true;
+				//Store the name of the wall we ran on
+				lastWallName = rHit.collider.name;
 				return rHit;
 			}
-			else if((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible")
+			else if((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible"
+				&& ((wallJumped && lastWallName != lHit.collider.name) || !wallJumped))
 			{
 				//Flag if we are initializing the wall-run
 				if(!wallRunningLeft && !wallRunningRight)
@@ -550,6 +508,8 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag the side we are wall-running
 				wallRunningLeft = true;
 				wallRunningRight = false;
+				//Store the name of the wall we ran on
+				lastWallName = lHit.collider.name;
 				return lHit;
 			}
 		}
@@ -596,7 +556,12 @@ public class FirstPersonController : MonoBehaviour {
 		}
 
 		//Enable wall-running if we touch the ground or the timer runs out
-		if(cc.isGrounded || wallRunningDisabledTimer <= 0)
+		if(cc.isGrounded) 
+		{
+			lastWallName = "";
+			wallJumped = false;
+		}
+		if(cc.isGrounded || wallRunningDisabledTimer < 0)
 		{
 			wallRunningDisabled = false;
 			wallRunningDisabledTimer = 0;
@@ -605,72 +570,6 @@ public class FirstPersonController : MonoBehaviour {
 		{
 			wallRunningDisabledTimer -= Time.deltaTime;
 		}
-
-		/*
-		if(!wallRunning)
-		{
-			//Check the rules for activating wall-running
-			if(checkActivateWallRunRules(vHit, rHit, lHit, cc.isGrounded))
-			{
-				//Start the timer
-				wallRunTimer = wallRunMax;
-				//Play a networked landing sound
-				fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
-				//Reset the jump counter
-				jumps = 2;
-
-				//Right raycast
-				if(rHit.collider != null || Input.GetKeyDown(KeyCode.D))
-				{
-					//Flag wall-running state
-					wallRunRight = true;
-					//Store the hit point information
-					wallRunDirection = Vector3.ProjectOnPlane(velocity, rHit.normal);
-					wallJumpDirectionSet = false;
-					wallRunNormal = rHit.normal;
-				}
-
-				//Left raycast
-				if(lHit.collider != null || Input.GetKeyDown(KeyCode.A))
-				{
-					//Flag wall-running state
-					wallRunLeft = true;
-					//Store the hit point
-					wallRunDirection = Vector3.ProjectOnPlane(velocity, lHit.normal);
-					wallJumpDirectionSet = false;
-					wallRunNormal = lHit.normal;
-				}
-			}
-			else
-			{
-				wallRunRight = false;
-				wallRunLeft = false;
-				wallRunTimer = 0.0f;
-				//Disabled wall-running until we hit the ground
-				if(cc.isGrounded)
-				{
-					wallRunningDisabled = false;
-				}
-			}
-		}
-		//Check if we should de-activate wall-running
-		else if(checkDeactivateWallRunRules(vHit, rHit, lHit, bHit, cc.isGrounded))
-		{
-			wallRunRight = false;
-			wallRunLeft = false;
-			wallRunTimer = 0.0f;
-			//If we're grounded then don't disabled wall-running
-			if(!cc.isGrounded)
-			{
-				wallRunningDisabled = true;
-			}
-		}
-		//Decrement the wallRunTimer
-		else 
-		{
-			wallRunTimer -= Time.deltaTime;
-		}
-		*/
 	}
 
 	//Push the player upwards if we jumped
@@ -760,6 +659,8 @@ public class FirstPersonController : MonoBehaviour {
 	{
 		//The angle we want to jump relative to the wall
 		float degrees = 45f;
+		//Flag us as having wall jumped
+		wallJumped = true;
 		//Depending on the button held and our wall-running side, increase the angle
 		if(wallRunningLeft)
 		{

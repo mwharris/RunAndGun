@@ -1,11 +1,11 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\MenuController.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\FirstPersonController.cs">
     <Files>
-      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="284" Column="1" />
-      <File FileName="Assets\Scripts\MenuController.cs" Line="36" Column="45" />
-      <File FileName="Assets\Scripts\GameManager.cs" Line="16" Column="29" />
-      <File FileName="Assets\Scripts\NetworkManager.cs" Line="142" Column="24" />
+      <File FileName="Assets\Scripts\FirstPersonController.cs" Line="663" Column="1" />
+      <File FileName="Assets\Scripts\MenuController.cs" Line="185" Column="63" />
+      <File FileName="Assets\Scripts\GameManager.cs" Line="1" Column="1" />
+      <File FileName="Assets\Scripts\NetworkManager.cs" Line="1" Column="1" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
@@ -13,6 +13,8 @@
       <Breakpoint file="C:\Users\Matthew\Documents\RunAndGun\Assets\Scripts\FirstPersonController.cs" line="119" column="1" />
       <Breakpoint file="C:\Users\RUSTY2\Documents\RunAndGun\Assets\Scripts\DeathCamScript.cs" line="28" column="22" />
       <Breakpoint file="C:\Users\RUSTY2\Documents\RunAndGun\Assets\Scripts\FXManager.cs" line="27" column="1" />
+      <Breakpoint file="C:\Users\RUSTY2\Documents\RunAndGun\Assets\Scripts\MenuController.cs" line="169" column="1" />
+      <Breakpoint file="C:\Users\RUSTY2\Documents\RunAndGun\Assets\Scripts\MenuController.cs" line="144" column="1" />
     </BreakpointStore>
   </MonoDevelop.Ide.DebuggingService.Breakpoints>
   <MonoDevelop.Ide.DebuggingService.PinnedWatches />
