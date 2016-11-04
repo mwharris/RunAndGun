@@ -461,16 +461,17 @@ public class FirstPersonController : MonoBehaviour {
 			RaycastHit vHit;
 			RaycastHit rHit;
 			RaycastHit lHit;
-			//RaycastHit bHit;
+			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
 			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1f);
 			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1f);
 			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1f);
-			//Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
+			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
 
 			//Check the angle between our velocity any wall we may have impacted
 			bool rightGood = false;
 			bool leftGood = false;
+			bool backGood = false;
 			Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 			if(Vector3.Angle(testV, rHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
 			{
@@ -479,15 +480,13 @@ public class FirstPersonController : MonoBehaviour {
 			if(Vector3.Angle(testV, lHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
 			{
 				leftGood = true;
-			}
+			}			
 
 			//Check if we should activate wall-running
-			if((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible" 
-				&& ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped))
-			{
+			if ((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible"
+			   && ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped)) {
 				//Flag if we are initializing the wall-run
-				if(!wallRunningLeft && !wallRunningRight)
-				{
+				if (!wallRunningLeft && !wallRunningRight) {
 					initWallRun = true;
 				}
 				//Flag the side we are wall-running
@@ -495,14 +494,13 @@ public class FirstPersonController : MonoBehaviour {
 				wallRunningRight = true;
 				//Store the name of the wall we ran on
 				lastWallName = rHit.collider.name;
+				//Reset the wall jumped flag
+				wallJumped = false;
 				return rHit;
-			}
-			else if((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible"
-				&& ((wallJumped && lastWallName != lHit.collider.name) || !wallJumped))
-			{
+			} else if ((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible"
+			        && ((wallJumped == true && lastWallName != lHit.collider.name) || wallJumped == false)) {
 				//Flag if we are initializing the wall-run
-				if(!wallRunningLeft && !wallRunningRight)
-				{
+				if (!wallRunningLeft && !wallRunningRight) {
 					initWallRun = true;
 				}
 				//Flag the side we are wall-running
@@ -510,8 +508,68 @@ public class FirstPersonController : MonoBehaviour {
 				wallRunningRight = false;
 				//Store the name of the wall we ran on
 				lastWallName = lHit.collider.name;
+				//Reset the wall jumped flag
+				wallJumped = false;
 				return lHit;
+			} 
+			else if (bHit.collider != null && bHit.collider.tag != "Player" && bHit.collider.tag != "Invisible") 
+			{
+				//TODO: DECIDE WHAT TO DO WITH BACKWARDS WALL RUNNING
+				//TODO: THE VELOCITY OF THE PLAYER WILL HAVE TO BE REVERSED WHEN THEY TURN AROUND
+				//TODO: ALSO THE TILT ANGLE OF THE CAMERA WILL NEED TO CHANGE
+				//TODO: AS WELL AS THE MOVEMENT CONTROLS WHILE ON THE WALL
+				//Check the angle between the player's look Vector and the wall's normal
+				Vector3 testCross = Vector3.Cross(transform.forward, bHit.normal);
+				if(testCross.y > 0) 
+				{
+					//Flag if we are initializing the wall-run
+					if (!wallRunningLeft && !wallRunningRight) {
+						initWallRun = true;
+					}
+					//Flag the side we are wall-running
+					wallRunningLeft = false;
+					wallRunningRight = true;
+					//Store the name of the wall we ran on
+					lastWallName = bHit.collider.name;
+					//Reset the wall jumped flag
+					wallJumped = false;
+					return bHit;
+				}
+				else
+				{
+					//Flag if we are initializing the wall-run
+					if (!wallRunningLeft && !wallRunningRight) {
+						initWallRun = true;
+					}
+					//Flag the side we are wall-running
+					wallRunningLeft = true;
+					wallRunningRight = false;
+					//Store the name of the wall we ran on
+					lastWallName = bHit.collider.name;
+					//Reset the wall jumped flag
+					wallJumped = false;
+					return bHit;
+				}
 			}
+
+			/*
+			//Also check the angle between our look direction and the wall's normal
+			if(wallRunningRight && Vector3.Angle(transform.forward, rHit.normal) > 0) 
+			{
+				//We are looking forward
+				print("FORWARD");
+			} 
+			if(wallRunningRight && ) 
+			{
+				//We are looking forward
+				print("FORWARD");
+			} 
+			else if(Vector3.Angle(transform.forward, lHit.normal) < 0) 
+			{
+				//We are looking backward
+				print("BACKWARD");
+			}
+			*/
 		}
 
 		return new RaycastHit();
