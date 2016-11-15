@@ -69,6 +69,7 @@ public class FirstPersonController : MonoBehaviour {
 	private float cameraRotZ = 0;
 	private bool wallRunningLeft = false;
 	private bool wallRunningRight = false;
+	private bool wallRunningBack = false;
 	private bool initWallRun = false;
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
@@ -124,10 +125,10 @@ public class FirstPersonController : MonoBehaviour {
 
 	void Update () {
 		//Test stuff
-		Debug.DrawRay(transform.position, transform.right);
-		Debug.DrawRay(transform.position, -transform.right);
-		Debug.DrawRay(transform.position, transform.forward);
-		Debug.DrawRay(transform.position, -transform.forward);
+		Debug.DrawRay(transform.position, transform.right * 1.5f);
+		Debug.DrawRay(transform.position, -transform.right * 1.5f);
+		Debug.DrawRay(transform.position, transform.forward * 1.5f);
+		Debug.DrawRay(transform.position, -transform.forward * 1.5f);
 		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 		Debug.DrawRay(transform.position, testV);
 
@@ -231,10 +232,9 @@ public class FirstPersonController : MonoBehaviour {
 		transform.Rotate(0, horizontalRotation, 0);
 		//Clamp the up and down mouse range so we don't look too far in one direction
 		verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
-
-		//Rotate our camera to the left or right if we are wall-running
 		if(wallRunningLeft || wallRunningRight)
 		{
+			//Rotate our camera to the left or right if we are wall-running
 			if(cameraTotalRotation < cameraRotAmount)
 			{
 				float currentAngle = playerCamera.transform.localRotation.eulerAngles.z;
@@ -258,7 +258,6 @@ public class FirstPersonController : MonoBehaviour {
 			cameraTotalRotation = 0f;
 			cameraRotZ = 0;
 		}
-
 		//Rotate the camera using Euler angles
 		playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
 	}
@@ -345,10 +344,18 @@ public class FirstPersonController : MonoBehaviour {
 			headBobScript.enabled = false;
 
 			//If we're wall-running
-			if(wallRunningLeft || wallRunningRight)
+			if(wallRunningLeft || wallRunningRight || wallRunningBack)
 			{
-				//The velocity should be in the direction parallel to the wall
+				//Check the angle between where we are looking and the wall's normal
+				Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+				//Flip the velocity if we're facing the opposite direction of our velocity
+				if(Vector3.Angle(transform.forward, testV) > 90)
+				{
+					wallRunDirection = new Vector3(-wallRunDirection.x, wallRunDirection.y, -wallRunDirection.z);
+				}
+				//The velocity should be in the direction we're facing, parallel to the wall
 				velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
+				//If we just initialized wall-running
 				if(initWallRun)
 				{
 					//Reset the y velocity if we're falling but we've activated wall-running
@@ -364,11 +371,6 @@ public class FirstPersonController : MonoBehaviour {
 				if(isWPressed)
 				{
 					//Scale the Vector up to 14 units if we're holding forward
-					//Vector3 nVelocity = new Vector3(velocity.x, 0, velocity.z);
-					//nVelocity = nVelocity * 14;
-					//nVelocity.y = velocity.y;
-					//velocity = nVelocity;
-					//scaleVal = 1.5f;
 					Vector3 blah = new Vector3(velocity.x, 0, velocity.z);
 					Vector3 nVelocity = blah.normalized;
 					nVelocity = nVelocity * 14;
@@ -415,7 +417,7 @@ public class FirstPersonController : MonoBehaviour {
 	void handleGravity()
 	{
 		//Add normal gravity if we aren't wall-running
-		if(!wallRunningLeft && !wallRunningRight)
+		if(!wallRunningLeft && !wallRunningRight && !wallRunningBack)
 		{
 			if(!cc.isGrounded)
 			{
@@ -451,11 +453,11 @@ public class FirstPersonController : MonoBehaviour {
 	//Perform raycast to check wall-running rules; return the hit location
 	RaycastHit DoWallRunCheck(bool isGrounded)
 	{
-		bool wallRunning = wallRunningLeft || wallRunningRight;
+		//Boolean to determine if we are wall-running in any direction
+		bool wallRunning = wallRunningLeft || wallRunningRight || wallRunningBack;
 
 		//If we're not grounded and we haven't disabled wall-running
-		if(!isGrounded && !wallRunningDisabled
-			&& ( (wallRunning && wallRunTimer > 0) || !wallRunning) )
+		if(!isGrounded && !wallRunningDisabled && ((wallRunning && wallRunTimer > 0) || !wallRunning))
 		{
 			//Raycast in several directions to see if we are wall-running
 			RaycastHit vHit;
@@ -463,15 +465,14 @@ public class FirstPersonController : MonoBehaviour {
 			RaycastHit lHit;
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1f);
-			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.5f);
+			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1.2f);
+			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1.2f);
+			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1.2f);
+			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.2f);
 
 			//Check the angle between our velocity any wall we may have impacted
 			bool rightGood = false;
 			bool leftGood = false;
-			bool backGood = false;
 			Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 			if(Vector3.Angle(testV, rHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
 			{
@@ -481,95 +482,76 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				leftGood = true;
 			}			
+			//Also check the angle between our look direction and our velocity
+			bool lookAngleGood = false;
+			float lookVeloAngle = Vector3.Angle(transform.forward, testV);
+			if(lookVeloAngle <= 90) 
+			{
+				lookAngleGood = true;
+			}
+			//Determine if either raycast hits are valid
+			bool rHitValid = rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible";
+			bool lHitValid = lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible";
+			bool bHitValid = bHit.collider != null && bHit.collider.tag != "Player" && bHit.collider.tag != "Invisible";
+			//Determine that we haven't jumped back onto a wall we just jumped off
+			bool rDoubleJumpCheck = rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped);
+			bool lDoubleJumpCheck = lHit.collider != null && ((wallJumped && lastWallName != lHit.collider.name) || !wallJumped);
+			bool bDoubleJumpCheck = bHit.collider != null && ((wallJumped && lastWallName != bHit.collider.name) || !wallJumped);
 
-			//Check if we should activate wall-running
-			if ((rightGood || wallRunningRight) && rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible"
-			   && ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped)) {
+			//Check if we should activate wall-running - right raycast
+			if (lookAngleGood && rHitValid && rDoubleJumpCheck && (rightGood || wallRunning)) 
+			{
 				//Flag if we are initializing the wall-run
-				if (!wallRunningLeft && !wallRunningRight) {
+				if (!wallRunning) {
 					initWallRun = true;
+					print("ANGLE: " + lookVeloAngle);
 				}
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
 				wallRunningRight = true;
+				wallRunningBack = false;
 				//Store the name of the wall we ran on
 				lastWallName = rHit.collider.name;
 				//Reset the wall jumped flag
 				wallJumped = false;
 				return rHit;
-			} else if ((leftGood || wallRunningLeft) && lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible"
-			        && ((wallJumped == true && lastWallName != lHit.collider.name) || wallJumped == false)) {
+			} 
+			//Left raycast
+			else if (lookAngleGood && lHitValid && lDoubleJumpCheck && (leftGood || wallRunning)) 
+			{
 				//Flag if we are initializing the wall-run
-				if (!wallRunningLeft && !wallRunningRight) {
+				if (!wallRunning) {
 					initWallRun = true;
+					print("ANGLE: " + lookVeloAngle);
 				}
 				//Flag the side we are wall-running
 				wallRunningLeft = true;
 				wallRunningRight = false;
+				wallRunningBack = false;
 				//Store the name of the wall we ran on
 				lastWallName = lHit.collider.name;
 				//Reset the wall jumped flag
 				wallJumped = false;
 				return lHit;
 			} 
-			else if (bHit.collider != null && bHit.collider.tag != "Player" && bHit.collider.tag != "Invisible") 
+			//Backwards raycast
+			else if (bHitValid && bDoubleJumpCheck) 
 			{
-				//TODO: DECIDE WHAT TO DO WITH BACKWARDS WALL RUNNING
-				//TODO: THE VELOCITY OF THE PLAYER WILL HAVE TO BE REVERSED WHEN THEY TURN AROUND
-				//TODO: ALSO THE TILT ANGLE OF THE CAMERA WILL NEED TO CHANGE
-				//TODO: AS WELL AS THE MOVEMENT CONTROLS WHILE ON THE WALL
-				//Check the angle between the player's look Vector and the wall's normal
-				Vector3 testCross = Vector3.Cross(transform.forward, bHit.normal);
-				if(testCross.y > 0) 
-				{
-					//Flag if we are initializing the wall-run
-					if (!wallRunningLeft && !wallRunningRight) {
-						initWallRun = true;
-					}
-					//Flag the side we are wall-running
-					wallRunningLeft = false;
-					wallRunningRight = true;
-					//Store the name of the wall we ran on
-					lastWallName = bHit.collider.name;
-					//Reset the wall jumped flag
-					wallJumped = false;
-					return bHit;
+				//Flag if we are initializing the wall-run
+				if (!wallRunning) {
+					initWallRun = true;
+					print("ANGLE: " + lookVeloAngle);
 				}
-				else
-				{
-					//Flag if we are initializing the wall-run
-					if (!wallRunningLeft && !wallRunningRight) {
-						initWallRun = true;
-					}
-					//Flag the side we are wall-running
-					wallRunningLeft = true;
-					wallRunningRight = false;
-					//Store the name of the wall we ran on
-					lastWallName = bHit.collider.name;
-					//Reset the wall jumped flag
-					wallJumped = false;
-					return bHit;
-				}
+				//Flag the side we are wall-running
+				wallRunningLeft = false;
+				wallRunningRight = false;
+				wallRunningBack = true;
+				//Store the name of the wall we ran on
+				lastWallName = bHit.collider.name;
+				//Reset the wall jumped flag
+				wallJumped = false;
+				return bHit;
 			}
-
-			/*
-			//Also check the angle between our look direction and the wall's normal
-			if(wallRunningRight && Vector3.Angle(transform.forward, rHit.normal) > 0) 
-			{
-				//We are looking forward
-				print("FORWARD");
-			} 
-			if(wallRunningRight && ) 
-			{
-				//We are looking forward
-				print("FORWARD");
-			} 
-			else if(Vector3.Angle(transform.forward, lHit.normal) < 0) 
-			{
-				//We are looking backward
-				print("BACKWARD");
-			}
-			*/
 		}
 
 		return new RaycastHit();
@@ -594,9 +576,11 @@ public class FirstPersonController : MonoBehaviour {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
+			//Move the player closer to the wall to ensure rotation doesn't cause off to come off the wall
+			this.transform.Translate(-wallRunHit.normal, Space.World);
 		}
 		//Continue wall-running if we are already and the rules passed
-		else if(wallRunHit.collider != null && (wallRunningLeft || wallRunningRight))
+		else if(wallRunHit.collider != null && (wallRunningLeft || wallRunningRight || wallRunningBack))
 		{
 			//Decrement the running timer
 			wallRunTimer -= Time.deltaTime;
@@ -605,11 +589,12 @@ public class FirstPersonController : MonoBehaviour {
 			wallRunNormal = wallRunHit.normal;
 		}
 		//The rules failed but we're already wall-running
-		else if(wallRunHit.collider == null && (wallRunningLeft || wallRunningRight))
+		else if(wallRunHit.collider == null && (wallRunningLeft || wallRunningRight || wallRunningBack))
 		{
 			//Deactivate wall-running
 			wallRunningLeft = false;
 			wallRunningRight = false;
+			wallRunningBack = false;
 			wallRunTimer = 0.0f;
 		}
 
@@ -651,13 +636,14 @@ public class FirstPersonController : MonoBehaviour {
 			//Add an immediate velocity upwards to jump
 			velocity.y = jumpSpeed;
 			//If we're wall-running, angle our jump outwards
-			if(wallRunningLeft || wallRunningRight)
+			if(wallRunningLeft || wallRunningRight || wallRunningBack)
 			{
 				//Handle double jumping
 				WallJump();
 				//Disable wall-running
 				wallRunningLeft = false;
 				wallRunningRight = false;
+				wallRunningBack = false;
 				wallRunningDisabled = true;
 				wallRunningDisabledTimer = 0.5f;
 			}
@@ -731,7 +717,7 @@ public class FirstPersonController : MonoBehaviour {
 				degrees = 70f;
 			}
 		}
-		else
+		else if(wallRunningRight)
 		{
 			if(isAPressed)
 			{
@@ -741,6 +727,10 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				degrees = 70f;
 			}
+		}
+		else 
+		{
+			degrees = 0f;
 		}
 		//Reset the y-velocity for rotation calculations
 		velocity.y = 0;
