@@ -125,12 +125,15 @@ public class FirstPersonController : MonoBehaviour {
 
 	void Update () {
 		//Test stuff
-		Debug.DrawRay(transform.position, transform.right * 1.5f);
-		Debug.DrawRay(transform.position, -transform.right * 1.5f);
-		Debug.DrawRay(transform.position, transform.forward * 1.5f);
-		Debug.DrawRay(transform.position, -transform.forward * 1.5f);
+		Debug.DrawRay(transform.position, transform.right * 1f);
+		Debug.DrawRay(transform.position, -transform.right * 1f);
+		Debug.DrawRay(transform.position, transform.forward * 1f);
+		Debug.DrawRay(transform.position, -transform.forward * 1f);
 		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 		Debug.DrawRay(transform.position, testV);
+
+		//Wall run test checks
+		//DoWallRunCheckFAKE(cc.isGrounded);
 
 		//Update the mou
 		gatherOptions();
@@ -225,16 +228,12 @@ public class FirstPersonController : MonoBehaviour {
 			isSpacePressed = false;
 		}
 	}
-		
-	void handleMouseInput()
+
+	//Tilt the camera left or right depending on which side we are wall-running
+	void CalculateCameraTilt()
 	{
-		//Rotate the player based on the mouse input
-		transform.Rotate(0, horizontalRotation, 0);
-		//Clamp the up and down mouse range so we don't look too far in one direction
-		verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
 		if(wallRunningLeft || wallRunningRight)
 		{
-			//Rotate our camera to the left or right if we are wall-running
 			if(cameraTotalRotation < cameraRotAmount)
 			{
 				float currentAngle = playerCamera.transform.localRotation.eulerAngles.z;
@@ -258,7 +257,53 @@ public class FirstPersonController : MonoBehaviour {
 			cameraTotalRotation = 0f;
 			cameraRotZ = 0;
 		}
-		//Rotate the camera using Euler angles
+	}
+
+	//Calculate and apply player rotation based on mouse input
+	void ApplyHorizontalRotation()
+	{
+		if(wallRunningLeft || wallRunningRight || wallRunningBack)
+		{
+			Vector3 testNormal = wallRunNormal;
+			Vector3 testForward = transform.forward;
+			//Get the vector 90 degrees to the left and right of the normal
+			testNormal = Quaternion.Euler(0,90,0) * testNormal;
+			//Calculate cross products between where we're looking and these two vectors
+			Vector3 cross = Vector3.Cross(testNormal, testForward);
+			//Mess with the rotation based on our forward vector relative to the boundaries
+			if(cross.y > 0.05)
+			{
+				//We looked too far left/right, rotate towards the cross product
+				Vector3 otherCross = new Vector3();
+				if(wallRunningRight){ otherCross = Vector3.Cross(Vector3.up, wallRunNormal); }
+				if(wallRunningLeft){ otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); }
+				float degrees = Vector3.Angle(testForward, otherCross);
+				float rads = degrees * Mathf.Deg2Rad;
+				testForward = Vector3.RotateTowards(testForward, otherCross, 10, 0.0f);
+				transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+			}
+			//Rotate normally if we don't break the boundaries
+			else
+			{
+				transform.Rotate(0, horizontalRotation, 0);
+			}
+		}
+		//Rotate normally if we are not wall-running
+		else 
+		{
+			transform.Rotate(0, horizontalRotation, 0);
+		}
+	}
+
+	void handleMouseInput()
+	{
+		//Apply any horizontal look rotation
+		ApplyHorizontalRotation();
+		//Clamp the up and down mouse range so we don't look too far in one direction
+		verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
+		//Calculate the angle we should tilt the camera depending on wall-run side
+		CalculateCameraTilt();
+		//Rotate the camera Up/Down and Tilt using Euler angles
 		playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
 	}
 
@@ -465,10 +510,10 @@ public class FirstPersonController : MonoBehaviour {
 			RaycastHit lHit;
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 1.2f);
-			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 1.2f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 1.2f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 1.2f);
+			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 0.825f);
+			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 0.825f);
+			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 0.825f);
+			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 0.825f);
 
 			//Check the angle between our velocity any wall we may have impacted
 			bool rightGood = false;
@@ -504,7 +549,6 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
-					print("ANGLE: " + lookVeloAngle);
 				}
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
@@ -522,7 +566,6 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
-					print("ANGLE: " + lookVeloAngle);
 				}
 				//Flag the side we are wall-running
 				wallRunningLeft = true;
@@ -540,7 +583,6 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
-					print("ANGLE: " + lookVeloAngle);
 				}
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
@@ -552,6 +594,14 @@ public class FirstPersonController : MonoBehaviour {
 				wallJumped = false;
 				return bHit;
 			}
+			else if(wallRunning)
+			{
+				print("WUUUUUUUUUUUUUUUUUUUUUUUT???");
+			}
+		}
+		else if(wallRunTimer <= 0)
+		{
+			wallRunningDisabled = true;
 		}
 
 		return new RaycastHit();
@@ -576,8 +626,8 @@ public class FirstPersonController : MonoBehaviour {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
-			//Move the player closer to the wall to ensure rotation doesn't cause off to come off the wall
-			this.transform.Translate(-wallRunHit.normal, Space.World);
+			//Move the player closer to the wall to ensure rotation doesn't cause us to come off the wall
+			this.transform.Translate((-wallRunHit.normal/2), Space.World);
 		}
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && (wallRunningLeft || wallRunningRight || wallRunningBack))
@@ -604,15 +654,15 @@ public class FirstPersonController : MonoBehaviour {
 			lastWallName = "";
 			wallJumped = false;
 		}
-		if(cc.isGrounded || wallRunningDisabledTimer < 0)
+		if(cc.isGrounded)
 		{
 			wallRunningDisabled = false;
-			wallRunningDisabledTimer = 0;
+			//wallRunningDisabledTimer = 0;
 		} 
-		else 
-		{
-			wallRunningDisabledTimer -= Time.deltaTime;
-		}
+		//else 
+		//{
+		//	wallRunningDisabledTimer -= Time.deltaTime;
+		//}
 	}
 
 	//Push the player upwards if we jumped
@@ -644,8 +694,8 @@ public class FirstPersonController : MonoBehaviour {
 				wallRunningLeft = false;
 				wallRunningRight = false;
 				wallRunningBack = false;
-				wallRunningDisabled = true;
-				wallRunningDisabledTimer = 0.5f;
+				//wallRunningDisabled = true;
+				//wallRunningDisabledTimer = 0.5f;
 			}
 			else
 			{
