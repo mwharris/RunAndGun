@@ -15,6 +15,7 @@ public class FirstPersonController : MonoBehaviour {
 	public float verticalRotation = 0f;
 	public float verticalVelocity = 0f;
 	public float upDownRange = 60.0f;
+	public bool invertY = false;
 	////////////////////////////////////////////
 
 	/// TIMERS /////////////////////////////////
@@ -177,6 +178,10 @@ public class FirstPersonController : MonoBehaviour {
 		{
 			mouseSensitivity = mc.mouseSensitivity;
 		}
+		if(mc.invertY != null)
+		{
+			invertY = mc.invertY;
+		}
 	}
 
 	void gatherInputs()
@@ -184,9 +189,9 @@ public class FirstPersonController : MonoBehaviour {
 		//Only gather user input if we're not paused
 		if(gm.GetGameState() == GameManager.GameState.playing)
 		{
-			//Mouse look inputs
+			//Mouse look inputs.  Include mouse inversion and sensitivity
 			horizontalRotation = Input.GetAxis("Mouse X") * mouseSensitivity;
-			verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity;
+			verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity * (invertY ? -1 : 1);
 			//Keyboard movement inputs
 			forwardSpeed = Input.GetAxis("Vertical");
 			sideSpeed = Input.GetAxis("Horizontal");
@@ -495,6 +500,34 @@ public class FirstPersonController : MonoBehaviour {
 		}
 	}
 
+	//rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || (!wallJumped && !wallRunningDisabled));
+	bool DoubleWallRunCheck(RaycastHit hit){
+		//If the raycast hit a wall...
+		if(hit.collider != null && hit.collider.tag != "Player"){
+			//...and we wall jumped onto a new wall
+ 			if(wallJumped && lastWallName != hit.collider.name){
+				//Allow wall running
+				return true;
+			}
+			//...and we did not wall jump
+			else if(!wallJumped){
+				//...and we fell off a wall onto a new wall
+				if(wallRunningDisabled && lastWallName != hit.collider.name){
+					//Allow wall running
+					wallRunningDisabled = false;
+					return true;
+				}
+				//..and wall running is not disabled
+				else if(!wallRunningDisabled){
+					//Allow wall running
+					return true;
+				}
+			}
+		}
+		//Did not pass rule checks
+		return false;
+	}
+
 	//Perform raycast to check wall-running rules; return the hit location
 	RaycastHit DoWallRunCheck(bool isGrounded)
 	{
@@ -502,7 +535,7 @@ public class FirstPersonController : MonoBehaviour {
 		bool wallRunning = wallRunningLeft || wallRunningRight || wallRunningBack;
 
 		//If we're not grounded and we haven't disabled wall-running
-		if(!isGrounded && !wallRunningDisabled && ((wallRunning && wallRunTimer > 0) || !wallRunning))
+		if(!isGrounded && ((wallRunning && wallRunTimer > 0) || !wallRunning))
 		{
 			//Raycast in several directions to see if we are wall-running
 			RaycastHit vHit;
@@ -538,14 +571,17 @@ public class FirstPersonController : MonoBehaviour {
 			bool rHitValid = rHit.collider != null && rHit.collider.tag != "Player" && rHit.collider.tag != "Invisible";
 			bool lHitValid = lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible";
 			bool bHitValid = bHit.collider != null && bHit.collider.tag != "Player" && bHit.collider.tag != "Invisible";
-			//Determine that we haven't jumped back onto a wall we just jumped off
-			bool rDoubleJumpCheck = rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || !wallJumped);
-			bool lDoubleJumpCheck = lHit.collider != null && ((wallJumped && lastWallName != lHit.collider.name) || !wallJumped);
-			bool bDoubleJumpCheck = bHit.collider != null && ((wallJumped && lastWallName != bHit.collider.name) || !wallJumped);
+			//Rule checks to prevent jumping onto the same wall
+			bool rDoubleJumpCheck = DoubleWallRunCheck(rHit); //rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || (!wallJumped && !wallRunningDisabled));//			
+			bool lDoubleJumpCheck = DoubleWallRunCheck(lHit); //lHit.collider != null && ((wallJumped && lastWallName != lHit.collider.name) || (!wallJumped && !wallRunningDisabled));//
+			bool bDoubleJumpCheck = DoubleWallRunCheck(bHit); //bHit.collider != null && ((wallJumped && lastWallName != bHit.collider.name) || (!wallJumped && !wallRunningDisabled));//DoubleWallRunCheck(bHit);
 
 			//Check if we should activate wall-running - right raycast
 			if (lookAngleGood && rHitValid && rDoubleJumpCheck && (rightGood || wallRunning)) 
 			{
+				if(wallRunningDisabled){
+					print("FOUND IT!!!");
+				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -563,6 +599,9 @@ public class FirstPersonController : MonoBehaviour {
 			//Left raycast
 			else if (lookAngleGood && lHitValid && lDoubleJumpCheck && (leftGood || wallRunning)) 
 			{
+				if(wallRunningDisabled){
+					print("FOUND IT!!!");
+				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -580,6 +619,9 @@ public class FirstPersonController : MonoBehaviour {
 			//Backwards raycast
 			else if (bHitValid && bDoubleJumpCheck) 
 			{
+				if(wallRunningDisabled){
+					print("FOUND IT!!!");
+				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -887,22 +929,6 @@ public class FirstPersonController : MonoBehaviour {
 		}
 	}
 
-	private void Crouch()
-	{
-		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
-		playerBody.GetComponent<CapsuleCollider>().height -= crouchDeltaHeight;
-		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center - test;
-		isCrouching = true;
-	}
-
-	private void StopCrouching()
-	{
-		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
-		playerBody.GetComponent<CapsuleCollider>().height += crouchDeltaHeight;
-		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center + test;
-		isCrouching = false;		
-	}
-
 	private void ToggleSprint()
 	{
 		isSprinting = !isSprinting;
@@ -912,31 +938,25 @@ public class FirstPersonController : MonoBehaviour {
 		}
 	}
 
-	private void ToggleCrouch()
-	{
-		if(isCrouching)
-		{
-			StopCrouching();
-		}
-		else 
-		{
-			Crouch();
-		}
-	}
-
 	private void handleCrouching()
 	{
-		//Crouching
+		//Crouching logic
 		if(isCTRLDown)
 		{
 			ToggleCrouch();
+			if(isCrouching)
+			{
+				cc.height = 1.9f;
+			}
+			else
+			{
+				cc.height = 2.9f;
+			}
 		}
-
 		//Store the local position for modification
 		Vector3 camLocalPos = playerCamera.transform.localPosition;
 		Vector3 bodyLocalPos = playerBody.transform.localPosition;
 		Vector3 bodyLocalScale = playerBody.transform.localScale;
-
 		//Modify the local position based on if we are/aren't crouching
 		if(isCrouching)
 		{
@@ -950,37 +970,56 @@ public class FirstPersonController : MonoBehaviour {
 				//Scale the body down
 				bodyLocalScale.y = lowerHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, crouchBodyScale);
 			}
-			if(bodyLocalPos.y > crouchBodyPos)
-			{
-				//Move the body down
-				bodyLocalPos.y = lowerHeight(bodyLocalPos.y, crouchDeltaPos, Time.deltaTime, crouchBodyPos);
-			}
 		}
 		else
 		{
 			if(camLocalPos.y < standardCamHeight)
 			{
 				//Move the camera up
-				camLocalPos.y = raiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, standardCamHeight);
+				camLocalPos.y = RaiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, standardCamHeight);
 			}
 			if(bodyLocalScale.y < standardBodyScale)
 			{
 				//Scale the body up
-				bodyLocalScale.y = raiseHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, standardBodyScale);
-			}
-			if(bodyLocalPos.y < standardBodyPos)
-			{
-				//Move the body up
-				bodyLocalPos.y = raiseHeight(bodyLocalPos.y, crouchDeltaPos, Time.deltaTime, standardBodyPos);
+				bodyLocalScale.y = RaiseHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, standardBodyScale);
 			}
 		}
-
 		//Apply the local position updates
 		playerCamera.transform.localPosition = camLocalPos;
 		playerBody.transform.localPosition = bodyLocalPos;
 		playerBody.transform.localScale = bodyLocalScale;
 	}
 
+	//Helper function to toggle crouching flags
+	private void ToggleCrouch()
+	{
+		if(isCrouching)
+		{
+			StopCrouching();
+		}
+		else 
+		{
+			Crouch();
+		}
+	}
+
+	//Code to actual handle crouching and standing
+	private void Crouch()
+	{
+		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
+		playerBody.GetComponent<CapsuleCollider>().height -= crouchDeltaHeight;
+		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center - test;
+		isCrouching = true;
+	}
+	private void StopCrouching()
+	{
+		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
+		playerBody.GetComponent<CapsuleCollider>().height += crouchDeltaHeight;
+		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center + test;
+		isCrouching = false;		
+	}
+
+	//Helper function to lower the height of the player due to crouching
 	private float lowerHeight(float yPos, float delta, float deltaTime, float height)
 	{
 		if(yPos - (delta * deltaTime * 8) < height)
@@ -991,11 +1030,11 @@ public class FirstPersonController : MonoBehaviour {
 		{
 			yPos -= delta * Time.deltaTime * 8;
 		}
-
 		return yPos;
 	}
 
-	private float raiseHeight(float yPos, float delta, float deltaTime, float height)
+	//Helper function to raise the height of the player due to standing
+	private float RaiseHeight(float yPos, float delta, float deltaTime, float height)
 	{
 		if(yPos + (delta * deltaTime * 8) > height)
 		{
@@ -1005,7 +1044,6 @@ public class FirstPersonController : MonoBehaviour {
 		{
 			yPos += delta * Time.deltaTime * 8;
 		}
-
 		return yPos;
 	}
 }

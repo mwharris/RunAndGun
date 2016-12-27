@@ -13,6 +13,11 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 	private Vector3 bodyPos = Vector3.zero;
 	private Quaternion weaponRot = Quaternion.identity;
 	private Vector3 weaponPos = Vector3.zero;
+	private Vector3 bodyCenter = Vector3.zero;
+	private float bodyHeight = 0f;
+	private float ccHeight = 0f;
+	private CapsuleCollider capCol;
+	private CharacterController cc;
 
 	void Awake()
 	{
@@ -21,6 +26,8 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			fpcScript = this.gameObject.GetComponent<FirstPersonController>();
 		}
 		*/
+		capCol = body.GetComponent<CapsuleCollider>();
+		cc = transform.GetComponent<CharacterController>();
 	}
 
 	void Update()
@@ -35,6 +42,10 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			body.transform.position = Vector3.Lerp(body.transform.position, bodyPos, 0.1f);
 			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, 0.1f);
 			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, 0.1f);
+			//Set Capsule Collider and Character Controller variables for crouching
+			capCol.center = Vector3.Lerp(capCol.center, bodyCenter, 0.1f);
+			capCol.height = bodyHeight;
+			cc.height = ccHeight;
 		}
 	}
 
@@ -49,6 +60,9 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			stream.SendNext(body.transform.position);
 			stream.SendNext(playerCamera.transform.rotation);
 			stream.SendNext(playerCamera.transform.position);
+			stream.SendNext(capCol.center);
+			stream.SendNext(capCol.height);
+			stream.SendNext(cc.height);
 		}
 		else
 		{
@@ -59,6 +73,9 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 			bodyPos = (Vector3) stream.ReceiveNext();
 			weaponRot = (Quaternion) stream.ReceiveNext();
 			weaponPos = (Vector3) stream.ReceiveNext();
+			bodyCenter = (Vector3) stream.ReceiveNext();
+			bodyHeight = (float) stream.ReceiveNext();
+			ccHeight = (float) stream.ReceiveNext();
 		}
 	}
 }

@@ -14,6 +14,7 @@ public class MenuController : MonoBehaviour {
 	private GameManager gm;
 
 	public float mouseSensitivity;
+	public bool invertY = false;
 
 	void Start()
 	{
@@ -141,7 +142,8 @@ public class MenuController : MonoBehaviour {
 		//Enable the options menu elements
 		Transform panel = optionsMenu.transform.GetChild(0);
 		Transform slider = panel.transform.GetChild(2);
-		Transform closeButton = panel.transform.GetChild(3);
+		Transform invertYToggle = panel.transform.GetChild(3);
+		Transform closeButton = panel.transform.GetChild(4);
 		//Enable the panel
 		panel.GetComponent<Image>().enabled = true;
 		//Enable the title text
@@ -152,6 +154,10 @@ public class MenuController : MonoBehaviour {
 		slider.GetChild(0).GetComponent<Image>().enabled = true;
 		slider.GetChild(1).GetChild(0).GetComponent<Image>().enabled = true;
 		slider.GetChild(2).GetChild(0).GetComponent<Image>().enabled = true;
+		//Enable the Invert Y checkbox
+		invertYToggle.GetChild(0).GetComponent<Text>().enabled = true;
+		invertYToggle.GetChild(1).GetComponent<Image>().enabled = true;
+		invertYToggle.GetChild(1).GetChild(0).GetComponent<Image>().enabled = true;
 		//Enable the close button
 		closeButton.GetComponent<Image>().enabled = true;
 		closeButton.GetChild(0).GetComponent<Text>().enabled = true;
@@ -166,7 +172,8 @@ public class MenuController : MonoBehaviour {
 		//Enable the options menu elements
 		Transform panel = optionsMenu.transform.GetChild(0);
 		Transform slider = panel.transform.GetChild(2);
-		Transform closeButton = panel.transform.GetChild(3);
+		Transform invertYToggle = panel.transform.GetChild(3);
+		Transform closeButton = panel.transform.GetChild(4);
 		//Enable the panel
 		panel.GetComponent<Image>().enabled = false;
 		//Enable the title text
@@ -177,6 +184,10 @@ public class MenuController : MonoBehaviour {
 		slider.GetChild(0).GetComponent<Image>().enabled = false;
 		slider.GetChild(1).GetChild(0).GetComponent<Image>().enabled = false;
 		slider.GetChild(2).GetChild(0).GetComponent<Image>().enabled = false;
+		//Enable the Invert Y checkbox
+		invertYToggle.GetChild(0).GetComponent<Text>().enabled = false;
+		invertYToggle.GetChild(1).GetComponent<Image>().enabled = false;
+		invertYToggle.GetChild(1).GetChild(0).GetComponent<Image>().enabled = false;
 		//Enable the close button
 		closeButton.GetComponent<Image>().enabled = false;
 		closeButton.GetChild(0).GetComponent<Text>().enabled = false;
@@ -186,5 +197,11 @@ public class MenuController : MonoBehaviour {
 	public void changeMouseSensitivity(float newValue)
 	{
 		mouseSensitivity = newValue;
+	}
+
+	//Update the invert y setting in the First Person Controller
+	public void changeInvertY(bool newValue)
+	{
+		invertY = newValue;
 	}
 }
