@@ -1,14 +1,16 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class GameManager : MonoBehaviour {
-
+public class GameManager : MonoBehaviour 
+{
+	public bool isAiming;
 	public enum GameState {
 		none,
 		playing,
 		paused
 	}
 	private GameState gameState = GameState.none;
+
 
 	void Start() 
 	{

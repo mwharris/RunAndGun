@@ -62,6 +62,7 @@ public class FirstPersonController : MonoBehaviour {
 	private MyHeadBob headBobScript;
 	private GameManager gm;
 	private MenuController mc;
+	private ShootController sc;
 	////////////////////////////////////////////
 
 	/// WALL-RUNNING VARIABLES //////////////////
@@ -113,6 +114,7 @@ public class FirstPersonController : MonoBehaviour {
 		headBobScript = playerCamera.GetComponent<MyHeadBob>();
 		gm = GameObject.FindObjectOfType<GameManager>();
 		mc = GameObject.FindObjectOfType<MenuController>();
+		sc = GameObject.FindObjectOfType<ShootController>();
 		//Set camera height variables
 		standardCamHeight = 2.5f;
 		standardBodyScale = 1.5f;
@@ -725,6 +727,8 @@ public class FirstPersonController : MonoBehaviour {
 			jumps--;
 			//Play a sound of use jumping
 			PlayJumpSound(!cc.isGrounded);
+			//Stop aiming if we are aiming
+			sc.StopAiming();
 			//Add an immediate velocity upwards to jump
 			velocity.y = jumpSpeed;
 			//If we're wall-running, angle our jump outwards
@@ -932,8 +936,14 @@ public class FirstPersonController : MonoBehaviour {
 	private void ToggleSprint()
 	{
 		isSprinting = !isSprinting;
+		if(isSprinting)
+		{
+			//Stop aiming if we are aiming
+			sc.StopAiming();
+		}
 		if(isSprinting == false)
 		{
+			//Start our sprint process
 			startedSprinting = false;
 		}
 	}
