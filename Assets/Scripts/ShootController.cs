@@ -29,7 +29,6 @@ public class ShootController : MonoBehaviour
 	private float cooldownTimerMax = 0.315f;
 	private PhotonView pView;
 	private GameManager gm;
-	private bool isAiming = false;
 
 	void Start()
 	{
@@ -74,9 +73,13 @@ public class ShootController : MonoBehaviour
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
 			//Determine if we are attempting to aim our weapon
-			if(Input.GetKeyDown(KeyCode.Mouse1))
+			if(Input.GetKey(KeyCode.Mouse1))
 			{
 				Aim();
+			}
+			else
+			{
+				StopAiming();
 			}
 			//Determine if we try to shoot the weapon
 			if(Input.GetKeyDown(KeyCode.Mouse0) && cooldownTimer <= 0)
@@ -110,24 +113,13 @@ public class ShootController : MonoBehaviour
 	//Handle aiming our weapon
 	void Aim()
 	{
-		//Toggle aiming boolean
-		isAiming = !isAiming;
-		//Move the current weapon accordingly
-		if(isAiming)
-		{
-			animator.SetBool("Aim", true);
-		}
-		else
-		{
-			animator.SetBool("Aim", false);
-		}
+		animator.SetBool("Aim", true);
 	}
 
 	//Helper method used by other classes to tell ShootController to stop aiming.
 	//Usually due to jumping, running, or wall-running.
 	public void StopAiming()
 	{
-		isAiming = false;
 		animator.SetBool("Aim", false);
 	}
 
