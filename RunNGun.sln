@@ -1,11 +1,11 @@
+﻿
 Microsoft Visual Studio Solution File, Format Version 11.00
-# Visual Studio 2008
-
-Project("{84586525-13B9-E66D-4F81-1C706D96B1BB}") = "RunNGun", "Assembly-CSharp-firstpass.csproj", "{E56B57EE-DF1C-EA19-1BB9-7E64EF3830C2}"
+# Visual Studio 2010
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunNGun", "Assembly-CSharp-firstpass.csproj", "{E56B57EE-DF1C-EA19-1BB9-7E64EF3830C2}"
 EndProject
-Project("{84586525-13B9-E66D-4F81-1C706D96B1BB}") = "RunNGun", "Assembly-CSharp.csproj", "{058DF492-16D2-62A6-A6BA-3EC9867DDF0E}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunNGun", "Assembly-CSharp.csproj", "{058DF492-16D2-62A6-A6BA-3EC9867DDF0E}"
 EndProject
-Project("{84586525-13B9-E66D-4F81-1C706D96B1BB}") = "RunNGun", "Assembly-CSharp-Editor.csproj", "{A5B642E9-4A0B-7A06-549C-65BD60801703}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "RunNGun", "Assembly-CSharp-Editor.csproj", "{A5B642E9-4A0B-7A06-549C-65BD60801703}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
