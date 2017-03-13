@@ -4,7 +4,7 @@ using System.Collections;
 public class FirstPersonController : MonoBehaviour {
 	public Camera playerCamera;   
 	public GameObject playerBody;
-	private CharacterController cc;
+	[HideInInspector] public CharacterController cc;
 	private GameObject gunObj;
 	public AudioClip jumpSound;  
 	private AudioSource aSource;    
@@ -31,10 +31,10 @@ public class FirstPersonController : MonoBehaviour {
 	private float movementSpeed = 0.96f;
 	//private float movementSpeed = 1.98f;
 	private float jumpSpeed = 8f;
-	private float forwardSpeed;
-	private float sideSpeed;
+	[HideInInspector] public float forwardSpeed;
+	[HideInInspector] public float sideSpeed;
 	private int jumps;
-	private bool isSprinting = false;
+	[HideInInspector] public bool isSprinting = false;
 	private bool startedSprinting = false;
 	private bool wasAirborne;
 	private bool allowAirMovement = false;
@@ -114,7 +114,7 @@ public class FirstPersonController : MonoBehaviour {
 		headBobScript = playerCamera.GetComponent<MyHeadBob>();
 		gm = GameObject.FindObjectOfType<GameManager>();
 		mc = GameObject.FindObjectOfType<MenuController>();
-		sc = GameObject.FindObjectOfType<ShootController>();
+		sc = this.gameObject.GetComponent<ShootController>();
 		//Set camera height variables
 		standardCamHeight = 2.5f;
 		standardBodyScale = 1.5f;
@@ -311,7 +311,8 @@ public class FirstPersonController : MonoBehaviour {
 		//Calculate the angle we should tilt the camera depending on wall-run side
 		CalculateCameraTilt();
 		//Rotate the camera Up/Down and Tilt using Euler angles
-		playerCamera.transform.localRotation = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
+		Quaternion targetTilt = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
+		playerCamera.transform.localRotation = Quaternion.Lerp(playerCamera.transform.localRotation, targetTilt, 30*Time.deltaTime);
 	}
 
 	//Handle any WASD or arrow key movement
@@ -325,7 +326,7 @@ public class FirstPersonController : MonoBehaviour {
 		if(cc.isGrounded)
 		{
 			//Activate sprinting if shift was pressed
-			if(isShiftDown)
+			if(isShiftDown && !sc.isAiming)
 			{
 				//Flag us as sprinting
 				ToggleSprint();
@@ -334,6 +335,12 @@ public class FirstPersonController : MonoBehaviour {
 				{
 					StopCrouching();
 				}
+			}
+			//If we aim while sprinting
+			else if(isSprinting && sc.isAiming)
+			{
+				//Stop sprinting
+				ToggleSprint();
 			}
 			//If we are not holding forward and we already started sprinting
 			else if(!isWPressed && startedSprinting && isSprinting)
@@ -344,17 +351,20 @@ public class FirstPersonController : MonoBehaviour {
 			}
 
 			//Apply movement speed based on crouching, sprinting, or standing
-			if(isCrouching)
+			if(isCrouching || sc.isAiming)
 			{
 				forwardSpeed *= crouchMovementSpeed;
 				sideSpeed *= crouchMovementSpeed;
+				//Disable head bob while crouching
 				headBobScript.enabled = false;
 			}
 			else if(isSprinting)
 			{
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
+				//Enable head bob while sprinting
 				headBobScript.enabled = true;
+				//TODO: Decrease accuracy while sprinting
 				//Mark ourselves as started sprinting if we're moving while sprinting
 				if(forwardSpeed != 0 || sideSpeed != 0)
 				{
@@ -365,7 +375,9 @@ public class FirstPersonController : MonoBehaviour {
 			{
 				forwardSpeed *= movementSpeed;
 				sideSpeed *= movementSpeed;
+				//Disable head bob while walking
 				headBobScript.enabled = false;
+				//TODO: Decrease accuracy while walking
 			}
 
 			//Play sprinting FX while sprinting

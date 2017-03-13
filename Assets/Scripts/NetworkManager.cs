@@ -17,6 +17,7 @@ public class NetworkManager : MonoBehaviour {
 	private GameObject[] spawnPoints;
 	private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
 	private GameManager gm;
+	private float baseFOV;
 
 	// Use this for initialization
 	void Start () 
@@ -113,13 +114,17 @@ public class NetworkManager : MonoBehaviour {
 		//Enable local player controls
 		myPlayer.GetComponent<FirstPersonController>().enabled = true;
 		myPlayer.GetComponent<ShootController>().enabled = true;
+		myPlayer.GetComponent<AccuracyController>().enabled = true;
+		myPlayer.GetComponent<RecoilController>().enabled = true;
+		myPlayer.GetComponent<RecoilController>().recoil = 0;
+		myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
 		myPlayer.GetComponentInChildren<Camera>().enabled = true;
 		myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
 		myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
 		//Enable the displayed ammo counter
 		ammoUI.SetActive(true);
 		//Enable the camera reticle
-		GameObject.FindGameObjectWithTag("Reticle").GetComponent<Image>().enabled = true;
+		EnableReticle();
 		//Disable the lobby camera
 		lobbyCamera.gameObject.SetActive(false);
 	}
@@ -173,5 +178,18 @@ public class NetworkManager : MonoBehaviour {
 		}
 		//Set the username
 		username = name;
+	}
+
+	private void EnableReticle()
+	{
+		//Get the reticle parent game object
+		GameObject reticle = GameObject.FindGameObjectWithTag("Reticle");
+		//Loop through each image
+		Image[] images = reticle.GetComponentsInChildren<Image>();
+		foreach(Image image in images)
+		{
+			//Show the reticle image
+			image.enabled = true;
+		}
 	}
 }

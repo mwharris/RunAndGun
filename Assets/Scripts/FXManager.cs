@@ -9,6 +9,7 @@ public class FXManager : MonoBehaviour {
 	public GameObject redHitEffect;
 	public GameObject enemyHitEffect;
 	public GameObject deathEffect;
+	public GameObject bullethole;
 	public AudioSource aSource;
 	public AudioClip[] footstepSounds;   
 	public AudioClip gunShot;
@@ -99,8 +100,9 @@ public class FXManager : MonoBehaviour {
 		}
 		else
 		{
-			//Show some red debris
+			//Show some debris
 			Instantiate(defaultHitEffect, endPos, Quaternion.identity);
+			Instantiate(bullethole, endPos, Quaternion.identity);
 		}
 	}
 

@@ -2,14 +2,14 @@
 using UnityEngine.UI;
 using System.Collections;
 
-//public class ShootController : NetworkBehaviour
 public class ShootController : MonoBehaviour 
 {
-
 	public GameObject gun;
 	public Animator animator;
 	public Camera playerCamera;
+	private float baseFOV;
 	public AudioSource aSource;
+	public bool isAiming;
 
 	//Weapon specific stuff
 	public AudioClip reloadClip;
@@ -24,11 +24,18 @@ public class ShootController : MonoBehaviour
 	private GameObject hitIndicator;
 	private float hitIndicatorTimer;
 	private float hitIndicatorTimerMax;
-	private FXManager fxManager;
-	private float cooldownTimer;
+	[HideInInspector] public float cooldownTimer;
 	private float cooldownTimerMax = 0.315f;
 	private PhotonView pView;
+	private GameObject reticleParent;
+	private float aimRecoilAmount = 0.05f;
+	private float hipRecoilAmount = 0.1f;
+
+	//Imported Scripts
+	private FXManager fxManager;
 	private GameManager gm;
+	private RecoilController rc;
+	private AccuracyController ac;
 
 	void Start()
 	{
@@ -41,6 +48,9 @@ public class ShootController : MonoBehaviour
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Initialize a reference to the GameManager
 		gm = GameObject.FindObjectOfType<GameManager>();
+		//Initialize a reference to the Recoil and Accuracy controllers
+		rc = this.gameObject.GetComponent<RecoilController>();
+		ac = this.gameObject.GetComponent<AccuracyController>();
 		//Initialize a reference to the Hit Indicators
 		hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
 
@@ -52,11 +62,17 @@ public class ShootController : MonoBehaviour
 		clipSizeText = txt.GetComponent<Text>();
 		clipSizeText.text = magazineCapacity.ToString();
 
+		//Get a reference to the Reticle object
+		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
+
 		//Default the bullet count to the max magazin capacity
 		bulletCount = magazineCapacity;
 
 		//Get the attached PhotonView
 		pView = GetComponent<PhotonView>();
+
+		//Get the camera's original FOV range
+		baseFOV = playerCamera.fieldOfView;
 	}
 
 	void Update() 
@@ -68,19 +84,22 @@ public class ShootController : MonoBehaviour
 		}
 		//Hide the hit indicators from last frame
 		HideHitIndicator();			
+
 		//Make sure we aren't reloading
 		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
+
 			//Determine if we are attempting to aim our weapon
 			if(Input.GetKey(KeyCode.Mouse1))
 			{
 				Aim();
 			}
-			else
+			else if(!Input.GetKey(KeyCode.Mouse1))
 			{
 				StopAiming();
 			}
+
 			//Determine if we try to shoot the weapon
 			if(Input.GetKeyDown(KeyCode.Mouse0) && cooldownTimer <= 0)
 			{
@@ -94,6 +113,7 @@ public class ShootController : MonoBehaviour
 					Reload();
 				}
 			}
+
 			//Reload if 'R' is pressed OR we tried to shoot while the clip is empty
 			if(Input.GetKeyDown(KeyCode.R))
 			{
@@ -106,6 +126,7 @@ public class ShootController : MonoBehaviour
 			//Decrement the reload timer if we are reloading
 			reloadTimer -= Time.deltaTime;
 		}
+
 		//Decrement the cooldown timer
 		cooldownTimer -= Time.deltaTime;
 	}
@@ -113,14 +134,39 @@ public class ShootController : MonoBehaviour
 	//Handle aiming our weapon
 	void Aim()
 	{
+		//Tell the animator to pull the gun to our face
 		animator.SetBool("Aim", true);
+		//Disable the crosshairs
+		foreach(Transform child in reticleParent.transform)
+		{
+			child.GetComponent<Image>().enabled = false;
+		}
+		//Flag ourselves as aiming
+		isAiming = true;
+		//Zoom the camera in
+		playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, 50, 10 * Time.deltaTime);
 	}
 
 	//Helper method used by other classes to tell ShootController to stop aiming.
 	//Usually due to jumping, running, or wall-running.
 	public void StopAiming()
 	{
+		//Tell the animator to pull the gun to the hip
 		animator.SetBool("Aim", false);
+		//Flag ourselves as not aiming
+		isAiming = false;
+		//Make sure reticle parent is NOT null
+		if(reticleParent == null)
+		{
+			reticleParent = GameObject.FindGameObjectWithTag("Reticle");
+		}
+		//Enable the crosshairs
+		foreach(Transform child in reticleParent.transform)
+		{
+			child.GetComponent<Image>().enabled = true;
+		}
+		//Zoom the camera out to normal
+		playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, baseFOV, 10 * Time.deltaTime);
 	}
 
 	//Handle everything that needs to be done to fire a weapon
@@ -132,14 +178,31 @@ public class ShootController : MonoBehaviour
 		//Decrement the bullet counter
 		bulletCount--;
 
-		//Play the recoil animation
+		//Shoot a Ray and find the closest thing we hit that isn't ourselves
+		if(ac.totalOffset > 0)
+		{
+			print("wah");
+		}
+		Vector3 shootVector = ApplyAccuracy(playerCamera.transform.forward);
+		Ray ray = new Ray(playerCamera.transform.position, shootVector);
+		Vector3 hitPoint = Vector3.zero;
+		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
+
+		//Play the recoil animation AFTER determing shoot vector
 		animator.SetBool("Shoot", true);
 		StartCoroutine(WaitForRecoilDone(0.08f));
 
-		//Shoot a Ray and find the closest thing we hit that isn't ourselves
-		Ray ray = new Ray(playerCamera.transform.position, playerCamera.transform.forward);
-		Vector3 hitPoint = Vector3.zero;
-		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
+		//Handle Recoil and Accuracy updates based on if we're aiming
+		if(Input.GetKey(KeyCode.Mouse1))
+		{
+			rc.StartRecoil(aimRecoilAmount);
+			ac.AddShootingOffset(isAiming);
+		}
+		else
+		{
+			rc.StartRecoil(hipRecoilAmount);
+			ac.AddShootingOffset(isAiming);
+		}
 
 		//Check if we hit a red object
 		bool hitRed = false;
@@ -193,6 +256,39 @@ public class ShootController : MonoBehaviour
 			hitPoint = playerCamera.transform.position + (playerCamera.transform.forward * 100f);
 			GunFX(hitPoint, hitEnemy, hitRed);
 		}
+	}
+
+	//Take a shooting vector and apply offsets based on recoil, weapon type
+	private Vector3 ApplyAccuracy(Vector3 shootVector)
+	{
+		shootVector.x += WeightedRandomAccuracy(ac.totalOffset);
+		shootVector.y += WeightedRandomAccuracy(ac.totalOffset);
+		shootVector.z += WeightedRandomAccuracy(ac.totalOffset);
+		//shootVector.x += Random.Range(-0.1F, 0.1F);
+		//shootVector.y += Random.Range(-0.1F, 0.1F);
+		//shootVector.z += Random.Range(-0.1F, 0.1F);
+		return shootVector;
+	}
+
+	private float WeightedRandomAccuracy(float accuracyRange)
+	{
+		//This is 1/3 of the range
+		float quarter = ac.totalOffset / 4;
+		float twoThirds = (ac.totalOffset / 3) * 2;
+		//Get a random value between 0 and 1
+		float rand = Random.value;
+		//40% change to shoot in the middle 25% of the accuracy range
+		if(rand <= 0.4F)
+		{
+			return Random.Range(-quarter, quarter);
+		}
+		//35% chance to shoot in the middle 60% of the accuracy range
+		if(rand <= 0.75F)
+		{
+			return Random.Range(-twoThirds, twoThirds);
+		} 
+		//20% to shoot anywhere within the accuracy range
+		return Random.Range(-accuracyRange, accuracyRange);
 	}
 
 	//Helper function to reload our weapon
