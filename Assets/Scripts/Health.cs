@@ -113,6 +113,8 @@ public class Health : MonoBehaviour {
 		else if(this.transform.GetComponent<PhotonView>().isMine){
 			//Respawn this player if it is ours
 			if(gameObject.tag == "Player"){
+				//Reset the reticles before death
+				this.GetComponent<AccuracyController>().ResetReticles();
 				//Play effects on death
 				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
 				fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);

@@ -14,7 +14,7 @@ public class AccuracyController : MonoBehaviour {
 	private float maxAccuracyOffset = 0.08F;
 	private float accuracyChangeSpeed = 1.5F;
 	private float sprintAccuracy = 0.03F;
-	private float walkAccuracy = 0.02F;
+	private float walkAccuracy = 0.015F;
 	private float crouchAccuracy = 0.01F;
 	private float accuracyReduceTimer = 0F;
 	private float accuracyReduceTimerMax = 0.45F;
@@ -30,6 +30,8 @@ public class AccuracyController : MonoBehaviour {
 	private float leftRetX;
 	private float rightRetX;
 	private float reticleSpreadSpeed = 0.01F;
+
+	private bool reticlesFuckedUp = false;
 
 	void Start () {
 		//Get a reference to the FPS Controller
@@ -130,29 +132,53 @@ public class AccuracyController : MonoBehaviour {
 
 	private void SpreadReticles()
 	{
-		//Lerp values to pass to the new positions
-		float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, (totalOffset * 800) + topRetY, Time.deltaTime * 3F);
-		float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, (-totalOffset * 800) + botRetY, Time.deltaTime * 3F);
-		float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, (-totalOffset * 800) + leftRetX, Time.deltaTime * 3F);
-		float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, (totalOffset * 800) + rightRetX, Time.deltaTime * 3F);
-		//Increase the distance of reticles
-		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetLerp, topRet.anchoredPosition3D.z);
-		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetLerp, botRet.anchoredPosition3D.z);
-		leftRet.anchoredPosition3D = new Vector3(leftRetLerp, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
-		rightRet.anchoredPosition3D = new Vector3(rightRetLerp, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
+		if(!reticlesFuckedUp)
+		{
+			//Lerp values to pass to the new positions
+			float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, (totalOffset * 800) + topRetY, Time.deltaTime * 3F);
+			float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, (-totalOffset * 800) + botRetY, Time.deltaTime * 3F);
+			float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, (-totalOffset * 800) + leftRetX, Time.deltaTime * 3F);
+			float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, (totalOffset * 800) + rightRetX, Time.deltaTime * 3F);
+			//Increase the distance of reticles
+			topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetLerp, topRet.anchoredPosition3D.z);
+			botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetLerp, botRet.anchoredPosition3D.z);
+			leftRet.anchoredPosition3D = new Vector3(leftRetLerp, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
+			rightRet.anchoredPosition3D = new Vector3(rightRetLerp, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
+		}
 	}
 
 	private void CloseReticles()
 	{
-		//Lerp values to pass to the new positions
-		float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, topRetY, Time.deltaTime * 2);
-		float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, botRetY, Time.deltaTime * 2);
-		float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, leftRetX, Time.deltaTime * 2);
-		float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, rightRetX, Time.deltaTime * 2);
-		//Increase the distance of reticles
-		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetLerp, topRet.anchoredPosition3D.z);
-		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetLerp, botRet.anchoredPosition3D.z);
-		leftRet.anchoredPosition3D = new Vector3(leftRetLerp, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
-		rightRet.anchoredPosition3D = new Vector3(rightRetLerp, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
+		if(!reticlesFuckedUp)
+		{
+			//Lerp values to pass to the new positions
+			float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, topRetY, Time.deltaTime * 2);
+			float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, botRetY, Time.deltaTime * 2);
+			float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, leftRetX, Time.deltaTime * 2);
+			float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, rightRetX, Time.deltaTime * 2);
+			//Decrease the distance of reticles
+			topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetLerp, topRet.anchoredPosition3D.z);
+			botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetLerp, botRet.anchoredPosition3D.z);
+			leftRet.anchoredPosition3D = new Vector3(leftRetLerp, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
+			rightRet.anchoredPosition3D = new Vector3(rightRetLerp, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
+		}
+	}
+
+	public void ResetReticles()
+	{
+		reticlesFuckedUp = false;
+		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetY, topRet.anchoredPosition3D.z);
+		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetY, botRet.anchoredPosition3D.z);
+		leftRet.anchoredPosition3D = new Vector3(leftRetX, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
+		rightRet.anchoredPosition3D = new Vector3(rightRetX, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
+	}
+
+	public void FuckUpReticles()
+	{
+		reticlesFuckedUp = true;
+		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, 50, topRet.anchoredPosition3D.z);
+		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, -50, botRet.anchoredPosition3D.z);
+		leftRet.anchoredPosition3D = new Vector3(-50, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
+		rightRet.anchoredPosition3D = new Vector3(50, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
 	}
 }

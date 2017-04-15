@@ -36,14 +36,14 @@ public class NetworkCharacter : Photon.MonoBehaviour {
 		if(!photonView.isMine)
 		{
 			//Smooth our movement from the current position to the received position
-			transform.position = Vector3.Lerp(transform.position, realPos, 0.1f);
-			transform.rotation = Quaternion.Lerp(transform.rotation, realRot, 0.1f);
-			body.transform.localScale = Vector3.Lerp(body.transform.localScale, bodyScale, 0.1f);
-			body.transform.position = Vector3.Lerp(body.transform.position, bodyPos, 0.1f);
-			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, 0.1f);
-			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, 0.1f);
+			transform.position = Vector3.Lerp(transform.position, realPos, Time.deltaTime * 5);
+			transform.rotation = Quaternion.Lerp(transform.rotation, realRot, Time.deltaTime * 5);
+			body.transform.localScale = Vector3.Lerp(body.transform.localScale, bodyScale, Time.deltaTime * 5);
+			body.transform.position = Vector3.Lerp(body.transform.position, bodyPos, Time.deltaTime * 5);
+			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, Time.deltaTime * 5);
+			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, Time.deltaTime * 5);
 			//Set Capsule Collider and Character Controller variables for crouching
-			capCol.center = Vector3.Lerp(capCol.center, bodyCenter, 0.1f);
+			capCol.center = Vector3.Lerp(capCol.center, bodyCenter, Time.deltaTime * 5);
 			capCol.height = bodyHeight;
 			cc.height = ccHeight;
 		}

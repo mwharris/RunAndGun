@@ -21,6 +21,7 @@ public class ShootController : MonoBehaviour
 	private Text bulletCountText;
 	private Text clipSizeText;
 	private int bulletCount;
+	private GameObject reloadIndicator;
 	private GameObject hitIndicator;
 	private float hitIndicatorTimer;
 	private float hitIndicatorTimerMax;
@@ -36,6 +37,7 @@ public class ShootController : MonoBehaviour
 	private GameManager gm;
 	private RecoilController rc;
 	private AccuracyController ac;
+	private FirstPersonController fps;
 
 	void Start()
 	{
@@ -51,8 +53,10 @@ public class ShootController : MonoBehaviour
 		//Initialize a reference to the Recoil and Accuracy controllers
 		rc = this.gameObject.GetComponent<RecoilController>();
 		ac = this.gameObject.GetComponent<AccuracyController>();
+		fps = this.gameObject.GetComponent<FirstPersonController>();
 		//Initialize a reference to the Hit Indicators
 		hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
+		reloadIndicator = GameObject.FindGameObjectWithTag("ReloadIndicator");
 
 		//Initialize a reference to the bullet count
 		GameObject txt = GameObject.FindGameObjectWithTag("BulletCount");
@@ -89,6 +93,12 @@ public class ShootController : MonoBehaviour
 		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
+
+			//Display an indicator is ammo is low
+			if(bulletCount <= 2)
+			{
+				ShowReloadIndicator();
+			} 
 
 			//Determine if we are attempting to aim our weapon
 			if(Input.GetKey(KeyCode.Mouse1))
@@ -302,6 +312,8 @@ public class ShootController : MonoBehaviour
 		aSource.PlayOneShot(reloadClip);
 		//Play the reload animation
 		animator.SetBool("Reload", true);
+		//Hide the reload indicator
+		HideReloadIndicator();
 	}
 
 	//Helper function to show the gun FX
@@ -360,6 +372,24 @@ public class ShootController : MonoBehaviour
 			{
 				child.gameObject.SetActive(false);
 			}
+		}
+	}
+
+	//Hide or show the reload indicator based on bullet count
+	void ShowReloadIndicator()
+	{
+		//Hide the text
+		foreach (Transform child in reloadIndicator.transform)
+		{
+			child.gameObject.SetActive(true);
+		}
+	}
+	void HideReloadIndicator()
+	{
+		//Show the text
+		foreach (Transform child in reloadIndicator.transform)
+		{
+			child.gameObject.SetActive(false);
 		}
 	}
 

@@ -65,13 +65,14 @@ public class FirstPersonController : MonoBehaviour {
 	private ShootController sc;
 	////////////////////////////////////////////
 
-	/// WALL-RUNNING VARIABLES //////////////////
+	/// WALL RUNNING / STICKING VARIABLES //////////////////
 	private float cameraTotalRotation = 0f;
 	private float cameraRotAmount = 15f;
 	private float cameraRotZ = 0;
 	private bool wallRunningLeft = false;
 	private bool wallRunningRight = false;
 	private bool wallRunningBack = false;
+	private bool wallSticking = false;
 	private bool initWallRun = false;
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
@@ -154,6 +155,8 @@ public class FirstPersonController : MonoBehaviour {
 		handleJumping();
 		//Handle the player wall-running
 		handleWallRunning();
+		//Handle the player wall-sticking
+		handleWallSticking();
 		//Set a flag if we're airborne this frame
 		if(!cc.isGrounded)
 		{
@@ -213,6 +216,15 @@ public class FirstPersonController : MonoBehaviour {
 			//Jump
 			isSpaceDown = Input.GetKeyDown(KeyCode.Space);
 			isSpacePressed = Input.GetKey(KeyCode.Space);
+			//Test stuff
+			if(Input.GetKeyDown(KeyCode.B))
+			{
+				this.GetComponent<AccuracyController>().FuckUpReticles();
+			}
+			if(Input.GetKeyDown(KeyCode.N))
+			{
+				this.GetComponent<AccuracyController>().ResetReticles();
+			}
 		}
 		//Reset all flags if we're paused
 		else
@@ -407,8 +419,14 @@ public class FirstPersonController : MonoBehaviour {
 			//Disable head bob
 			headBobScript.enabled = false;
 
+			//If we're wall-sticking
+			if(wallSticking)
+			{
+				//Stop all movement
+				velocity = Vector3.zero;
+			}
 			//If we're wall-running
-			if(wallRunningLeft || wallRunningRight || wallRunningBack)
+			else if(wallRunningLeft || wallRunningRight || wallRunningBack)
 			{
 				//Check the angle between where we are looking and the wall's normal
 				Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
@@ -549,7 +567,7 @@ public class FirstPersonController : MonoBehaviour {
 		bool wallRunning = wallRunningLeft || wallRunningRight || wallRunningBack;
 
 		//If we're not grounded and we haven't disabled wall-running
-		if(!isGrounded && ((wallRunning && wallRunTimer > 0) || !wallRunning))
+		if(!isGrounded && ((wallRunning && (wallRunTimer > 0 || wallSticking)) || !wallRunning))
 		{
 			//Raycast in several directions to see if we are wall-running
 			RaycastHit vHit;
@@ -593,9 +611,6 @@ public class FirstPersonController : MonoBehaviour {
 			//Check if we should activate wall-running - right raycast
 			if (lookAngleGood && rHitValid && rDoubleJumpCheck && (rightGood || wallRunning)) 
 			{
-				if(wallRunningDisabled){
-					print("FOUND IT!!!");
-				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -613,9 +628,6 @@ public class FirstPersonController : MonoBehaviour {
 			//Left raycast
 			else if (lookAngleGood && lHitValid && lDoubleJumpCheck && (leftGood || wallRunning)) 
 			{
-				if(wallRunningDisabled){
-					print("FOUND IT!!!");
-				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -633,9 +645,6 @@ public class FirstPersonController : MonoBehaviour {
 			//Backwards raycast
 			else if (bHitValid && bDoubleJumpCheck) 
 			{
-				if(wallRunningDisabled){
-					print("FOUND IT!!!");
-				}
 				//Flag if we are initializing the wall-run
 				if (!wallRunning) {
 					initWallRun = true;
@@ -650,12 +659,8 @@ public class FirstPersonController : MonoBehaviour {
 				wallJumped = false;
 				return bHit;
 			}
-			else if(wallRunning)
-			{
-				print("WUUUUUUUUUUUUUUUUUUUUUUUT???");
-			}
 		}
-		else if(wallRunTimer <= 0)
+		else if(wallRunTimer <= 0 && !wallSticking)
 		{
 			wallRunningDisabled = true;
 		}
@@ -719,6 +724,20 @@ public class FirstPersonController : MonoBehaviour {
 		//{
 		//	wallRunningDisabledTimer -= Time.deltaTime;
 		//}
+	}
+
+	void handleWallSticking()
+	{
+		//Activate wall sticking if we aim while wall running
+		if(sc.isAiming && (wallRunningLeft || wallRunningRight || wallRunningBack))
+		{
+			wallSticking = true;
+			wallRunTimer = 0f;
+		}
+		else
+		{
+			wallSticking = false;
+		}
 	}
 
 	//Push the player upwards if we jumped
@@ -1067,5 +1086,17 @@ public class FirstPersonController : MonoBehaviour {
 			yPos += delta * Time.deltaTime * 8;
 		}
 		return yPos;
+	}
+
+	public bool isWallRunning()
+	{
+		if(wallRunningBack || wallRunningLeft || wallRunningRight)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 }

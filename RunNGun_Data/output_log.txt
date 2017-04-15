@@ -1,10 +1,11 @@
-Initialize engine version: 5.4.3f1 (01f4c123905a)
+Initialize engine version: 5.5.1f1 (88d00a7498cd)
 GfxDevice: creating device client; threaded=1
 Direct3D:
     Version:  Direct3D 11.0 [level 11.0]
     Renderer: ATI Mobility Radeon HD 5650   (ID=0x68c1)
     Vendor:   ATI
     VRAM:     1014 MB
+    Driver:   8.712.2.1000
 Begin MonoManager ReloadAssembly
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.dll (this message is harmless)
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.dll into Unity Child Domain
@@ -16,31 +17,29 @@ Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.UI.dll into Unity Child Domain
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.Networking.dll (this message is harmless)
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.Networking.dll into Unity Child Domain
+Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll (this message is harmless)
+Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\UnityEngine.PlaymodeTestsRunner.dll into Unity Child Domain
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll (this message is harmless)
 Loading C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\Photon3Unity3D.dll into Unity Child Domain
-- Completed reload, in  0.125 seconds
+- Completed reload, in  0.068 seconds
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.Core.dll (this message is harmless)
 Platform assembly: C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\RunNGun_Data\Managed\System.dll (this message is harmless)
 desktop: 1366x768 60Hz; virtual: 1366x768 at 0,0
 <RI> Initializing input.
 <RI> Input initialized.
 <RI> Initialized touch support.
-UnloadTime: 1.693389 ms
+UnloadTime: 3.234444 ms
 Setting up 1 worker threads for Enlighten.
-  Thread -> id: 1ec0 -> priority: 1 
+  Thread -> id: 2130 -> priority: 1 
 SwitchToProtocol: Udp PhotonNetwork.connected: False
  
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 42)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 Operation failed: OperationResponse 225: ReturnCode: 32760 (No match found). Parameters: {}
  
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 42)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
 WUUUUUUUUUUUUUUUUUUUUUUUT???
  
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 42)
-
-WUUUUUUUUUUUUUUUUUUUUUUUT???
- 
-(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/UnityEngineDebugBindings.gen.cpp Line: 42)
+(Filename: C:/buildslave/unity/build/artifacts/generated/common/runtime/DebugBindings.gen.cpp Line: 51)
 
