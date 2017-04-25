@@ -23,6 +23,9 @@ public class Health : MonoBehaviour {
 	private float regenRate = 4.0f;
 	private bool regenerating = false;
 	private PhotonView pView;
+	private GameObject damagedArrow;
+	private float damagedArrowTime = 0f;
+	private float damagedArrowDelay = 1f;
 
 	void Start () 
 	{
@@ -40,6 +43,8 @@ public class Health : MonoBehaviour {
 		gScale = this.transform.GetComponentInChildren<Grayscale>();
 		//Get the attached PhotonView
 		pView = GetComponent<PhotonView>();
+		//Get the arrow for when we are damaged
+		damagedArrow = GameObject.FindGameObjectWithTag("DamagedArrow");
 	}
 
 	void Update()
@@ -58,6 +63,11 @@ public class Health : MonoBehaviour {
 			damageImage.color = Color.Lerp(damageImage.color, newColor, flashSpeed * Time.deltaTime);
 			//If we are close to death also apply grayscale
 			gScale.effectAmount = ((100F - currentHitPoints) / 100F);
+			//Fade out the arrow if the delay is over
+			if(Time.time - damagedArrowTime > damagedArrowDelay)
+			{
+				damagedArrow.GetComponentInChildren<Image>().enabled = false;
+			}
 		}
 	}
 
@@ -78,7 +88,7 @@ public class Health : MonoBehaviour {
 	}
 
 	[PunRPC]
-	public void TakeDamage(float damage, string enemyPhotonName) 
+	public void TakeDamage(float damage, string enemyPhotonName, Vector3 shooterPosition) 
 	{
 		currentHitPoints -= damage;
 		//If this is our local player
@@ -86,6 +96,8 @@ public class Health : MonoBehaviour {
 		{
 			//Play a sound indicating we were shot
 			PlayHurtSound();
+			//Indicate where we were shot
+			ShowHitAngle(shooterPosition);
 		} 
 		//Die if our HP is below 0
 		if(currentHitPoints <= 0)
@@ -100,6 +112,27 @@ public class Health : MonoBehaviour {
 			//Restart the timer
 			regenTimer = regenTimerMax;
 		}
+	}
+
+	void ShowHitAngle(Vector3 shooterPosition)
+	{
+		//Calculate the direction between this player's position and the shooter's position
+		Vector3 direction = transform.position - shooterPosition;
+		float angle = Vector3.Angle(direction, transform.forward);
+		//Make sure the damage arrow is at 0 rotation
+		RectTransform dArrow = damagedArrow.GetComponent<RectTransform>();
+		//Rotate the arrow to point to where we were damaged
+		Quaternion rotation = Quaternion.LookRotation(direction);
+		float rot = Quaternion.Angle(rotation, transform.localRotation);
+		if(Vector3.Dot(transform.right, direction) > 0f)
+		{
+			rot = -rot;
+		}
+		dArrow.localRotation = Quaternion.Euler(0,0,rot);
+		//Show the arrow
+		dArrow.GetComponentInChildren<Image>().enabled = true;
+		//Start the timer to hide the arrow
+		damagedArrowTime = Time.time;
 	}
 
 	void Die(string enemyPhotonName)
@@ -256,7 +289,6 @@ public class Health : MonoBehaviour {
 		deathOverlay.transform.GetChild(1).GetComponent<Text>().text = enemyName;
 	}
 
-	/*
 	//Suicide button for testing respawn
 	void OnGUI()
 	{
@@ -268,7 +300,7 @@ public class Health : MonoBehaviour {
 			}
 			if(GUI.Button(new Rect(Screen.width-200, 0, 100, 40), "Damage!"))
 			{
-				TakeDamage(25, ""); 
+				TakeDamage(25, "", new Vector3(0,0,0)); 
 			}
 			if(regenerating && hitPoints > currentHitPoints)
 			{
@@ -279,5 +311,4 @@ public class Health : MonoBehaviour {
 			}	
 		}
 	}
-	*/
 }

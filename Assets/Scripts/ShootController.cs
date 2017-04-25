@@ -189,10 +189,6 @@ public class ShootController : MonoBehaviour
 		bulletCount--;
 
 		//Shoot a Ray and find the closest thing we hit that isn't ourselves
-		if(ac.totalOffset > 0)
-		{
-			print("wah");
-		}
 		Vector3 shootVector = ApplyAccuracy(playerCamera.transform.forward);
 		Ray ray = new Ray(playerCamera.transform.position, shootVector);
 		Vector3 hitPoint = Vector3.zero;
@@ -249,7 +245,7 @@ public class ShootController : MonoBehaviour
 				PhotonView pv = h.GetComponent<PhotonView>();
 				if(pv != null)
 				{
-					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name);
+					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name, transform.position);
 				}
 			} 
 
