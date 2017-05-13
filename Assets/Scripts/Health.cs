@@ -23,7 +23,10 @@ public class Health : MonoBehaviour {
 	private float regenRate = 4.0f;
 	private bool regenerating = false;
 	private PhotonView pView;
+
 	private GameObject damagedArrow;
+	private RectTransform rectDamagedArrow;
+	private Image imageDamagedArrow;
 	private float damagedArrowTime = 0f;
 	private float damagedArrowDelay = 1f;
 
@@ -45,6 +48,8 @@ public class Health : MonoBehaviour {
 		pView = GetComponent<PhotonView>();
 		//Get the arrow for when we are damaged
 		damagedArrow = GameObject.FindGameObjectWithTag("DamagedArrow");
+		rectDamagedArrow = damagedArrow.GetComponent<RectTransform>();
+		imageDamagedArrow = rectDamagedArrow.GetComponentInChildren<Image>();
 	}
 
 	void Update()
@@ -66,7 +71,7 @@ public class Health : MonoBehaviour {
 			//Fade out the arrow if the delay is over
 			if(Time.time - damagedArrowTime > damagedArrowDelay)
 			{
-				damagedArrow.GetComponentInChildren<Image>().enabled = false;
+				HideHitAngle(false);
 			}
 		}
 	}
@@ -119,8 +124,6 @@ public class Health : MonoBehaviour {
 		//Calculate the direction between this player's position and the shooter's position
 		Vector3 direction = transform.position - shooterPosition;
 		float angle = Vector3.Angle(direction, transform.forward);
-		//Make sure the damage arrow is at 0 rotation
-		RectTransform dArrow = damagedArrow.GetComponent<RectTransform>();
 		//Rotate the arrow to point to where we were damaged
 		Quaternion rotation = Quaternion.LookRotation(direction);
 		float rot = Quaternion.Angle(rotation, transform.localRotation);
@@ -128,11 +131,30 @@ public class Health : MonoBehaviour {
 		{
 			rot = -rot;
 		}
-		dArrow.localRotation = Quaternion.Euler(0,0,rot);
+		rectDamagedArrow.localRotation = Quaternion.Euler(0,0,rot);
 		//Show the arrow
-		dArrow.GetComponentInChildren<Image>().enabled = true;
+		Color currCol = imageDamagedArrow.color;
+		currCol.a = 1;
+		imageDamagedArrow.color = currCol;
 		//Start the timer to hide the arrow
 		damagedArrowTime = Time.time;
+	}
+
+	void HideHitAngle(bool immediate)
+	{
+		//Store the current color of the arrow
+		Color currCol = imageDamagedArrow.color;
+		//Immediately fade it out
+		if(immediate)
+		{
+			currCol.a = 0;
+		}
+		//Slowly fade it out
+		else
+		{
+			currCol.a = Mathf.Lerp(currCol.a, 0, 0.05f);
+		}
+		imageDamagedArrow.color = currCol;
 	}
 
 	void Die(string enemyPhotonName)
@@ -155,6 +177,8 @@ public class Health : MonoBehaviour {
 				ShowDeathOverlay(enemyPhotonName);
 				//Handle spawning a Death Camera
 				HandleKillCam(enemyPhotonName);
+				//Make sure the hit angle is hidden
+				HideHitAngle(true);
 			}
 			//Send out a notification this player was killed
 			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.name, enemyPhotonName);
