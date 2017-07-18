@@ -5,14 +5,14 @@
       <File FileName="Assets\Scripts\FirstPersonController.cs" Line="1" Column="1" />
       <File FileName="Assets\Scripts\ShootController.cs" Line="1" Column="1" />
       <File FileName="Assets\ColorChange.cs" Line="1" Column="1" />
-      <File FileName="Assets\Scripts\Health.cs" Line="314" Column="4" />
+      <File FileName="Assets\Scripts\Health.cs" Line="181" Column="14" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="380" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="403" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="81" column="1" />
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="204" column="27" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="228" column="27" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="20" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="92" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\ColorChange.cs" line="26" column="1" />
