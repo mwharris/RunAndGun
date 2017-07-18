@@ -85,18 +85,12 @@ public class FirstPersonController : MonoBehaviour {
 	////////////////////////////////////////////
 
 	// CROUCHING VARIABLES 	////////////////////
-	public bool isCrouching = false;
-	public float crouchCamHeight;
-	public float crouchBodyScale;
-	public float crouchBodyPos;
-	private float crouchMovementSpeed;
-	private float crouchDeltaHeight;
-	private float crouchDeltaScale;
-	private float crouchDeltaPos;
-	private float standardCamHeight;
-	private float standardBodyScale;
-	private float standardBodyPos;
+	private float standardCamHeight = 2.5f;
+	private float standardBodyScale = 1.5f;
+	private float standardBodyPos = 1.5f;
 	////////////////////////////////////////////
+
+	private CrouchController crouchCon;
 
 	void Start () {
 		//Initialize a reference to the character controller component
@@ -116,15 +110,9 @@ public class FirstPersonController : MonoBehaviour {
 		gm = GameObject.FindObjectOfType<GameManager>();
 		mc = GameObject.FindObjectOfType<MenuController>();
 		sc = this.gameObject.GetComponent<ShootController>();
-		//Set camera height variables
-		standardCamHeight = 2.5f;
-		standardBodyScale = 1.5f;
-		standardBodyPos = 1.5f;
-		crouchDeltaHeight = standardCamHeight - crouchCamHeight;
-		crouchDeltaScale = standardBodyScale - crouchBodyScale;
-		crouchDeltaPos = standardBodyPos - crouchBodyPos;
-		//Calculate the movement speed while crouched
-		crouchMovementSpeed = movementSpeed/2;
+		//Set up the crouch controller
+		crouchCon = GetComponent<CrouchController>();
+		crouchCon.CalculateCrouchVars(movementSpeed);
 	}
 
 	void Update () {
@@ -146,7 +134,7 @@ public class FirstPersonController : MonoBehaviour {
 		//Handle any mouse input that occurred
 		handleMouseInput();
 		//Handle crouching
-		handleCrouching();
+		crouchCon.HandleCrouching(cc, playerCamera, playerBody, isCTRLDown);
 		//Handle the movement of the player
 		handleMovement();
 		//Apply gravity
@@ -343,9 +331,9 @@ public class FirstPersonController : MonoBehaviour {
 				//Flag us as sprinting
 				ToggleSprint();
 				//Come out of crouch if we're crouching
-				if(isSprinting && isCrouching)
+				if(isSprinting && crouchCon.isCrouching)
 				{
-					StopCrouching();
+					crouchCon.StopCrouching(playerBody);
 				}
 			}
 			//If we aim while sprinting
@@ -363,10 +351,10 @@ public class FirstPersonController : MonoBehaviour {
 			}
 
 			//Apply movement speed based on crouching, sprinting, or standing
-			if(isCrouching || sc.isAiming)
+			if(crouchCon.isCrouching || sc.isAiming)
 			{
-				forwardSpeed *= crouchMovementSpeed;
-				sideSpeed *= crouchMovementSpeed;
+				forwardSpeed *= crouchCon.crouchMovementSpeed;
+				sideSpeed *= crouchCon.crouchMovementSpeed;
 				//Disable head bob while crouching
 				headBobScript.enabled = false;
 			}
@@ -783,9 +771,9 @@ public class FirstPersonController : MonoBehaviour {
 					allowAirMovement = false;
 				}
 				//If we're crouched, uncrouch for our jump
-				if(isCrouching)
+				if(crouchCon.isCrouching)
 				{
-					ToggleCrouch();
+					crouchCon.ToggleCrouch(playerBody);
 				}
 				//Add a little horizontal movement if we double jumped while holding a key
 				if(!cc.isGrounded)
@@ -977,115 +965,6 @@ public class FirstPersonController : MonoBehaviour {
 			//Start our sprint process
 			startedSprinting = false;
 		}
-	}
-
-	private void handleCrouching()
-	{
-		//Crouching logic
-		if(isCTRLDown)
-		{
-			ToggleCrouch();
-			if(isCrouching)
-			{
-				cc.height = 1.9f;
-			}
-			else
-			{
-				cc.height = 2.9f;
-			}
-		}
-		//Store the local position for modification
-		Vector3 camLocalPos = playerCamera.transform.localPosition;
-		Vector3 bodyLocalPos = playerBody.transform.localPosition;
-		Vector3 bodyLocalScale = playerBody.transform.localScale;
-		//Modify the local position based on if we are/aren't crouching
-		if(isCrouching)
-		{
-			if(camLocalPos.y > crouchCamHeight)
-			{
-				//Move the camera down
-				camLocalPos.y = lowerHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, crouchCamHeight);
-			}
-			if(bodyLocalScale.y > crouchBodyScale)
-			{
-				//Scale the body down
-				bodyLocalScale.y = lowerHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, crouchBodyScale);
-			}
-		}
-		else
-		{
-			if(camLocalPos.y < standardCamHeight)
-			{
-				//Move the camera up
-				camLocalPos.y = RaiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, standardCamHeight);
-			}
-			if(bodyLocalScale.y < standardBodyScale)
-			{
-				//Scale the body up
-				bodyLocalScale.y = RaiseHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, standardBodyScale);
-			}
-		}
-		//Apply the local position updates
-		playerCamera.transform.localPosition = camLocalPos;
-		playerBody.transform.localPosition = bodyLocalPos;
-		playerBody.transform.localScale = bodyLocalScale;
-	}
-
-	//Helper function to toggle crouching flags
-	private void ToggleCrouch()
-	{
-		if(isCrouching)
-		{
-			StopCrouching();
-		}
-		else 
-		{
-			Crouch();
-		}
-	}
-
-	//Code to actual handle crouching and standing
-	private void Crouch()
-	{
-		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
-		playerBody.GetComponent<CapsuleCollider>().height -= crouchDeltaHeight;
-		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center - test;
-		isCrouching = true;
-	}
-	private void StopCrouching()
-	{
-		Vector3 test = new Vector3(0f, crouchDeltaHeight/2, 0f);
-		playerBody.GetComponent<CapsuleCollider>().height += crouchDeltaHeight;
-		playerBody.GetComponent<CapsuleCollider>().center = playerBody.GetComponent<CapsuleCollider>().center + test;
-		isCrouching = false;		
-	}
-
-	//Helper function to lower the height of the player due to crouching
-	private float lowerHeight(float yPos, float delta, float deltaTime, float height)
-	{
-		if(yPos - (delta * deltaTime * 8) < height)
-		{
-			yPos = height;
-		}
-		else
-		{
-			yPos -= delta * Time.deltaTime * 8;
-		}
-		return yPos;
-	}
-
-	//Helper function to raise the height of the player due to standing
-	private float RaiseHeight(float yPos, float delta, float deltaTime, float height)
-	{
-		if(yPos + (delta * deltaTime * 8) > height)
-		{
-			yPos = height;
-		}
-		else
-		{
-			yPos += delta * Time.deltaTime * 8;
-		}
-		return yPos;
 	}
 
 	public bool isWallRunning()

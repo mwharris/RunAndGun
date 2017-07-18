@@ -11,6 +11,7 @@ public class AccuracyController : MonoBehaviour {
 	private float baseOffset;
 	private float shootingOffset;
 	private FirstPersonController fpsController;
+	private CrouchController crouchController;
 	private float maxAccuracyOffset = 0.08F;
 	private float accuracyChangeSpeed = 1.5F;
 	private float sprintAccuracy = 0.03F;
@@ -36,6 +37,7 @@ public class AccuracyController : MonoBehaviour {
 	void Start () {
 		//Get a reference to the FPS Controller
 		fpsController = GetComponent<FirstPersonController>();
+		crouchController = GetComponent<CrouchController>();
 		//Get a reference to the Reticle object
 		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
 		//Get references to all reticles in the crosshair
@@ -65,7 +67,7 @@ public class AccuracyController : MonoBehaviour {
 			{
 				baseOffset = sprintAccuracy;
 			}
-			else if(fpsController.isCrouching)
+			else if(crouchController.isCrouching)
 			{
 				baseOffset = crouchAccuracy;
 			}
