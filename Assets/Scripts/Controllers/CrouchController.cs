@@ -4,12 +4,19 @@ using UnityEngine;
 
 public class CrouchController : MonoBehaviour {
 
-	[HideInInspector] public bool isCrouching = false;
-	[HideInInspector] public float crouchMovementSpeed;
+	private bool isCrouching = false;
+	public bool IsCrouching {
+		get { return isCrouching; }
+	}
 
-	public float crouchCamHeight;
-	public float crouchBodyScale;
-	public float crouchBodyPos;
+	private float crouchMovementSpeed;
+	public float CrouchMovementSpeed {
+		get { return crouchMovementSpeed; }
+	}
+
+	[SerializeField] private float crouchCamHeight;
+	[SerializeField] private float crouchBodyScale;
+	[SerializeField] private float crouchBodyPos;
 
 	private float crouchDeltaHeight;
 	private float crouchDeltaScale;
@@ -60,7 +67,7 @@ public class CrouchController : MonoBehaviour {
 				bodyLocalScale.y = LowerHeight(bodyLocalScale.y, crouchDeltaScale, Time.deltaTime, crouchBodyScale);
 			}
 		}
-		else
+		else if(cc.isGrounded)
 		{
 			if(camLocalPos.y < standardCamHeight)
 			{

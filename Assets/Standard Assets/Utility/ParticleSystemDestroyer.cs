@@ -25,18 +25,18 @@ namespace UnityStandardAssets.Utility
             // find out the maximum lifetime of any particles in this effect
             foreach (var system in systems)
             {
-                m_MaxLifetime = Mathf.Max(system.startLifetime, m_MaxLifetime);
+                m_MaxLifetime = Mathf.Max(system.main.startLifetime.constant, m_MaxLifetime);
             }
 
             // wait for random duration
 
             float stopTime = Time.time + Random.Range(minDuration, maxDuration);
 
-            while (Time.time < stopTime || m_EarlyStop)
+            while (Time.time < stopTime && !m_EarlyStop)
             {
                 yield return null;
             }
-            //Debug.Log("stopping " + name);
+            Debug.Log("stopping " + name);
 
             // turn off emission
             foreach (var system in systems)
