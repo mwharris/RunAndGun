@@ -1,21 +1,17 @@
 ﻿<Properties StartupItem="Assembly-CSharp.csproj">
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
-  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\WeaponSway.cs">
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Networking\NetworkManager.cs">
     <Files>
-      <File FileName="Assets\Scripts\Controllers\FirstPersonController.cs" Line="181" Column="49" />
-      <File FileName="Assets\Scripts\WeaponSway.cs" Line="24" Column="64" />
-      <File FileName="Assets\Scripts\WeaponSwayLR.cs" Line="19" Column="30" />
-      <File FileName="Assets\Scripts\Controllers\ShootController.cs" Line="389" Column="3" />
-      <File FileName="Assets\Scripts\Controllers\AccuracyController.cs" Line="7" Column="2" />
-      <File FileName="Assets\Scripts\Controllers\RecoilController.cs" Line="10" Column="29" />
+      <File FileName="Assets\Scripts\Controllers\FirstPersonController.cs" Line="118" Column="4" />
+      <File FileName="Assets\Scripts\Controllers\ShootController.cs" Line="337" Column="49" />
+      <File FileName="Assets\Scripts\Controllers\RecoilController.cs" Line="9" Column="22" />
       <File FileName="Assets\Scripts\Networking\NetworkManager.cs" Line="112" Column="58" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="403" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="402" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="81" column="1" />
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="228" column="27" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="20" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="92" column="1" />
     </BreakpointStore>

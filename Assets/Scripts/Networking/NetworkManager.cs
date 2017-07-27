@@ -109,12 +109,14 @@ public class NetworkManager : MonoBehaviour {
 		Vector3 spawnPos = spawnPoints[spawnNum].transform.position;
 		Quaternion spawnRot = spawnPoints[spawnNum].transform.rotation;
 		//Instantiate the player across all clients
-		GameObject myPlayer = PhotonNetwork.Instantiate("Player", spawnPos, spawnRot, 0);
+		GameObject myPlayer = PhotonNetwork.Instantiate("RecoilPlayer", spawnPos, spawnRot, 0);
 		myPlayer.name = username;
 		//Enable local player controls
 		myPlayer.GetComponent<FirstPersonController>().enabled = true;
 		myPlayer.GetComponent<ShootController>().enabled = true;
 		myPlayer.GetComponent<AccuracyController>().enabled = true;
+		myPlayer.GetComponent<WallRunController>().enabled = true;
+		myPlayer.GetComponent<JumpController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().recoil = 0;
 		myPlayer.GetComponent<RecoilController>().currentRecoil = 0;

@@ -5,16 +5,21 @@ using UnityStandardAssets.Utility;
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (WallRunController))]
 [RequireComponent(typeof (ShootController))]
-[RequireComponent(typeof (AudioSource))]
+[RequireComponent(typeof (JumpController))]
 [RequireComponent(typeof (CharacterController))]
+[RequireComponent(typeof (AudioSource))]
 [RequireComponent(typeof (LerpControlledBob))]
 public class FirstPersonController : MonoBehaviour 
 {
-	[SerializeField] private Camera playerCamera;   
 	public GameObject playerBody;
 	public AudioClip jumpSound;  
+	public bool isGrounded;
+
 	[HideInInspector] public CharacterController cc;
 	[HideInInspector] public bool isSprinting = false;
+
+	[SerializeField] private Camera playerCamera;   
+
 	private AudioSource aSource;    
 
 	/// MOUSE CONTROL VARIABLES ////////////////
@@ -34,7 +39,7 @@ public class FirstPersonController : MonoBehaviour
 	////////////////////////////////////////////
 
 	/// VELOCITY VARIABLES /////////////////////
-	private Vector3 velocity;
+	[HideInInspector] public Vector3 velocity;
 	//private float movementSpeed = 60.0f;
 	private float movementSpeed = 0.96f;
 	//private float movementSpeed = 1.98f;
@@ -122,6 +127,8 @@ public class FirstPersonController : MonoBehaviour
 		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 		Debug.DrawRay(transform.position, testV);
 
+		//Keep track ourselves if we are grounded or not
+		isGrounded = cc.isGrounded;
 		//Update variables based on options menu selections
 		GatherOptions();
 		//Gather all mouse and keyboard inputs if we aren't paused
@@ -137,11 +144,11 @@ public class FirstPersonController : MonoBehaviour
 		//Handle jumping of the player
 		HandleJumping();
 		//Tell the wall-run controller to handle any wall-running tasks
-		wallRunController.HandleWallRunning(velocity, playerBody, cc.isGrounded, ref jumps);
+		wallRunController.HandleWallRunning(velocity, playerBody, isGrounded, ref jumps);
 		//Tell the wall-run controller to also handle any wall-sticking tasks
 		wallRunController.HandleWallSticking(shootContoller.isAiming);
 		//Set a flag if we're airborne this frame
-		if(!cc.isGrounded)
+		if(!isGrounded)
 		{
 			wasAirborne = true;
 		}
@@ -150,7 +157,7 @@ public class FirstPersonController : MonoBehaviour
 			wasAirborne = false;
 		}
 		//Linear drag along the X and Z while grounded
-		if(cc.isGrounded)
+		if(isGrounded)
 		{
 			velocity.x *= 0.9f;
 			velocity.z *= 0.9f;
@@ -273,7 +280,7 @@ public class FirstPersonController : MonoBehaviour
 		runTimer -= Time.deltaTime;
 
 		//Grounded movement
-		if(cc.isGrounded)
+		if(isGrounded)
 		{
 			//Activate sprinting if shift was pressed
 			if(isShiftDown && !shootContoller.isAiming)
@@ -389,7 +396,7 @@ public class FirstPersonController : MonoBehaviour
 		//Add normal gravity if we aren't wall-running
 		if(!wallRunController.isWallRunning())
 		{
-			if(!cc.isGrounded)
+			if(!isGrounded)
 			{
 				//Add gravity only when we aren't on the ground
 				//velocity += Physics.gravity;
@@ -404,7 +411,7 @@ public class FirstPersonController : MonoBehaviour
 			}
 		}
 		//If we're wall-running, lower the gravity to simulate it
-		else if(!cc.isGrounded)
+		else if(!isGrounded)
 		{
 			//Slow our descent
 			if(velocity.y <= 0)
@@ -423,15 +430,17 @@ public class FirstPersonController : MonoBehaviour
 	//Push the player upwards if we jumped
 	void HandleJumping()
 	{
-		//Play a sound this frame if we hit the ground
-		if(wasAirborne && cc.isGrounded)
+		//If we just landed on the ground
+		if(wasAirborne && isGrounded)
 		{
+			//Add a head bob to our landing
+			StartCoroutine(jumpBob.DoBobCycle());
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset our air movement flag
 			allowAirMovement = false;
 		}
-
+		//If we just jumped
 		if(isSpaceDown && jumps > 0)
 		{
 			//Add a head bob to our jump
@@ -439,7 +448,7 @@ public class FirstPersonController : MonoBehaviour
 			//Decrement our jumps so we can only jump twice
 			jumps--;
 			//Play a sound of use jumping
-			PlayJumpSound(!cc.isGrounded);
+			PlayJumpSound(!isGrounded);
 			//Stop aiming if we are aiming
 			shootContoller.StopAiming();
 			//Add an immediate velocity upwards to jump
@@ -466,7 +475,7 @@ public class FirstPersonController : MonoBehaviour
 					crouchController.ToggleCrouch(playerBody);
 				}
 				//Add a little horizontal movement if we double jumped while holding a key
-				if(!cc.isGrounded)
+				if(!isGrounded)
 				{
 					//Handle double jumping
 					RotateDoubleJump();
@@ -563,7 +572,7 @@ public class FirstPersonController : MonoBehaviour
 
 	private void PlayFootStepAudio(bool isSprinting, bool isWallRunning)
 	{
-		if (!cc.isGrounded && !isWallRunning && !aSource.isPlaying)
+		if (!isGrounded && !isWallRunning && !aSource.isPlaying)
 		{
 			return;
 		}

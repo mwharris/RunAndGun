@@ -81,10 +81,10 @@ public class ShootController : MonoBehaviour
 	void Update() 
 	{
 		//Reset the reload animation
-		/*if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
+		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
 		{
 			animator.SetBool("Reload", false);
-		}*/
+		}
 		//Hide the hit indicators from last frame
 		HideHitIndicator();			
 
@@ -144,7 +144,7 @@ public class ShootController : MonoBehaviour
 	void Aim()
 	{
 		//Tell the animator to pull the gun to our face
-		//animator.SetBool("Aim", true);
+		animator.SetBool("Aim", true);
 		//Disable the crosshairs
 		foreach(Transform child in reticleParent.transform)
 		{
@@ -161,7 +161,7 @@ public class ShootController : MonoBehaviour
 	public void StopAiming()
 	{
 		//Tell the animator to pull the gun to the hip
-		//animator.SetBool("Aim", false);
+		animator.SetBool("Aim", false);
 		//Flag ourselves as not aiming
 		isAiming = false;
 		//Make sure reticle parent is NOT null
@@ -194,7 +194,7 @@ public class ShootController : MonoBehaviour
 		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
 
 		//Play the recoil animation AFTER determing shoot vector
-		//animator.SetBool("Shoot", true);
+		animator.SetBool("Shoot", true);
 		StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
@@ -306,7 +306,7 @@ public class ShootController : MonoBehaviour
 		//Play a sound
 		aSource.PlayOneShot(reloadClip);
 		//Play the reload animation
-		//animator.SetBool("Reload", true);
+		animator.SetBool("Reload", true);
 		//Hide the reload indicator
 		HideReloadIndicator();
 	}
@@ -333,7 +333,9 @@ public class ShootController : MonoBehaviour
 		foreach(RaycastHit hit in hits)
 		{
 			//Find the closest object we hit that is not ourselves
-			if(hit.transform != this.transform && (closestHit == null || hit.distance < distance))
+			if(hit.transform != this.transform 
+				&& !hit.transform.IsChildOf(this.transform) 
+				&& (closestHit == null || hit.distance < distance))
 			{
 				//Update the closest hit and distance
 				closestHit = hit.transform;
@@ -392,6 +394,6 @@ public class ShootController : MonoBehaviour
 	public IEnumerator WaitForRecoilDone(float time)
 	{
 		yield return new WaitForSeconds(time);
-		//animator.SetBool("Shoot", false);
+		animator.SetBool("Shoot", false);
 	}
 }
