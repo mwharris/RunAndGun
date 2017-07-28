@@ -110,7 +110,7 @@ public class FirstPersonController : MonoBehaviour
 
 	void FixedUpdate () {
 		//Crouching camera changes clash with jump bob camera changes
-		if(!crouchController.IsCrouching) 
+		if(!crouchController.IsCrouching && !crouchController.cameraResetting) 
 		{
 			//Apply a head bob when we jump
 			Vector3 localPos = playerCamera.transform.localPosition;
