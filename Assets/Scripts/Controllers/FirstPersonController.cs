@@ -86,7 +86,7 @@ public class FirstPersonController : MonoBehaviour
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
 		//Lock the mouse cursor
-		Cursor.lockState = CursorLockMode.Locked;
+		//Cursor.lockState = CursorLockMode.Locked;
 		//We will only ever have 2 jumps
 		jumps = 2;
 		//Get a reference to the audio source
@@ -105,7 +105,7 @@ public class FirstPersonController : MonoBehaviour
 		wallRunController = GetComponent<WallRunController>();
 		shootContoller = GetComponent<ShootController>();
 		//Initiliaze crouch controller variables
-		crouchController.CalculateCrouchVars(movementSpeed);
+		crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
 	}
 
 	void FixedUpdate () {
@@ -290,7 +290,7 @@ public class FirstPersonController : MonoBehaviour
 				//Come out of crouch if we're crouching
 				if(isSprinting && crouchController.IsCrouching)
 				{
-					crouchController.StopCrouching(playerBody);
+					crouchController.StopCrouching();
 				}
 			}
 			//If we aim while sprinting
@@ -470,10 +470,10 @@ public class FirstPersonController : MonoBehaviour
 					allowAirMovement = false;
 				}
 				//If we're crouched, uncrouch for our jump
-				if(crouchController.IsCrouching)
-				{
-					crouchController.ToggleCrouch(playerBody);
-				}
+				//if(crouchController.IsCrouching)
+				//{
+				//	crouchController.ToggleCrouch();
+				//}
 				//Add a little horizontal movement if we double jumped while holding a key
 				if(!isGrounded)
 				{

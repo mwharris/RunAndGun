@@ -13,17 +13,18 @@ public class NetworkCharacter : Photon.MonoBehaviour
 	private Quaternion weaponRot = Quaternion.identity;
 	private Vector3 weaponPos = Vector3.zero;
 	private Vector3 bodyCenter = Vector3.zero;
-	private float bodyHeight = 0f;
 	private float ccHeight = 0f;
-	private CapsuleCollider capCol;
+	private float ccCenter = 0f;
 	private CharacterController cc;
 
 	void Awake()
 	{
-		capCol = body.GetComponent<CapsuleCollider>();
 		cc = transform.GetComponent<CharacterController>();
 	}
 
+	/**
+	 * Handle updating non-local player's variables sent over the network
+	 */
 	void Update()
 	{
 		//Only update a non-local player. Local players are updated by First Person Controller
@@ -37,12 +38,14 @@ public class NetworkCharacter : Photon.MonoBehaviour
 			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, Time.deltaTime * 5);
 			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, Time.deltaTime * 5);
 			//Set Capsule Collider and Character Controller variables for crouching
-			capCol.center = Vector3.Lerp(capCol.center, bodyCenter, Time.deltaTime * 5);
-			capCol.height = bodyHeight;
-			cc.height = ccHeight;
+			cc.height = Mathf.Lerp(cc.height, ccHeight, Time.deltaTime * 5);
+			cc.center = Vector3.Lerp(cc.center, new Vector3(cc.center.x, ccCenter, cc.center.z), Time.deltaTime * 5);
 		}
 	}
 
+	/**
+	 * Handle the actual sending / receiving of variables over the network
+	 */
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
 	{
 		if(stream.isWriting)
@@ -54,9 +57,8 @@ public class NetworkCharacter : Photon.MonoBehaviour
 			stream.SendNext(body.transform.position);
 			stream.SendNext(playerCamera.transform.rotation);
 			stream.SendNext(playerCamera.transform.position);
-			stream.SendNext(capCol.center);
-			stream.SendNext(capCol.height);
 			stream.SendNext(cc.height);
+			stream.SendNext(cc.center.y);
 		}
 		else
 		{
@@ -67,9 +69,8 @@ public class NetworkCharacter : Photon.MonoBehaviour
 			bodyPos = (Vector3) stream.ReceiveNext();
 			weaponRot = (Quaternion) stream.ReceiveNext();
 			weaponPos = (Vector3) stream.ReceiveNext();
-			bodyCenter = (Vector3) stream.ReceiveNext();
-			bodyHeight = (float) stream.ReceiveNext();
 			ccHeight = (float) stream.ReceiveNext();
+			ccCenter = (float) stream.ReceiveNext();
 		}
 	}
 }
