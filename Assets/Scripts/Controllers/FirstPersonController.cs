@@ -5,15 +5,14 @@ using UnityStandardAssets.Utility;
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (WallRunController))]
 [RequireComponent(typeof (ShootController))]
-[RequireComponent(typeof (JumpController))]
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]
 [RequireComponent(typeof (LerpControlledBob))]
-public class FirstPersonController : MonoBehaviour 
+public class FirstPersonController : AbstractBehavior 
 {
 	public GameObject playerBody;
 	public AudioClip jumpSound;  
-	public bool isGrounded;
+	private Vector3 ogCamPos;
 
 	[HideInInspector] public CharacterController cc;
 	[HideInInspector] public bool isSprinting = false;
@@ -39,16 +38,13 @@ public class FirstPersonController : MonoBehaviour
 	////////////////////////////////////////////
 
 	/// VELOCITY VARIABLES /////////////////////
-	[HideInInspector] public Vector3 velocity;
 	//private float movementSpeed = 60.0f;
 	private float movementSpeed = 0.96f;
 	//private float movementSpeed = 1.98f;
 	private float jumpSpeed = 8f;
 	[HideInInspector] public float forwardSpeed;
 	[HideInInspector] public float sideSpeed;
-	private int jumps;
 	private bool wasAirborne;
-	private bool allowAirMovement = false;
 	////////////////////////////////////////////
 
 	/// MOVEMENT FLAGS /////////////////////
@@ -80,15 +76,17 @@ public class FirstPersonController : MonoBehaviour
 	[SerializeField] private LerpControlledBob jumpBob = new LerpControlledBob();
 	////////////////////////////////////////////
 
-	Vector3 ogCamPos;
+
+	[SerializeField] private PlayerLook playerLook;
+	private Vector2 lookInput;
+	private Vector2 moveInput;
+
 	void Start () {
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
 		//Lock the mouse cursor
 		//Cursor.lockState = CursorLockMode.Locked;
-		//We will only ever have 2 jumps
-		jumps = 2;
 		//Get a reference to the audio source
 		aSource = GetComponent<AudioSource>();
 		//Keep track of how long our walk audio delay should be
@@ -99,13 +97,15 @@ public class FirstPersonController : MonoBehaviour
 		headBobScript = playerCamera.GetComponent<MyHeadBob>();
 		gm = GameObject.FindObjectOfType<GameManager>();
 		menuController = GameObject.FindObjectOfType<MenuController>();
-		//jumpBob = GetComponent<LerpControlledBob>();
 		//Set up the various controllers
 		crouchController = GetComponent<CrouchController>();
 		wallRunController = GetComponent<WallRunController>();
 		shootContoller = GetComponent<ShootController>();
 		//Initiliaze crouch controller variables
 		crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
+
+		//Initialize player looking mechanics
+		playerLook.Init(transform, playerCamera.transform);
 	}
 
 	void FixedUpdate () {
@@ -124,11 +124,11 @@ public class FirstPersonController : MonoBehaviour
 		Debug.DrawRay(transform.position, -transform.right * 1f);
 		Debug.DrawRay(transform.position, transform.forward * 1f);
 		Debug.DrawRay(transform.position, -transform.forward * 1f);
-		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+		Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
 		Debug.DrawRay(transform.position, testV);
 
 		//Keep track ourselves if we are grounded or not
-		isGrounded = cc.isGrounded;
+		inputState.playerIsGrounded = cc.isGrounded;
 		//Update variables based on options menu selections
 		GatherOptions();
 		//Gather all mouse and keyboard inputs if we aren't paused
@@ -136,7 +136,7 @@ public class FirstPersonController : MonoBehaviour
 		//Handle any mouse input that occurred
 		HandleMouseInput();
 		//Handle crouching
-		crouchController.HandleCrouching(cc, playerCamera, playerBody, isCTRLDown);
+		//crouchController.HandleCrouching(cc, playerCamera, playerBody, isCTRLDown);
 		//Handle the movement of the player
 		HandleMovement();
 		//Apply gravity
@@ -144,11 +144,11 @@ public class FirstPersonController : MonoBehaviour
 		//Handle jumping of the player
 		HandleJumping();
 		//Tell the wall-run controller to handle any wall-running tasks
-		wallRunController.HandleWallRunning(velocity, playerBody, isGrounded, ref jumps);
+		//wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, playerIsGrounded, ref jumps);
 		//Tell the wall-run controller to also handle any wall-sticking tasks
-		wallRunController.HandleWallSticking(shootContoller.isAiming);
+		//wallRunController.HandleWallSticking(shootContoller.isAiming);
 		//Set a flag if we're airborne this frame
-		if(!isGrounded)
+		if(!inputState.playerIsGrounded)
 		{
 			wasAirborne = true;
 		}
@@ -157,13 +157,13 @@ public class FirstPersonController : MonoBehaviour
 			wasAirborne = false;
 		}
 		//Linear drag along the X and Z while grounded
-		if(isGrounded)
+		if(inputState.playerIsGrounded)
 		{
-			velocity.x *= 0.9f;
-			velocity.z *= 0.9f;
+			inputState.playerVelocity.x *= 0.9f;
+			inputState.playerVelocity.z *= 0.9f;
 		}
 		//Move the char controller
-		cc.Move(velocity * Time.deltaTime);
+		cc.Move(inputState.playerVelocity * Time.deltaTime);
 	}
 
 	void GatherOptions()
@@ -179,17 +179,69 @@ public class FirstPersonController : MonoBehaviour
 		}
 	}
 
+	private void GetMoveInput()
+	{
+		if (inputs != null)
+		{
+			//Gather input axis and set movement accordingly
+			float forwardDir = 0f;
+			float sideDir = 0f;
+			if (inputState.GetButtonPressed(inputs[0])) 
+			{
+				forwardDir += inputState.GetButtonValue(inputs[0]);
+			}
+			if (inputState.GetButtonPressed(inputs[1])) 
+			{
+				forwardDir += inputState.GetButtonValue(inputs[1]);
+			}
+			if (inputState.GetButtonPressed(inputs[2])) 
+			{
+				sideDir += inputState.GetButtonValue(inputs[2]);
+			}
+			if (inputState.GetButtonPressed(inputs[3])) 
+			{
+				sideDir += inputState.GetButtonValue(inputs[3]);
+			}
+
+			//Store values in an input vector
+			moveInput = new Vector2(forwardDir, sideDir);
+
+			//Normalize if values exceed 1, this prevents faster diagonal movement
+			if (moveInput.sqrMagnitude > 1) 
+			{
+				moveInput.Normalize();
+			}
+
+			forwardSpeed = moveInput.x;
+			sideSpeed = moveInput.y;
+		}
+	}
+
+	private void GetLookInput()
+	{
+		if (inputs != null)
+		{
+			float horizontalRot = 0f;
+			float verticalRot = 0f;
+
+			verticalRot += inputState.GetButtonValue(inputs[4]);
+			verticalRot += inputState.GetButtonValue(inputs[5]);
+			horizontalRot += inputState.GetButtonValue(inputs[6]);
+			horizontalRot += inputState.GetButtonValue(inputs[7]);
+
+			lookInput = new Vector2(verticalRot, horizontalRot);
+			//Debug.Log(lookInput);
+		}
+	}
+
 	void GatherInputs()
 	{
 		//Only gather user input if we're not paused
 		if(gm.GetGameState() == GameManager.GameState.playing)
 		{
-			//Mouse look inputs.  Include mouse inversion and sensitivity
-			horizontalRotation = Input.GetAxis("Mouse X") * mouseSensitivity;
-			verticalRotation -= Input.GetAxis("Mouse Y") * mouseSensitivity * (invertY ? -1 : 1);
+			GetLookInput();
 			//Keyboard movement inputs
-			forwardSpeed = Input.GetAxis("Vertical");
-			sideSpeed = Input.GetAxis("Horizontal");
+			GetMoveInput();
 			isWDown = Input.GetKeyDown(KeyCode.W);
 			isWPressed = Input.GetKey(KeyCode.W);
 			isADown = Input.GetKeyDown(KeyCode.A);
@@ -238,9 +290,9 @@ public class FirstPersonController : MonoBehaviour
 		}
 	}
 
-	//Calculate and apply player rotation based on mouse input
-	void ApplyHorizontalRotation()
+	void HandleMouseInput()
 	{
+		//Apply any horizontal look rotation
 		bool rotationSet = false;
 		//If we are wall-running
 		if(wallRunController.isWallRunning())
@@ -255,21 +307,10 @@ public class FirstPersonController : MonoBehaviour
 		//Rotate normally if we are not wall-running OR our look rotation while wall-running is normal
 		if(!rotationSet)
 		{
-			transform.Rotate(0, horizontalRotation, 0);
+			playerLook.LookRotation(transform, playerCamera.transform, lookInput);
 		}
-	}
-
-	void HandleMouseInput()
-	{
-		//Apply any horizontal look rotation
-		ApplyHorizontalRotation();
-		//Clamp the up and down mouse range so we don't look too far in one direction
-		verticalRotation = Mathf.Clamp(verticalRotation, -upDownRange, upDownRange);
 		//Calculate the angle we should tilt the camera depending on wall-run side
 		float cameraRotZ = wallRunController.CalculateCameraTilt(playerCamera);
-		//Rotate the camera Up/Down and Tilt using Euler angles
-		Quaternion targetTilt = Quaternion.Euler(verticalRotation, 0, cameraRotZ);
-		playerCamera.transform.localRotation = Quaternion.Lerp(playerCamera.transform.localRotation, targetTilt, 30*Time.deltaTime);
 	}
 
 	//Handle any WASD or arrow key movement
@@ -280,7 +321,7 @@ public class FirstPersonController : MonoBehaviour
 		runTimer -= Time.deltaTime;
 
 		//Grounded movement
-		if(isGrounded)
+		if(inputState.playerIsGrounded)
 		{
 			//Activate sprinting if shift was pressed
 			if(isShiftDown && !shootContoller.isAiming)
@@ -338,15 +379,15 @@ public class FirstPersonController : MonoBehaviour
 			//Add the x / z movement
 			if(forwardSpeed == 0 && sideSpeed == 0)
 			{
-				velocity.x = 0;
-				velocity.z = 0;
+				inputState.playerVelocity.x = 0;
+				inputState.playerVelocity.z = 0;
 			} 
 			else 
 			{
-				velocity += forwardSpeed * transform.forward;
-				velocity += sideSpeed * transform.right;
-				//velocity += forwardSpeed * transform.forward * Time.deltaTime;
-				//velocity += sideSpeed * transform.right * Time.deltaTime;
+				inputState.playerVelocity += forwardSpeed * transform.forward;
+				inputState.playerVelocity += sideSpeed * transform.right;
+				//inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
+				//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 			}
 		}
 		//Air / Wall-running movement
@@ -359,13 +400,13 @@ public class FirstPersonController : MonoBehaviour
 			if(wallRunController.wallSticking)
 			{
 				//Stop all movement
-				velocity = Vector3.zero;
+				inputState.playerVelocity = Vector3.zero;
 			}
 			//If we're wall-running
 			else if(wallRunController.isWallRunning())
 			{
 				//Calculate our wall-running velocity
-				velocity = wallRunController.SetWallRunVelocity(velocity, isWPressed, isSPressed);
+				inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWPressed, isSPressed);
 				//Play footstep FX while wall-running
 				PlayFootStepAudio(false, true);
 			}
@@ -376,15 +417,15 @@ public class FirstPersonController : MonoBehaviour
 				forwardSpeed = forwardSpeed * (movementSpeed/10);
 				sideSpeed = sideSpeed * (movementSpeed/10);
 				//Add the x / z movement
-				if(forwardSpeed != 0 && allowAirMovement)
+				if(forwardSpeed != 0 && inputState.allowAirMovement)
 				{
-					velocity += forwardSpeed * transform.forward;
-					//velocity += forwardSpeed * transform.forward * Time.deltaTime;
+					inputState.playerVelocity += forwardSpeed * transform.forward;
+					//inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
 				} 
-				if(sideSpeed != 0 && allowAirMovement) 
+				if(sideSpeed != 0 && inputState.allowAirMovement) 
 				{
-					velocity += sideSpeed * transform.right;
-					//velocity += sideSpeed * transform.right * Time.deltaTime;
+					inputState.playerVelocity += sideSpeed * transform.right;
+					//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 				}
 			}
 		}
@@ -396,33 +437,26 @@ public class FirstPersonController : MonoBehaviour
 		//Add normal gravity if we aren't wall-running
 		if(!wallRunController.isWallRunning())
 		{
-			if(!isGrounded)
+			if(!inputState.playerIsGrounded)
 			{
 				//Add gravity only when we aren't on the ground
-				//velocity += Physics.gravity;
-				velocity += Physics.gravity * Time.deltaTime;
+				//inputState.playerVelocity += Physics.gravity;
+				inputState.playerVelocity += Physics.gravity * Time.deltaTime;
 			} 
-			else 
-			{
-				//No y-velocity while grounded
-				//velocity += -Physics.gravity * Time.deltaTime;
-				//Double jump enabled while grounded
-				jumps = 2;
-			}
 		}
 		//If we're wall-running, lower the gravity to simulate it
-		else if(!isGrounded)
+		else if(!inputState.playerIsGrounded)
 		{
 			//Slow our descent
-			if(velocity.y <= 0)
+			if(inputState.playerVelocity.y <= 0)
 			{
-				//velocity += (Physics.gravity/4);
-				velocity += (Physics.gravity/4) * Time.deltaTime;
+				//inputState.playerVelocity += (Physics.gravity/4);
+				inputState.playerVelocity += (Physics.gravity/4) * Time.deltaTime;
 			}
 			//Otherwise use normal gravity
 			else 
 			{
-				velocity += (Physics.gravity/1.5f) * Time.deltaTime;
+				inputState.playerVelocity += (Physics.gravity/1.5f) * Time.deltaTime;
 			}
 		}
 	}
@@ -431,56 +465,14 @@ public class FirstPersonController : MonoBehaviour
 	void HandleJumping()
 	{
 		//If we just landed on the ground
-		if(wasAirborne && isGrounded)
+		if(wasAirborne && inputState.playerIsGrounded)
 		{
 			//Add a head bob to our landing
 			StartCoroutine(jumpBob.DoBobCycle());
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset our air movement flag
-			allowAirMovement = false;
-		}
-		//If we just jumped
-		if(isSpaceDown && jumps > 0)
-		{
-			//Add a head bob to our jump
-			StartCoroutine(jumpBob.DoBobCycle());
-			//Decrement our jumps so we can only jump twice
-			jumps--;
-			//Play a sound of use jumping
-			PlayJumpSound(!isGrounded);
-			//Stop aiming if we are aiming
-			shootContoller.StopAiming();
-			//Add an immediate velocity upwards to jump
-			velocity.y = jumpSpeed;
-			//If we're wall-running, angle our jump outwards
-			if(wallRunController.isWallRunning())
-			{
-				//Handle double jumping
-				velocity = wallRunController.WallJump(velocity, jumpSpeed, isDPressed, isWPressed, isAPressed);
-				//wallRunningDisabled = true;
-				//wallRunningDisabledTimer = 0.5f;
-			}
-			else
-			{
-				//Determine if we jumped straight upwards
-				if(velocity.x == 0 && velocity.z == 0){
-					allowAirMovement = true;
-				} else {
-					allowAirMovement = false;
-				}
-				//If we're crouched, uncrouch for our jump
-				//if(crouchController.IsCrouching)
-				//{
-				//	crouchController.ToggleCrouch();
-				//}
-				//Add a little horizontal movement if we double jumped while holding a key
-				if(!isGrounded)
-				{
-					//Handle double jumping
-					RotateDoubleJump();
-				}
-			}	
+			inputState.allowAirMovement = false;
 		}
 	}
 
@@ -495,84 +487,23 @@ public class FirstPersonController : MonoBehaviour
 		//apply a force in the direction they are pressing.
 		if(isSPressed)
 		{
-			velocity = velocity + (-transform.forward * 7);
+			inputState.playerVelocity = inputState.playerVelocity + (-transform.forward * 7);
 		}
 		if(isAPressed)
 		{
-			velocity = velocity + (-transform.right * 7);
+			inputState.playerVelocity = inputState.playerVelocity + (-transform.right * 7);
 		}
 		if(isDPressed)
 		{
-			velocity = velocity + (transform.right * 7);
+			inputState.playerVelocity = inputState.playerVelocity + (transform.right * 7);
 		}
 		//Apply upward force
-		velocity.y = jumpSpeed;
-	}
-
-	/*
-	 * This function handles double jumping by rotating the current velocity
-	 * toward the direction the player is holding relative to their current
-	 * look position.  This applies no boost unlike ForceDoubleJump().
-	*/
-	private void RotateDoubleJump()
-	{
-		//Determine our target jump direction based on player input
-		bool buttonPushed = false;
-		Vector3 targetDir = velocity;
-		if(isSPressed)
-		{
-			targetDir = -transform.forward;
-			buttonPushed = true;
-		}
-		if(isAPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += -transform.right;
-			}
-			else
-			{
-				targetDir = -transform.right;
-			}
-			buttonPushed = true;
-		}
-		if(isDPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += transform.right;
-			}
-			else
-			{
-				targetDir = transform.right;
-			}
-			buttonPushed = true;
-		}
-		if(isWPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += transform.forward;
-			}
-			else
-			{
-				targetDir = transform.forward;
-			}
-		}
-		//Reset the y-velocity for rotation calculations
-		velocity.y = 0;
-		//Find the angle, in radians, between our target direction and current direction
-		float degrees = Vector3.Angle(velocity, targetDir);
-		float radians = degrees * Mathf.Deg2Rad;
-		//Rotate the current direction the amount of radians determined above
-		velocity = Vector3.RotateTowards(velocity, targetDir, radians, 0.0f);
-		//Jump upwards
-		velocity.y = jumpSpeed;
+		inputState.playerVelocity.y = jumpSpeed;
 	}
 
 	private void PlayFootStepAudio(bool isSprinting, bool isWallRunning)
 	{
-		if (!isGrounded && !isWallRunning && !aSource.isPlaying)
+		if (!inputState.playerIsGrounded && !isWallRunning && !aSource.isPlaying)
 		{
 			return;
 		}
@@ -584,20 +515,6 @@ public class FirstPersonController : MonoBehaviour
 			runTimer = origRunTimer;
 			//Play a networked walking sound
 			fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
-		}
-	}
-
-	private void PlayJumpSound(bool isDoubleJump)
-	{
-		if(isDoubleJump)
-		{
-			//Play a networked double jump sound
-			fxManager.GetComponent<PhotonView>().RPC("DoubleJumpFX", PhotonTargets.All, this.transform.position);
-		}
-		else
-		{
-			aSource.clip = jumpSound;
-			aSource.Play();
 		}
 	}
 }

@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WallRunController : MonoBehaviour {
+public class WallRunController : AbstractBehavior {
 
 	[HideInInspector] public bool wallSticking = false;
 
@@ -377,8 +377,12 @@ public class WallRunController : MonoBehaviour {
 	 * This function handles jumping while wall-running.  
 	 * Depending on any keys held down, the jump will be angled away from the wall.
 	 */
-	public Vector3 WallJump(Vector3 velocity, float jumpSpeed, bool isDPressed, bool isWPressed, bool isAPressed)
+	public Vector3 WallJump(Vector3 velocity, float jumpSpeed)
 	{
+		bool isWPressed = inputState.GetButtonPressed(inputs[0]);
+		bool isAPressed = inputState.GetButtonPressed(inputs[2]);
+		bool isDPressed = inputState.GetButtonPressed(inputs[3]);
+
 		//The angle we want to jump relative to the wall
 		float degrees = 45f;
 		//Flag us as having wall jumped

@@ -18,6 +18,7 @@ public class NetworkManager : MonoBehaviour {
 	private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
 	private GameManager gm;
 	private float baseFOV;
+	private InputManager inputManager;
 
 	// Use this for initialization
 	void Start () 
@@ -28,6 +29,8 @@ public class NetworkManager : MonoBehaviour {
 		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
 		//Initialize a reference to the GameManager
 		gm = GameObject.FindObjectOfType<GameManager>();
+		//And the global input manager
+		inputManager = GameObject.FindGameObjectWithTag("Input Manager").GetComponent<InputManager>();
 	}
 
 	void Update()
@@ -111,12 +114,13 @@ public class NetworkManager : MonoBehaviour {
 		//Instantiate the player across all clients
 		GameObject myPlayer = PhotonNetwork.Instantiate("RecoilPlayer", spawnPos, spawnRot, 0);
 		myPlayer.name = username;
+		//Set the local player up to handle input
+		inputManager.inputState = myPlayer.GetComponent<InputState>();
 		//Enable local player controls
 		myPlayer.GetComponent<FirstPersonController>().enabled = true;
 		myPlayer.GetComponent<ShootController>().enabled = true;
 		myPlayer.GetComponent<AccuracyController>().enabled = true;
 		myPlayer.GetComponent<WallRunController>().enabled = true;
-		myPlayer.GetComponent<JumpController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().recoil = 0;
 		myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
