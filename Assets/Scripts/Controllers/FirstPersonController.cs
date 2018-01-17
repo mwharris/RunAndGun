@@ -15,7 +15,6 @@ public class FirstPersonController : AbstractBehavior
 	private Vector3 ogCamPos;
 
 	[HideInInspector] public CharacterController cc;
-	[HideInInspector] public bool isSprinting = false;
 
 	[SerializeField] private Camera playerCamera;   
 
@@ -49,19 +48,9 @@ public class FirstPersonController : AbstractBehavior
 
 	/// MOVEMENT FLAGS /////////////////////
 	private bool isWDown = false;
-	private bool isWPressed = false;
 	private bool isADown = false;
-	private bool isAPressed = false;
 	private bool isSDown = false;
-	private bool isSPressed = false;
 	private bool isDDown = false;
-	private bool isDPressed = false;
-	private bool isShiftDown = false;
-	private bool isShiftPressed = false;
-	private bool isCTRLDown = false;
-	private bool isCTRLPressed = false;
-	private bool isSpaceDown = false;
-	private bool isSpacePressed = false;
 	////////////////////////////////////////
 
 	/// IMPORTED SCRIPTS //////////////////
@@ -110,7 +99,7 @@ public class FirstPersonController : AbstractBehavior
 
 	void FixedUpdate () {
 		//Crouching camera changes clash with jump bob camera changes
-		if(!crouchController.IsCrouching && !crouchController.cameraResetting) 
+		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
 		{
 			//Apply a head bob when we jump
 			Vector3 localPos = playerCamera.transform.localPosition;
@@ -134,9 +123,9 @@ public class FirstPersonController : AbstractBehavior
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
 		//Handle any mouse input that occurred
-		HandleMouseInput();
+		HandleControllerInput();
 		//Handle crouching
-		//crouchController.HandleCrouching(cc, playerCamera, playerBody, isCTRLDown);
+		crouchController.HandleCrouching(cc, playerCamera, playerBody);
 		//Handle the movement of the player
 		HandleMovement();
 		//Apply gravity
@@ -169,11 +158,11 @@ public class FirstPersonController : AbstractBehavior
 	void GatherOptions()
 	{
 		//Set some variables based on Optons menu
-		if(menuController.mouseSensitivity != null && menuController.mouseSensitivity > 0)
+		if(menuController.mouseSensitivity > 0)
 		{
 			mouseSensitivity = menuController.mouseSensitivity;
 		}
-		if(menuController.invertY != null)
+		if(menuController.invertY != false)
 		{
 			invertY = menuController.invertY;
 		}
@@ -186,19 +175,19 @@ public class FirstPersonController : AbstractBehavior
 			//Gather input axis and set movement accordingly
 			float forwardDir = 0f;
 			float sideDir = 0f;
-			if (inputState.GetButtonPressed(inputs[0])) 
+			if (isWDown) 
 			{
 				forwardDir += inputState.GetButtonValue(inputs[0]);
 			}
-			if (inputState.GetButtonPressed(inputs[1])) 
+			if (isSDown) 
 			{
 				forwardDir += inputState.GetButtonValue(inputs[1]);
 			}
-			if (inputState.GetButtonPressed(inputs[2])) 
+			if (isADown) 
 			{
 				sideDir += inputState.GetButtonValue(inputs[2]);
 			}
-			if (inputState.GetButtonPressed(inputs[3])) 
+			if (isDDown) 
 			{
 				sideDir += inputState.GetButtonValue(inputs[3]);
 			}
@@ -239,25 +228,15 @@ public class FirstPersonController : AbstractBehavior
 		//Only gather user input if we're not paused
 		if(gm.GetGameState() == GameManager.GameState.playing)
 		{
+			//Input from Mouse or Right Stick
 			GetLookInput();
-			//Keyboard movement inputs
+			//Input from WASD or Left Stick
 			GetMoveInput();
-			isWDown = Input.GetKeyDown(KeyCode.W);
-			isWPressed = Input.GetKey(KeyCode.W);
-			isADown = Input.GetKeyDown(KeyCode.A);
-			isAPressed = Input.GetKey(KeyCode.A);
-			isSDown = Input.GetKeyDown(KeyCode.S);
-			isSPressed = Input.GetKey(KeyCode.S);
-			isDDown = Input.GetKeyDown(KeyCode.D);
-			isDPressed = Input.GetKey(KeyCode.D);
-			//Crouch and Sprint
-			isCTRLDown = Input.GetKeyDown(KeyCode.LeftControl);
-			isCTRLPressed = Input.GetKey(KeyCode.LeftControl);
-			isShiftDown = Input.GetKeyDown(KeyCode.LeftShift);
-			isShiftPressed = Input.GetKey(KeyCode.LeftShift);
-			//Jump
-			isSpaceDown = Input.GetKeyDown(KeyCode.Space);
-			isSpacePressed = Input.GetKey(KeyCode.Space);
+			//Map inputState values to more manageable variables
+			isWDown = inputState.GetButtonPressed(inputs[0]);
+			isADown = inputState.GetButtonPressed(inputs[2]);
+			isSDown = inputState.GetButtonPressed(inputs[1]);
+			isDDown = inputState.GetButtonPressed(inputs[3]);
 			//Test stuff
 			if(Input.GetKeyDown(KeyCode.B))
 			{
@@ -274,23 +253,13 @@ public class FirstPersonController : AbstractBehavior
 			forwardSpeed = 0;
 			sideSpeed = 0;
 			isWDown = false;
-			isWPressed = false;
 			isADown = false;
-			isAPressed = false;
 			isSDown = false;
-			isSPressed = false;
 			isDDown = false;
-			isDPressed = false;
-			isCTRLDown = false;
-			isCTRLPressed = false;
-			isShiftDown = false;
-			isShiftPressed = false;
-			isSpaceDown = false;
-			isSpacePressed = false;
 		}
 	}
 
-	void HandleMouseInput()
+	void HandleControllerInput()
 	{
 		//Apply any horizontal look rotation
 		bool rotationSet = false;
@@ -323,38 +292,15 @@ public class FirstPersonController : AbstractBehavior
 		//Grounded movement
 		if(inputState.playerIsGrounded)
 		{
-			//Activate sprinting if shift was pressed
-			if(isShiftDown && !shootContoller.isAiming)
-			{
-				//Flag us as sprinting
-				isSprinting = !isSprinting;
-				//Come out of crouch if we're crouching
-				if(isSprinting && crouchController.IsCrouching)
-				{
-					crouchController.StopCrouching();
-				}
-			}
-			//If we aim while sprinting
-			else if(isSprinting && shootContoller.isAiming)
-			{
-				//Stop sprinting
-				isSprinting = false;
-			}
-			//Only sprint while holding forward
-			else if(!isWPressed && isSprinting)
-			{
-				isSprinting = false;
-			}
-
 			//Apply movement speed based on crouching, sprinting, or standing
-			if(crouchController.IsCrouching || shootContoller.isAiming)
+			if(inputState.playerIsCrouching || shootContoller.isAiming)
 			{
 				forwardSpeed *= crouchController.CrouchMovementSpeed;
 				sideSpeed *= crouchController.CrouchMovementSpeed;
 				//Disable head bob while crouching
 				headBobScript.enabled = false;
 			}
-			else if(isSprinting)
+			else if(inputState.playerIsSprinting)
 			{
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
@@ -373,7 +319,7 @@ public class FirstPersonController : AbstractBehavior
 			if(forwardSpeed != 0 || sideSpeed != 0)
 			{
 				//Increase footstep rate
-				PlayFootStepAudio(isSprinting, false);
+				PlayFootStepAudio(inputState.playerIsSprinting, false);
 			}
 
 			//Add the x / z movement
@@ -406,7 +352,7 @@ public class FirstPersonController : AbstractBehavior
 			else if(wallRunController.isWallRunning())
 			{
 				//Calculate our wall-running velocity
-				inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWPressed, isSPressed);
+				inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
 				//Play footstep FX while wall-running
 				PlayFootStepAudio(false, true);
 			}
@@ -485,15 +431,15 @@ public class FirstPersonController : AbstractBehavior
 	{
 		//If the player is holding left or right at the time of the jump,
 		//apply a force in the direction they are pressing.
-		if(isSPressed)
+		if(isSDown)
 		{
 			inputState.playerVelocity = inputState.playerVelocity + (-transform.forward * 7);
 		}
-		if(isAPressed)
+		if(isADown)
 		{
 			inputState.playerVelocity = inputState.playerVelocity + (-transform.right * 7);
 		}
-		if(isDPressed)
+		if(isDDown)
 		{
 			inputState.playerVelocity = inputState.playerVelocity + (transform.right * 7);
 		}

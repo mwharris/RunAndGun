@@ -15,6 +15,8 @@ public class InputState : MonoBehaviour {
 	Dictionary<Buttons, ButtonState> buttonStates = new Dictionary<Buttons, ButtonState>();
 
 	[HideInInspector] public bool playerIsGrounded = false;
+	[HideInInspector] public bool playerIsSprinting = false;
+	[HideInInspector] public bool playerIsCrouching = false;
 	[HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;
 

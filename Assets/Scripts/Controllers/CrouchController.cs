@@ -2,12 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CrouchController : MonoBehaviour {
-
-	private bool isCrouching = false;
-	public bool IsCrouching {
-		get { return isCrouching; }
-	}
+public class CrouchController : AbstractBehavior {
 
 	private float crouchMovementSpeed;
 	public float CrouchMovementSpeed {
@@ -62,10 +57,13 @@ public class CrouchController : MonoBehaviour {
 	/**
 	 * Handle shrinking / expanding the player and attached components when crouching or standing 
 	 */
-	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameObject playerBody, bool crouchBtnDown)
+	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameObject playerBody)
 	{
+		bool isCrouchDown = inputState.GetButtonPressed(inputs[0]);
+		float crouchHoldTime = inputState.GetButtonHoldTime(inputs[0]);
+
 		//Crouching logic
-		if(crouchBtnDown)
+		if(isCrouchDown && crouchHoldTime == 0f)
 		{
 			ToggleCrouch();
 		}
@@ -76,7 +74,7 @@ public class CrouchController : MonoBehaviour {
 		float ccHeight = cc.height;
 		Vector3 ccCenter = cc.center;
 		//Modify the local position over time based on if we are/aren't crouching
-		if(isCrouching)
+		if(inputState.playerIsCrouching)
 		{
 			if(bodyLocalScale.y > crouchBodyScale)
 			{
@@ -140,7 +138,7 @@ public class CrouchController : MonoBehaviour {
 	 */ 
 	public void ToggleCrouch()
 	{
-		if(isCrouching)
+		if(inputState.playerIsCrouching)
 		{
 			StopCrouching();
 			//Flag the camera as being moved
@@ -157,11 +155,11 @@ public class CrouchController : MonoBehaviour {
 	 */
 	public void Crouch()
 	{
-		isCrouching = true;
+		inputState.playerIsCrouching = true;
 	}
 	public void StopCrouching()
 	{
-		isCrouching = false;		
+		inputState.playerIsCrouching = false;		
 	}
 
 	/**

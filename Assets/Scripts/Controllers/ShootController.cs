@@ -2,7 +2,7 @@
 using UnityEngine.UI;
 using System.Collections;
 
-public class ShootController : MonoBehaviour 
+public class ShootController : AbstractBehavior 
 {
 	public Animator animator;
 	public Camera playerCamera;
@@ -80,6 +80,11 @@ public class ShootController : MonoBehaviour
 
 	void Update() 
 	{
+		//Gather inputs needed below
+		bool isShootDown = inputState.GetButtonPressed(inputs[0]);
+		float shootHoldTime = inputState.GetButtonHoldTime(inputs[0]);
+		bool isAimDown = inputState.GetButtonPressed(inputs[1]);
+
 		//Reset the reload animation
 		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
 		{
@@ -100,21 +105,22 @@ public class ShootController : MonoBehaviour
 			} 
 
 			//Determine if we are attempting to aim our weapon
-			if(Input.GetKey(KeyCode.Mouse1))
+			if(isAimDown)
 			{
 				Aim();
 			}
-			else if(!Input.GetKey(KeyCode.Mouse1))
+			else
 			{
 				StopAiming();
 			}
 
 			//Determine if we try to shoot the weapon
-			if(Input.GetKeyDown(KeyCode.Mouse0) && cooldownTimer <= 0)
+			if(isShootDown && shootHoldTime == 0f && cooldownTimer <= 0)
 			{
 				//Only fire if there are bullets in the clip
-				if(bulletCount > 0){
-					Shoot();
+				if(bulletCount > 0)
+				{
+					Shoot(isAimDown);
 				}
 				//If the clip is empty, reload instead
 				else 
@@ -179,7 +185,7 @@ public class ShootController : MonoBehaviour
 	}
 
 	//Handle everything that needs to be done to fire a weapon
-	void Shoot()
+	void Shoot(bool isAimDown)
 	{
 		//Reset the shot timer
 		cooldownTimer = cooldownTimerMax;
@@ -198,7 +204,7 @@ public class ShootController : MonoBehaviour
 		StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
-		if(Input.GetKey(KeyCode.Mouse1))
+		if(isAimDown)
 		{
 			rc.StartRecoil(aimRecoilAmount);
 			ac.AddShootingOffset(isAiming);

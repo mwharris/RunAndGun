@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class AccuracyController : MonoBehaviour 
+public class AccuracyController : AbstractBehavior 
 {
 	//Public class globals
 	[HideInInspector] public float totalOffset;
@@ -10,8 +10,6 @@ public class AccuracyController : MonoBehaviour
 	//Private class globals
 	private float baseOffset;
 	private float shootingOffset;
-	private FirstPersonController fpsController;
-	private CrouchController crouchController;
 	private float maxAccuracyOffset = 0.08F;
 	private float accuracyChangeSpeed = 1.5F;
 	private float sprintAccuracy = 0.03F;
@@ -35,9 +33,6 @@ public class AccuracyController : MonoBehaviour
 	private bool reticlesFuckedUp = false;
 
 	void Start () {
-		//Get a reference to the FPS Controller
-		fpsController = GetComponent<FirstPersonController>();
-		crouchController = GetComponent<CrouchController>();
 		//Get a reference to the Reticle object
 		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
 		//Get references to all reticles in the crosshair
@@ -56,18 +51,17 @@ public class AccuracyController : MonoBehaviour
 	
 	void Update () {
 		//Some short-hand variables
-		bool isMoving = fpsController.forwardSpeed != 0 || fpsController.sideSpeed != 0;
-		bool isGrounded = fpsController.cc.isGrounded;
+		bool isMoving = inputState.playerVelocity.x != 0 || inputState.playerVelocity.z != 0;
 
 		//Determine if we should apply a base accuracy offset based on movement
-		if(isMoving && isGrounded)
+		if(isMoving && inputState.playerIsGrounded)
 		{
 			//Check if we're sprinting, crouching, or walking and apply corresponding accuracy
-			if(fpsController.isSprinting)
+			if(inputState.playerIsSprinting)
 			{
 				baseOffset = sprintAccuracy;
 			}
-			else if(crouchController.IsCrouching)
+			else if(inputState.playerIsCrouching)
 			{
 				baseOffset = crouchAccuracy;
 			}
@@ -76,7 +70,7 @@ public class AccuracyController : MonoBehaviour
 				baseOffset = walkAccuracy;
 			}
 		}
-		else if(isGrounded)
+		else if(inputState.playerIsGrounded)
 		{
 			baseOffset = 0F;
 		}

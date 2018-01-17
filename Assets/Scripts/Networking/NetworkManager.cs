@@ -121,6 +121,7 @@ public class NetworkManager : MonoBehaviour {
 		myPlayer.GetComponent<ShootController>().enabled = true;
 		myPlayer.GetComponent<AccuracyController>().enabled = true;
 		myPlayer.GetComponent<WallRunController>().enabled = true;
+		myPlayer.GetComponent<SprintController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().enabled = true;
 		myPlayer.GetComponent<RecoilController>().recoil = 0;
 		myPlayer.GetComponent<RecoilController>().currentRecoil = 0;

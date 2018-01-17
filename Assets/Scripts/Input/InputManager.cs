@@ -12,7 +12,11 @@ public enum Buttons {
 	LookUp,
 	LookDown,
 	A,
-	B
+	B,
+	Sprint,
+	Shoot,
+	Aim,
+	Crouch
 }
 
 public enum Condition {
