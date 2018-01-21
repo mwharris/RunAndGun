@@ -4,19 +4,30 @@ using System.Collections;
 
 public class ShootController : AbstractBehavior 
 {
+	//General global variables - public
 	public Animator animator;
 	public Camera playerCamera;
-	private float baseFOV;
 	public AudioSource aSource;
 	public bool isAiming;
 
+	//General global variables - private
+	private float baseFOV;
+	private PhotonView pView;
+	private float aimRecoilAmount = 0.05f;
+	private float hipRecoilAmount = 0.1f;
+	private float lastTriggerVal = 0.0f;
+
 	//Weapon specific stuff
+	[HideInInspector] public float cooldownTimer;
+	private float cooldownTimerMax = 0.315f;
 	public AudioClip reloadClip;
 	private float weaponDamage = 25f;
 	private int magazineCapacity = 12;
 	private float weaponReloadTime = 2.5f;
 	private float reloadTimer = 0f;
+	private GameObject reticleParent;
 
+	//HUD variables
 	private Text bulletCountText;
 	private Text clipSizeText;
 	private int bulletCount;
@@ -24,19 +35,12 @@ public class ShootController : AbstractBehavior
 	private GameObject hitIndicator;
 	private float hitIndicatorTimer;
 	private float hitIndicatorTimerMax;
-	[HideInInspector] public float cooldownTimer;
-	private float cooldownTimerMax = 0.315f;
-	private PhotonView pView;
-	private GameObject reticleParent;
-	private float aimRecoilAmount = 0.05f;
-	private float hipRecoilAmount = 0.1f;
 
 	//Imported Scripts
 	private FXManager fxManager;
 	private GameManager gm;
 	private RecoilController rc;
 	private AccuracyController ac;
-	private FirstPersonController fps;
 
 	void Start()
 	{
@@ -52,7 +56,6 @@ public class ShootController : AbstractBehavior
 		//Initialize a reference to the Recoil and Accuracy controllers
 		rc = this.gameObject.GetComponent<RecoilController>();
 		ac = this.gameObject.GetComponent<AccuracyController>();
-		fps = this.gameObject.GetComponent<FirstPersonController>();
 		//Initialize a reference to the Hit Indicators
 		hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
 		reloadIndicator = GameObject.FindGameObjectWithTag("ReloadIndicator");
@@ -78,12 +81,23 @@ public class ShootController : AbstractBehavior
 		baseFOV = playerCamera.fieldOfView;
 	}
 
+	bool CheckForTriggerPull() {
+		bool ret = false;
+		float currTriggerVal = Input.GetAxis("Fire1");
+		Debug.Log("PULL: " + currTriggerVal);
+		if (currTriggerVal > 0 && currTriggerVal > lastTriggerVal + 0.2f) {
+			ret = true;
+		}
+		lastTriggerVal = currTriggerVal;
+		return ret;
+	}
+
 	void Update() 
 	{
 		//Gather inputs needed below
 		bool isShootDown = inputState.GetButtonPressed(inputs[0]);
-		float shootHoldTime = inputState.GetButtonHoldTime(inputs[0]);
 		bool isAimDown = inputState.GetButtonPressed(inputs[1]);
+		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
 		//Reset the reload animation
 		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
@@ -115,7 +129,7 @@ public class ShootController : AbstractBehavior
 			}
 
 			//Determine if we try to shoot the weapon
-			if(isShootDown && shootHoldTime == 0f && cooldownTimer <= 0)
+			if(isShootDown && cooldownTimer <= 0)
 			{
 				//Only fire if there are bullets in the clip
 				if(bulletCount > 0)
@@ -130,7 +144,7 @@ public class ShootController : AbstractBehavior
 			}
 
 			//Reload if 'R' is pressed OR we tried to shoot while the clip is empty
-			if(Input.GetKeyDown(KeyCode.R))
+			if(isReloadDown)
 			{
 				Reload();
 			}

@@ -2,18 +2,16 @@
   <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
   <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Scripts\Controllers\PlayerJump.cs">
     <Files>
-      <File FileName="Assets\Scripts\Controllers\FirstPersonController.cs" Line="95" Column="54" />
-      <File FileName="Assets\Scripts\Controllers\PlayerJump.cs" Line="23" Column="56" />
-      <File FileName="Assets\Scripts\PlayerLook.cs" Line="31" Column="37" />
-      <File FileName="Assets\Scripts\Controllers\AbstractBehavior.cs" Line="9" Column="33" />
-      <File FileName="Assets\Scripts\Input\InputState.cs" Line="19" Column="48" />
-      <File FileName="Assets\Scripts\Controllers\ShootController.cs" Line="62" Column="1" />
-      <File FileName="Assets\Scripts\Controllers\WallRunController.cs" Line="380" Column="25" />
+      <File FileName="Assets\Scripts\Input\InputManager.cs" Line="21" Column="3" />
+      <File FileName="Assets\Scripts\Input\InputState.cs" Line="23" Column="28" />
+      <File FileName="Assets\Scripts\Controllers\FirstPersonController.cs" Line="247" Column="11" />
+      <File FileName="Assets\Scripts\Controllers\ShootController.cs" Line="98" Column="61" />
+      <File FileName="Assets\Scripts\Controllers\PlayerJump.cs" Line="87" Column="47" />
     </Files>
   </MonoDevelop.Ide.Workbench>
   <MonoDevelop.Ide.DebuggingService.Breakpoints>
     <BreakpointStore>
-      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="402" column="1" />
+      <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\Health.cs" line="412" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="81" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="20" column="1" />
       <Breakpoint file="C:\Users\Spanky\Documents\PlaycraftUnity\RunNGun\Assets\Scripts\DeathCamScript.cs" line="92" column="1" />

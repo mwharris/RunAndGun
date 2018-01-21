@@ -92,6 +92,6 @@ public class PlayerController : AbstractBehavior {
 
 	private void RotateView()
 	{
-		playerLook.LookRotation(transform, playerCam.transform, lookInput);
+		playerLook.LookRotation(transform, playerCam.transform, lookInput, 5.0f, true);
 	}
 }

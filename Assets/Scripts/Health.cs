@@ -136,6 +136,7 @@ public class Health : MonoBehaviour {
 		Color currCol = imageDamagedArrow.color;
 		currCol.a = 1;
 		imageDamagedArrow.color = currCol;
+		imageDamagedArrow.enabled = true;
 		//Start the timer to hide the arrow
 		damagedArrowTime = Time.time;
 	}
@@ -155,6 +156,15 @@ public class Health : MonoBehaviour {
 			currCol.a = Mathf.Lerp(currCol.a, 0, 0.05f);
 		}
 		imageDamagedArrow.color = currCol;
+		//Enable or disable the arrow when fading
+		if (currCol.a == 0) 
+		{
+			imageDamagedArrow.enabled = false;
+		}
+		else 
+		{
+			imageDamagedArrow.enabled = true;
+		}
 	}
 
 	void Die(string enemyPhotonName)

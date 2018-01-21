@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class MenuController : MonoBehaviour {
+public class MenuController : AbstractBehavior {
 
 	private bool paused = false;
 	private bool options = false;
@@ -13,8 +13,8 @@ public class MenuController : MonoBehaviour {
 	private NetworkManager nm;
 	private GameManager gm;
 
-	public float mouseSensitivity;
-	public bool invertY = false;
+	[HideInInspector] public float mouseSensitivity = 5.0f;
+	[HideInInspector] public bool invertY = false;
 
 	void Start()
 	{
@@ -41,6 +41,18 @@ public class MenuController : MonoBehaviour {
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 		}
+	}
+
+	//Update the mouse sensitivity in the First Person Controller
+	public void changeMouseSensitivity(float newValue)
+	{
+		mouseSensitivity = newValue;
+	}
+
+	//Update the invert y setting in the First Person Controller
+	public void changeInvertY(bool newValue)
+	{
+		invertY = newValue;
 	}
 
 	public void TogglePauseMenu(bool mainMenu)
@@ -191,17 +203,5 @@ public class MenuController : MonoBehaviour {
 		//Enable the close button
 		closeButton.GetComponent<Image>().enabled = false;
 		closeButton.GetChild(0).GetComponent<Text>().enabled = false;
-	}
-
-	//Update the mouse sensitivity in the First Person Controller
-	public void changeMouseSensitivity(float newValue)
-	{
-		mouseSensitivity = newValue;
-	}
-
-	//Update the invert y setting in the First Person Controller
-	public void changeInvertY(bool newValue)
-	{
-		invertY = newValue;
 	}
 }

@@ -10,23 +10,26 @@ using UnityStandardAssets.Utility;
 [RequireComponent(typeof (LerpControlledBob))]
 public class FirstPersonController : AbstractBehavior 
 {
+	[HideInInspector] public CharacterController cc;
 	public GameObject playerBody;
 	public AudioClip jumpSound;  
-	private Vector3 ogCamPos;
-
-	[HideInInspector] public CharacterController cc;
 
 	[SerializeField] private Camera playerCamera;   
-
+	private Vector3 ogCamPos;
 	private AudioSource aSource;    
+	private Vector2 lookInput;
+	private Vector2 moveInput;
+
+	/// OPTIONS VARIABLES //////////////////////
+	private float mouseSensitivity = 5.0f;
+	private bool invertY = false;
+	////////////////////////////////////////////
 
 	/// MOUSE CONTROL VARIABLES ////////////////
-	public float mouseSensitivity = 5.0f;
 	public float horizontalRotation = 0f;
 	public float verticalRotation = 0f;
 	public float verticalVelocity = 0f;
 	public float upDownRange = 60.0f;
-	public bool invertY = false;
 	////////////////////////////////////////////
 
 	/// TIMERS /////////////////////////////////
@@ -61,21 +64,16 @@ public class FirstPersonController : AbstractBehavior
 	private ShootController shootContoller;
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
-	//private JumpBob jumpBob;
 	[SerializeField] private LerpControlledBob jumpBob = new LerpControlledBob();
-	////////////////////////////////////////////
-
-
 	[SerializeField] private PlayerLook playerLook;
-	private Vector2 lookInput;
-	private Vector2 moveInput;
+	////////////////////////////////////////////
 
 	void Start () {
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
 		//Lock the mouse cursor
-		//Cursor.lockState = CursorLockMode.Locked;
+		Cursor.lockState = CursorLockMode.Locked;
 		//Get a reference to the audio source
 		aSource = GetComponent<AudioSource>();
 		//Keep track of how long our walk audio delay should be
@@ -92,7 +90,6 @@ public class FirstPersonController : AbstractBehavior
 		shootContoller = GetComponent<ShootController>();
 		//Initiliaze crouch controller variables
 		crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
-
 		//Initialize player looking mechanics
 		playerLook.Init(transform, playerCamera.transform);
 	}
@@ -157,13 +154,8 @@ public class FirstPersonController : AbstractBehavior
 
 	void GatherOptions()
 	{
-		//Set some variables based on Optons menu
-		if(menuController.mouseSensitivity > 0)
-		{
+		if (menuController != null) {
 			mouseSensitivity = menuController.mouseSensitivity;
-		}
-		if(menuController.invertY != false)
-		{
 			invertY = menuController.invertY;
 		}
 	}
@@ -276,7 +268,7 @@ public class FirstPersonController : AbstractBehavior
 		//Rotate normally if we are not wall-running OR our look rotation while wall-running is normal
 		if(!rotationSet)
 		{
-			playerLook.LookRotation(transform, playerCamera.transform, lookInput);
+			playerLook.LookRotation(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY);
 		}
 		//Calculate the angle we should tilt the camera depending on wall-run side
 		float cameraRotZ = wallRunController.CalculateCameraTilt(playerCamera);

@@ -10,21 +10,23 @@ public class PlayerLook {
 	private Quaternion playerLocalRot;
 	private Quaternion camLocalRot;
 
-	public float mouseSensitivity = 5.0f;
-
 	public void Init(Transform player, Transform camera)
 	{
 		playerLocalRot = player.localRotation;
 		camLocalRot = camera.localRotation;
 	}
 
-	public void LookRotation(Transform player, Transform camera, Vector2 lookInput)
+	public void LookRotation(Transform player, Transform camera, Vector2 lookInput, float mouseSensitivity, bool invertY)
 	{
 		//Add mouse sensitivity to the controller input
 		Vector2 inputs = lookInput * mouseSensitivity;
 
+		//Invert the Y input if Options dictates it
+		if (invertY) {
+			inputs = new Vector2(-inputs.x, inputs.y);
+		}
+
 		//Apply the rotation to both the player and the camera
-		//Debug.Log(inputs);
 		playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
 		camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
 

@@ -16,7 +16,9 @@ public enum Buttons {
 	Sprint,
 	Shoot,
 	Aim,
-	Crouch
+	Crouch,
+	X,
+	Y
 }
 
 public enum Condition {

@@ -78,54 +78,13 @@ public class PlayerJump : AbstractBehavior {
 	*/
 	private void RotateDoubleJump()
 	{
-		bool isWPressed = inputState.GetButtonPressed(inputs[1]);
-		bool isSPressed = inputState.GetButtonPressed(inputs[2]);
-		bool isAPressed = inputState.GetButtonPressed(inputs[3]);
-		bool isDPressed = inputState.GetButtonPressed(inputs[4]);
-
-		//Determine our target jump direction based on player input
-		bool buttonPushed = false;
-		Vector3 targetDir = inputState.playerVelocity;
-		if(isSPressed)
-		{
-			targetDir = -transform.forward;
-			buttonPushed = true;
-		}
-		if(isAPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += -transform.right;
-			}
-			else
-			{
-				targetDir = -transform.right;
-			}
-			buttonPushed = true;
-		}
-		if(isDPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += transform.right;
-			}
-			else
-			{
-				targetDir = transform.right;
-			}
-			buttonPushed = true;
-		}
-		if(isWPressed)
-		{
-			if(buttonPushed)
-			{
-				targetDir += transform.forward;
-			}
-			else
-			{
-				targetDir = transform.forward;
-			}
-		}
+		//Get keyboard or controller input using raw axis values
+		float forwardAxis = inputState.GetButtonValue(inputs[1]);
+		float backwardAxis = inputState.GetButtonValue(inputs[2]);
+		float leftAxis = inputState.GetButtonValue(inputs[3]);
+		float rightAxis = inputState.GetButtonValue(inputs[4]);
+		//Determine our target jump direction relative to player forward based on input
+		Vector3 targetDir = transform.TransformDirection(new Vector3(leftAxis + rightAxis, 0, forwardAxis + backwardAxis));
 		//Reset the y-velocity for rotation calculations
 		inputState.playerVelocity.y = 0;
 		//Find the angle, in radians, between our target direction and current direction
