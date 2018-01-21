@@ -18,7 +18,8 @@ public enum Buttons {
 	Aim,
 	Crouch,
 	X,
-	Y
+	Y,
+	Pause
 }
 
 public enum Condition {

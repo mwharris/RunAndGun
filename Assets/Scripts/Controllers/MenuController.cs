@@ -30,9 +30,11 @@ public class MenuController : AbstractBehavior {
 	}
 
 	void Update () {
+		bool isPauseDown = inputState.GetButtonPressed(inputs[0]);
+		float pauseHoldTime = inputState.GetButtonHoldTime(inputs[0]);
 		//Toggle the pause menu when ESC key is pressed if we're playing and the Options menu is not open
 		if((gm.GetGameState() == GameManager.GameState.playing || gm.GetGameState() == GameManager.GameState.paused) 
-			&& Input.GetKeyDown(KeyCode.P) && !options)
+			&& isPauseDown && pauseHoldTime == 0 && !options)
 		{
 			TogglePauseMenu(false);
 		}

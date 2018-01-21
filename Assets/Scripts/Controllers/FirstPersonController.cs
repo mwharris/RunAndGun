@@ -122,7 +122,7 @@ public class FirstPersonController : AbstractBehavior
 		//Handle any mouse input that occurred
 		HandleControllerInput();
 		//Handle crouching
-		crouchController.HandleCrouching(cc, playerCamera, playerBody);
+		crouchController.HandleCrouching(cc, playerCamera, playerBody, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
 		//Apply gravity

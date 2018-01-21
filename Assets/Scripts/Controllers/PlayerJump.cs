@@ -12,6 +12,7 @@ public class PlayerJump : AbstractBehavior {
 	private int jumps;
 	private WallRunController wallRunController;
 	private FXManager fxManager;
+	private GameManager gm;
 	private AudioSource aSource;
 
 	[SerializeField] private LerpControlledBob jumpBob = new LerpControlledBob();
@@ -22,52 +23,56 @@ public class PlayerJump : AbstractBehavior {
 		wallRunController = GetComponent<WallRunController>();
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
+		gm = GameObject.FindObjectOfType<GameManager>();
 	}
 
 	void Update()
 	{
-		//Gather inputs needed for jumping
-		bool canJump = inputState.GetButtonPressed(inputs[0]);
-		float holdTime = inputState.GetButtonHoldTime(inputs[0]);
-
-		//Reset our jumps if we're grouded
-		if (inputState.playerIsGrounded) 
+		if (gm.GetGameState() == GameManager.GameState.playing) 
 		{
-			jumps = maxJumps;
-		}
+			//Gather inputs needed for jumping
+			bool canJump = inputState.GetButtonPressed(inputs[0]);
+			float holdTime = inputState.GetButtonHoldTime(inputs[0]);
 
-		//Perform a jump if we've jumped
-		if (canJump && holdTime == 0f && jumps > 0) 
-		{
-			//Add a head bob to our jump
-			StartCoroutine(jumpBob.DoBobCycle());
-			//Decrement our jumps so we can only jump twice
-			jumps--;
-			//Play a sound of use jumping
-			PlayJumpSound(!inputState.playerIsGrounded);
-			//Add an immediate velocity upwards to jump
-			inputState.playerVelocity.y = jumpSpeed;
-			//If we're wall-running, angle our jump outwards
-			if(wallRunController.isWallRunning())
+			//Reset our jumps if we're grouded
+			if (inputState.playerIsGrounded) 
 			{
-				//Handle double jumping
-				inputState.playerVelocity = wallRunController.WallJump(inputState.playerVelocity, jumpSpeed);
+				jumps = maxJumps;
 			}
-			else
+
+			//Perform a jump if we've jumped
+			if (canJump && holdTime == 0f && jumps > 0) 
 			{
-				//Determine if we jumped straight upwards
-				if(inputState.playerVelocity.x == 0 && inputState.playerVelocity.z == 0){
-					inputState.allowAirMovement = true;
-				} else {
-					inputState.allowAirMovement = false;
-				}
-				//Add a little horizontal movement if we double jumped while holding a key
-				if(!inputState.playerIsGrounded)
+				//Add a head bob to our jump
+				StartCoroutine(jumpBob.DoBobCycle());
+				//Decrement our jumps so we can only jump twice
+				jumps--;
+				//Play a sound of use jumping
+				PlayJumpSound(!inputState.playerIsGrounded);
+				//Add an immediate velocity upwards to jump
+				inputState.playerVelocity.y = jumpSpeed;
+				//If we're wall-running, angle our jump outwards
+				if(wallRunController.isWallRunning())
 				{
 					//Handle double jumping
-					RotateDoubleJump();
+					inputState.playerVelocity = wallRunController.WallJump(inputState.playerVelocity, jumpSpeed);
 				}
-			}	
+				else
+				{
+					//Determine if we jumped straight upwards
+					if(inputState.playerVelocity.x == 0 && inputState.playerVelocity.z == 0){
+						inputState.allowAirMovement = true;
+					} else {
+						inputState.allowAirMovement = false;
+					}
+					//Add a little horizontal movement if we double jumped while holding a key
+					if(!inputState.playerIsGrounded)
+					{
+						//Handle double jumping
+						RotateDoubleJump();
+					}
+				}	
+			}
 		}
 	}
 
