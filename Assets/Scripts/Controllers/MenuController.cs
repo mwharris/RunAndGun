@@ -3,24 +3,29 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class MenuController : AbstractBehavior {
+public class MenuController : AbstractBehavior 
+{
+	[HideInInspector] public float mouseSensitivity = 5.0f;
+	[HideInInspector] public bool invertY = false;
 
 	private bool paused = false;
 	private bool options = false;
-	private GameObject pauseMenu;
-	private GameObject optionsMenu;
 	private GameObject eventSystem;
 	private NetworkManager nm;
 	private GameManager gm;
 
-	[HideInInspector] public float mouseSensitivity = 5.0f;
-	[HideInInspector] public bool invertY = false;
+	private GameObject pauseMenu;
+	private GameObject optionsMenu;
+	private Transform pausePanel;
+	private Transform optionsPanel;
 
 	void Start()
 	{
-		//Find the pause and options menu GameObject
+		//Find the pause and options menu GameObjects and Panels
 		pauseMenu = GameObject.FindGameObjectWithTag("PauseMenu");
+		pausePanel = pauseMenu.transform.GetChild(0);
 		optionsMenu = GameObject.FindGameObjectWithTag("OptionsMenu");
+		optionsPanel = optionsMenu.transform.GetChild(0);
 		//Initialize a reference to the NetworkManager
 		nm = GameObject.FindObjectOfType<NetworkManager>();
 		//Initialize a reference to the GameManager
@@ -29,32 +34,21 @@ public class MenuController : AbstractBehavior {
 		eventSystem = GameObject.Find("EventSystem");
 	}
 
-	void Update () {
+	void Update () 
+	{
 		bool isPauseDown = inputState.GetButtonPressed(inputs[0]);
 		float pauseHoldTime = inputState.GetButtonHoldTime(inputs[0]);
-		//Toggle the pause menu when ESC key is pressed if we're playing and the Options menu is not open
+		//Toggle the pause menu when P key is pressed if we're playing and the Options menu is not open
 		if((gm.GetGameState() == GameManager.GameState.playing || gm.GetGameState() == GameManager.GameState.paused) 
 			&& isPauseDown && pauseHoldTime == 0 && !options)
 		{
 			TogglePauseMenu(false);
 		}
 		//Lock the cursor if L was hit
-		if(gm.GetGameState () == GameManager.GameState.playing && Input.GetKeyDown (KeyCode.L)) 
+		if(gm.GetGameState () == GameManager.GameState.playing && Input.GetKeyDown(KeyCode.L)) 
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 		}
-	}
-
-	//Update the mouse sensitivity in the First Person Controller
-	public void changeMouseSensitivity(float newValue)
-	{
-		mouseSensitivity = newValue;
-	}
-
-	//Update the invert y setting in the First Person Controller
-	public void changeInvertY(bool newValue)
-	{
-		invertY = newValue;
 	}
 
 	public void TogglePauseMenu(bool mainMenu)
@@ -86,48 +80,19 @@ public class MenuController : AbstractBehavior {
 	{
 		//Unlock the mouse cursor
 		Cursor.lockState = CursorLockMode.None;
-		//Show all elements
-		Transform panel = pauseMenu.transform.GetChild(0);
-		Transform menuButton = panel.GetChild(1);
-		Transform optionsButton = panel.GetChild(2);
-		Transform closeButton = panel.GetChild(3);
-		//The panel
-		panel.GetComponent<Image>().enabled = true;
-		//Pause menu text
-		panel.GetChild(0).GetComponent<Text>().enabled = true;
-		//Main menu button
-		menuButton.GetComponent<Image>().enabled = true;
-		menuButton.GetComponentInChildren<Text>().enabled = true;
-		//Options menu button
-		optionsButton.GetComponent<Image>().enabled = true;
-		optionsButton.GetComponentInChildren<Text>().enabled = true;
-		//Close button
-		closeButton.GetComponent<Image>().enabled = true;
-		closeButton.GetComponentInChildren<Text>().enabled = true;
+		//Simply set the pause panel to active
+		pausePanel.gameObject.SetActive(true);
+		//Default select the main menu button
+		Transform menuButton = pausePanel.GetChild(1);
+		menuButton.GetComponent<Selectable>().Select();
 	}
 
 	void HidePauseMenu()
 	{
 		//Lock the mouse cursor
 		Cursor.lockState = CursorLockMode.Locked;
-		//Hide all elements
-		Transform panel = pauseMenu.transform.GetChild(0);
-		Transform menuButton = panel.GetChild(1);
-		Transform optionsButton = panel.GetChild(2);
-		Transform closeButton = panel.GetChild(3);
-		//The panel
-		panel.GetComponent<Image>().enabled = false;
-		//Pause menu text
-		panel.GetChild(0).GetComponent<Text>().enabled = false;
-		//Main menu button
-		menuButton.GetComponent<Image>().enabled = false;
-		menuButton.GetComponentInChildren<Text>().enabled = false;
-		//Options menu button
-		optionsButton.GetComponent<Image>().enabled = false;
-		optionsButton.GetComponentInChildren<Text>().enabled = false;
-		//Close button
-		closeButton.GetComponent<Image>().enabled = false;
-		closeButton.GetComponentInChildren<Text>().enabled = false;
+		//Simply set the pause panel to inactive
+		pausePanel.gameObject.SetActive(false);
 	}
 
 	public void ToggleOptionsMenu()
@@ -153,28 +118,11 @@ public class MenuController : AbstractBehavior {
 		HidePauseMenu();
 		//Unlock the mouse cursor
 		Cursor.lockState = CursorLockMode.None;
-		//Enable the options menu elements
-		Transform panel = optionsMenu.transform.GetChild(0);
-		Transform slider = panel.transform.GetChild(2);
-		Transform invertYToggle = panel.transform.GetChild(3);
-		Transform closeButton = panel.transform.GetChild(4);
-		//Enable the panel
-		panel.GetComponent<Image>().enabled = true;
-		//Enable the title text
-		panel.GetChild(0).GetComponent<Text>().enabled = true;
-		//Enable the mouse sensitivity text
-		panel.GetChild(1).GetComponent<Text>().enabled = true;
-		//Enable the slider
-		slider.GetChild(0).GetComponent<Image>().enabled = true;
-		slider.GetChild(1).GetChild(0).GetComponent<Image>().enabled = true;
-		slider.GetChild(2).GetChild(0).GetComponent<Image>().enabled = true;
-		//Enable the Invert Y checkbox
-		invertYToggle.GetChild(0).GetComponent<Text>().enabled = true;
-		invertYToggle.GetChild(1).GetComponent<Image>().enabled = true;
-		invertYToggle.GetChild(1).GetChild(0).GetComponent<Image>().enabled = true;
-		//Enable the close button
-		closeButton.GetComponent<Image>().enabled = true;
-		closeButton.GetChild(0).GetComponent<Text>().enabled = true;
+		//Simply set the Options menu to active
+		optionsPanel.gameObject.SetActive(true);
+		//Default select the Close button
+		Transform closeButton = optionsPanel.transform.GetChild(4);
+		closeButton.GetComponent<Selectable>().Select();
 	}
 
 	void HideOptionsMenu()
@@ -183,27 +131,19 @@ public class MenuController : AbstractBehavior {
 		ShowPauseMenu();
 		//Unlock the mouse cursor
 		Cursor.lockState = CursorLockMode.None;
-		//Enable the options menu elements
-		Transform panel = optionsMenu.transform.GetChild(0);
-		Transform slider = panel.transform.GetChild(2);
-		Transform invertYToggle = panel.transform.GetChild(3);
-		Transform closeButton = panel.transform.GetChild(4);
-		//Enable the panel
-		panel.GetComponent<Image>().enabled = false;
-		//Enable the title text
-		panel.GetChild(0).GetComponent<Text>().enabled = false;
-		//Enable the mouse sensitivity text
-		panel.GetChild(1).GetComponent<Text>().enabled = false;
-		//Enable the slider
-		slider.GetChild(0).GetComponent<Image>().enabled = false;
-		slider.GetChild(1).GetChild(0).GetComponent<Image>().enabled = false;
-		slider.GetChild(2).GetChild(0).GetComponent<Image>().enabled = false;
-		//Enable the Invert Y checkbox
-		invertYToggle.GetChild(0).GetComponent<Text>().enabled = false;
-		invertYToggle.GetChild(1).GetComponent<Image>().enabled = false;
-		invertYToggle.GetChild(1).GetChild(0).GetComponent<Image>().enabled = false;
-		//Enable the close button
-		closeButton.GetComponent<Image>().enabled = false;
-		closeButton.GetChild(0).GetComponent<Text>().enabled = false;
+		//Simply set the Options menu to active
+		optionsPanel.gameObject.SetActive(false);
+	}
+
+	//Update the mouse sensitivity in the First Person Controller
+	public void changeMouseSensitivity(float newValue)
+	{
+		mouseSensitivity = newValue;
+	}
+
+	//Update the invert y setting in the First Person Controller
+	public void changeInvertY(bool newValue)
+	{
+		invertY = newValue;
 	}
 }

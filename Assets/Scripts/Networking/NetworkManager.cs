@@ -152,6 +152,8 @@ public class NetworkManager : MonoBehaviour {
 		lobbyCamera.gameObject.SetActive(true);
 		//Show the main menu
 		menu.SetActive(true);
+		//Default select the Solo button
+		menu.transform.GetChild(5).GetComponent<Selectable>().Select();
 		//Unlock the cursor
 		Cursor.lockState = CursorLockMode.None;
 		//Mark our Game State as none
