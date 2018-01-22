@@ -130,9 +130,9 @@ public class FirstPersonController : AbstractBehavior
 		//Handle jumping of the player
 		HandleJumping();
 		//Tell the wall-run controller to handle any wall-running tasks
-		//wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, playerIsGrounded, ref jumps);
+		wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
 		//Tell the wall-run controller to also handle any wall-sticking tasks
-		//wallRunController.HandleWallSticking(shootContoller.isAiming);
+		wallRunController.HandleWallSticking(shootContoller.isAiming);
 		//Set a flag if we're airborne this frame
 		if(!inputState.playerIsGrounded)
 		{
@@ -256,22 +256,22 @@ public class FirstPersonController : AbstractBehavior
 		//Apply any horizontal look rotation
 		bool rotationSet = false;
 		//If we are wall-running
+		/*
 		if(wallRunController.isWallRunning())
 		{
-			//Tell the wall run controller to handle our look rotation.
-			//This is so we don't look to far into the wall.
-			if(wallRunController.SetWallRunLookRotation())
+			//Tell the wall run controller to handle our look rotation. This is so we don't look to far into the wall.
+			if(wallRunController.SetWallRunLookRotation(playerCamera))
 			{
 				rotationSet = true;
 			}
 		}
+		*/
 		//Rotate normally if we are not wall-running OR our look rotation while wall-running is normal
 		if(!rotationSet)
 		{
-			playerLook.LookRotation(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY);
+			float cameraRotZ = wallRunController.CalculateCameraTilt(playerCamera);
+			playerLook.LookRotation(transform, playerCamera.transform, lookInput, Time.deltaTime, mouseSensitivity, invertY, cameraRotZ);
 		}
-		//Calculate the angle we should tilt the camera depending on wall-run side
-		float cameraRotZ = wallRunController.CalculateCameraTilt(playerCamera);
 	}
 
 	//Handle any WASD or arrow key movement

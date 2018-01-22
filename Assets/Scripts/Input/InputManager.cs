@@ -19,7 +19,9 @@ public enum Buttons {
 	Crouch,
 	X,
 	Y,
-	Pause
+	Pause,
+	Lock,
+	Back
 }
 
 public enum Condition {

@@ -61,11 +61,9 @@ public class CrouchController : AbstractBehavior {
 	{
 		if (gs == GameManager.GameState.playing) 
 		{
-			bool isCrouchDown = inputState.GetButtonPressed(inputs[0]);
-			float crouchHoldTime = inputState.GetButtonHoldTime(inputs[0]);
-
+			bool isCrouchDown = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
 			//Crouching logic
-			if(isCrouchDown && crouchHoldTime == 0f)
+			if(isCrouchDown)
 			{
 				ToggleCrouch();
 			}

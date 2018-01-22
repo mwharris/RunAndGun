@@ -24,18 +24,20 @@ public class WallRunController : AbstractBehavior {
 	[SerializeField] private float cameraRotZ = 0;
 
 	private FXManager fxManager;
+	private PlayerJump jumpController;
 
 	void Start() 
 	{
-		//Initialize a reference to the FX Manager
+		//Initialize references to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
+		jumpController = GetComponent<PlayerJump>();
 	}
 
 	/*
 	 * Raycast outwards from the player (left, right, and back) to detect walls.  
 	 * If either any are hit while the player is in the air, activate wall-running.
 	 */
-	public void HandleWallRunning(Vector3 velocity, GameObject playerBody, bool isGrounded, ref int jumps)
+	public void HandleWallRunning(Vector3 velocity, GameObject playerBody, bool isGrounded) //, ref int jumps)
 	{
 		//Raycast in several directions to see if we are wall-running
 		RaycastHit wallRunHit = DoWallRunCheck(velocity, playerBody, isGrounded);
@@ -48,7 +50,8 @@ public class WallRunController : AbstractBehavior {
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset the jump counter
-			jumps = 2;
+			//jumps = 2;
+			jumpController.ResetJumps();
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
@@ -151,6 +154,8 @@ public class WallRunController : AbstractBehavior {
 	 */
 	public bool SetWallRunLookRotation()
 	{
+		return false;
+		/*
 		Vector3 testNormal = wallRunNormal;
 		Vector3 testForward = transform.forward;
 		//Get a vector 90 degrees to the left and right of the normal
@@ -182,6 +187,7 @@ public class WallRunController : AbstractBehavior {
 			//Flag that we didn't handle the look rotation
 			return false;
 		}
+		*/
 	}
 
 	/**

@@ -36,16 +36,34 @@ public class MenuController : AbstractBehavior
 
 	void Update () 
 	{
-		bool isPauseDown = inputState.GetButtonPressed(inputs[0]);
-		float pauseHoldTime = inputState.GetButtonHoldTime(inputs[0]);
-		//Toggle the pause menu when P key is pressed if we're playing and the Options menu is not open
-		if((gm.GetGameState() == GameManager.GameState.playing || gm.GetGameState() == GameManager.GameState.paused) 
-			&& isPauseDown && pauseHoldTime == 0 && !options)
+		//Gather button presses for processing below
+		bool isPauseDown = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
+		bool isLockDown = inputState.GetButtonPressed(inputs[1]) && inputState.GetButtonHoldTime(inputs[1]) == 0;
+		bool isCancelDown = inputState.GetButtonPressed(inputs[2]) && inputState.GetButtonHoldTime(inputs[2]) == 0;
+		//Game state variables
+		bool isGamePlaying = gm.GetGameState() == GameManager.GameState.playing;
+		bool isGamePaused = gm.GetGameState() == GameManager.GameState.paused;
+		//Toggle the pause menu when pause button is pressed while playing
+		if((isGamePlaying || isGamePaused) && isPauseDown && !options)
 		{
 			TogglePauseMenu(false);
 		}
-		//Lock the cursor if L was hit
-		if(gm.GetGameState () == GameManager.GameState.playing && Input.GetKeyDown(KeyCode.L)) 
+		//Back button pressed while game is paused
+		else if (isGamePaused && isCancelDown) 
+		{
+			//Back out of Options menu
+			if (options) 
+			{
+				ToggleOptionsMenu();				
+			}
+			//Back out of Pause menu
+			else 
+			{
+				TogglePauseMenu(false);
+			}
+		}
+		//Lock the cursor if Lock button was hit
+		if(isGamePlaying && isLockDown) 
 		{
 			Cursor.lockState = CursorLockMode.Locked;
 		}

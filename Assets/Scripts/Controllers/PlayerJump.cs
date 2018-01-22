@@ -31,8 +31,7 @@ public class PlayerJump : AbstractBehavior {
 		if (gm.GetGameState() == GameManager.GameState.playing) 
 		{
 			//Gather inputs needed for jumping
-			bool canJump = inputState.GetButtonPressed(inputs[0]);
-			float holdTime = inputState.GetButtonHoldTime(inputs[0]);
+			bool canJump = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
 
 			//Reset our jumps if we're grouded
 			if (inputState.playerIsGrounded) 
@@ -41,7 +40,7 @@ public class PlayerJump : AbstractBehavior {
 			}
 
 			//Perform a jump if we've jumped
-			if (canJump && holdTime == 0f && jumps > 0) 
+			if (canJump && jumps > 0) 
 			{
 				//Add a head bob to our jump
 				StartCoroutine(jumpBob.DoBobCycle());
@@ -113,5 +112,10 @@ public class PlayerJump : AbstractBehavior {
 			aSource.clip = jumpSound;
 			aSource.Play();
 		}
+	}
+
+	public void ResetJumps()
+	{
+		jumps = maxJumps;
 	}
 }
