@@ -27,6 +27,7 @@ public class PlayerLook {
 			inputs = new Vector2(-inputs.x, inputs.y);
 		}
 		//Apply the rotation to both the player and the camera
+		camLocalRot = camera.localRotation;
 		playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
 		camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
 		//Clamp the up/down rotation in the x axis 
@@ -34,12 +35,13 @@ public class PlayerLook {
 		//If we are wall-running then add a rotation in the z-axis
 		if (wallRunZRotation != 0) 
 		{
-			Quaternion targetTilt = Quaternion.Euler(camLocalRot.x, 0, wallRunZRotation);
-			camLocalRot = Quaternion.Lerp(camLocalRot, targetTilt, 30*deltaTime);
+			float blah = Mathf.Lerp(camLocalRot.eulerAngles.z, wallRunZRotation, 30*deltaTime);
+			camLocalRot.eulerAngles = new Vector3(camLocalRot.eulerAngles.x, camLocalRot.eulerAngles.y, blah);
 		}
 		//Reset this if we're done wall-running
 		else if (wallRunZRotation == 0 && camLocalRot.z != 0) 
 		{
+			//This just seems to work better than reversing the above...
 			camLocalRot.z = Mathf.Lerp(camLocalRot.z, 0f, 30*deltaTime);
 		}
 		//Update the rotation of our camera
