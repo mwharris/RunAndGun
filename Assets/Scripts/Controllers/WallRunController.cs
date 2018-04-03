@@ -10,7 +10,7 @@ public class WallRunController : AbstractBehavior {
 	private bool wallRunningRight = false;
 	private bool wallRunningBack = false;
 	private bool initWallRun = false;
-	private bool wallJumped = false;
+    private bool wallJumped = false;
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
 	private bool wallRunningDisabled = false;
@@ -19,14 +19,19 @@ public class WallRunController : AbstractBehavior {
 	private float wallRunMax = 2.0f;
 	private string lastWallName = "";
 
-	[SerializeField] private float cameraTotalRotation = 0f;
-	[SerializeField] private float cameraRotAmount = 15f;
-	[SerializeField] private float cameraRotZ = 0;
+	private float cameraTotalRotation = 0f;
+	private float cameraRotAmount = 0.1f;
+	private float cameraRotZ = 0;
 
 	private FXManager fxManager;
 	private PlayerJump jumpController;
 
-	void Start() 
+    private float wallRunAngle1 = 0f;
+    private float wallRunAngle2 = 0f;
+    private bool wrapAroundRotationCircle = false;
+    private bool reclampRotation = false;
+
+    void Start() 
 	{
 		//Initialize references to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
@@ -57,7 +62,9 @@ public class WallRunController : AbstractBehavior {
 			wallRunNormal = wallRunHit.normal;
 			//Move the player closer to the wall to ensure rotation doesn't cause us to come off the wall
 			this.transform.Translate((-wallRunHit.normal/2), Space.World);
-		}
+            //Set a rotation to make sure we aren't looking too far into the wall
+            SetWallRunLookRotation();
+        }
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && isWallRunning())
 		{
@@ -71,11 +78,8 @@ public class WallRunController : AbstractBehavior {
 		else if(wallRunHit.collider == null && isWallRunning())
 		{
 			//Deactivate wall-running
-			wallRunningLeft = false;
-			wallRunningRight = false;
-			wallRunningBack = false;
-			wallRunTimer = 0.0f;
-		}
+            ResetActiveVars();
+        }
 
 		//Enable wall-running if we touch the ground or the timer runs out
 		if(isGrounded) 
@@ -114,11 +118,9 @@ public class WallRunController : AbstractBehavior {
 			//Reset the y velocity if we're falling but we've activated wall-running
 			if(velocity.y < 0)
 			{
-				velocity.y = 0;	
-			}
-			//Marked that we're done initializing the wall-run
-			initWallRun = false;
-		}
+				velocity.y = 0;
+            }
+        }
 		//W will speed up movement slightly and S will slow down movement slightly
 		float scaleVal = 0.0f;
 		//Scale the Vector up to 14 units if we're holding forward
@@ -144,18 +146,90 @@ public class WallRunController : AbstractBehavior {
 		//Make sure we don't move too fast
 		velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
 		velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
-		return velocity;
+        //Determine wall run angles when we start wall-running
+        if (initWallRun || reclampRotation)
+        {
+            initWallRun = false;
+            reclampRotation = false;
+            FindWallRunClampAngles(velocity);
+        }
+        return velocity;
 	}
 
-	/**
+    //Calculate the angles to clamp the player's look rotation while wall-running
+    private void FindWallRunClampAngles(Vector3 v)
+    {
+        //Get the angles between velocity and North and velocity and South
+        Vector3 testV = new Vector3(v.x, 0f, v.z);
+        wallRunAngle1 = Vector3.Angle(testV, Vector3.forward);
+        wallRunAngle2 = Vector3.Angle(testV, Vector3.back);
+        //Wall-running N/S: use wall-run side to determine bounded area
+        if (wallRunAngle1 == 0 && wallRunAngle2 == 180 && wallRunningRight)
+        {
+            wallRunAngle1 = -wallRunAngle1;
+            wallRunAngle2 = -wallRunAngle2;
+        }
+        //Wall-running N/S: use wall-run side to determine bounded area
+        else if (wallRunAngle1 == 180 && wallRunAngle2 == 0 && wallRunningLeft)
+        {
+            wallRunAngle1 = -wallRunAngle1;
+            wallRunAngle2 = -wallRunAngle2;
+        }
+        //Wall-running E/W (90 degree to 90 degree)
+        else if (wallRunAngle1 == 90 && wallRunAngle2 == 90)
+        {
+            //Reverse one of the angles to get -90 and 90
+            wallRunAngle1 = -wallRunAngle1;
+            //Determine if our range should be -90 -> 90 or -90 -> -180, 180 -> 90 
+            if (Vector3.back == wallRunNormal)
+            {
+                wrapAroundRotationCircle = true;
+            }
+        }
+        //Wall-running on an angled surface (not perfectly N/S or E/W) 
+        else if (wallRunAngle1 > 0 && wallRunAngle2 > 0)
+        {
+            //Determine the polarity of these angles using cross product
+            Vector3 cross = Vector3.Cross(testV, Vector3.forward);
+            if (cross.y > 0)
+            {
+                wallRunAngle1 = -wallRunAngle1;
+            }
+            cross = Vector3.Cross(testV, Vector3.back);
+            if (cross.y > 0)
+            {
+                wallRunAngle2 = -wallRunAngle2;
+            }
+            //Determine whether the -180/+180 point is contained in bounded area
+            float normalForwardAngle = Vector3.Angle(wallRunNormal, Vector3.forward);
+            float normalBackAngle = Vector3.Angle(wallRunNormal, Vector3.back);
+            //If the normal is closer to Back vector then it is contained
+            if (normalBackAngle < normalForwardAngle)
+            {
+                wrapAroundRotationCircle = true;
+            }
+        }
+        else
+        {
+            wrapAroundRotationCircle = false;
+        }
+    }
+
+    public void SetWallRunLookRotationInputs(LookRotationInput lri, Camera playerCamera)
+    {
+        lri.wallRunZRotation = CalculateCameraTilt(playerCamera);
+        lri.wallRunAngle1 = wallRunAngle1;
+        lri.wallRunAngle2 = wallRunAngle2;
+        lri.wrapAround = wrapAroundRotationCircle;
+    }
+
+    /**
 	 * This function was created to handle a special case.
-	 * When we are wall-running, we don't want to be able to into the wall.
+	 * When we are wall-running, we don't want to be able to look into the wall.
 	 * This function will clamp our look rotation so that we cannot look too far towards the wall.
 	 */
-	public bool SetWallRunLookRotation()
+    public void SetWallRunLookRotation()
 	{
-		return false;
-		/*
 		Vector3 testNormal = wallRunNormal;
 		Vector3 testForward = transform.forward;
 		//Get a vector 90 degrees to the left and right of the normal
@@ -175,19 +249,9 @@ public class WallRunController : AbstractBehavior {
 			{ 
 				otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 			}
-			float degrees = Vector3.Angle(testForward, otherCross);
-			float rads = degrees * Mathf.Deg2Rad;
 			testForward = Vector3.RotateTowards(testForward, otherCross, 10, 0.0f);
 			transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
-			//Flag that we handled the look rotation
-			return true;
 		}
-		else 
-		{
-			//Flag that we didn't handle the look rotation
-			return false;
-		}
-		*/
 	}
 
 	/**
@@ -195,35 +259,25 @@ public class WallRunController : AbstractBehavior {
 	 * No tilt while facing directly away from the wall.
 	 */
 	public float CalculateCameraTilt(Camera playerCamera)
-	{
-		//Wall-running left or right, tilt in the opposite direction
-		if(wallRunningLeft || wallRunningRight)
-		{
-			if(cameraTotalRotation < cameraRotAmount)
-			{
-				float currentAngle = playerCamera.transform.localRotation.eulerAngles.z;
-				if(wallRunningLeft)
-				{
-					cameraRotZ = currentAngle - (Time.deltaTime * 100);
-				}
-				else
-				{
-					cameraRotZ = currentAngle + (Time.deltaTime * 100);
-				}
-				cameraTotalRotation += Time.deltaTime * 100;
-			}
-			else if(cameraTotalRotation > cameraRotAmount)
-			{
-				cameraTotalRotation = cameraRotAmount;
-			}
-		}
+    {
+        float lerpedRot = 0f;
+        //Wall-running left, tilt right
+        if (wallRunningLeft)
+        {
+            lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, 8*Time.deltaTime);
+        }
+        //Wall-running right, tilt left
+        else if (wallRunningRight)
+        {
+            lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8*Time.deltaTime);
+        }
 		//Facing directly away from the wall, no rotation
 		else 
 		{
-			cameraTotalRotation = 0f;
-			cameraRotZ = 0;
-		}
-		return cameraRotZ;
+            lerpedRot = Mathf.Lerp(cameraRotZ, 0f, 8*Time.deltaTime);
+        }
+        cameraRotZ = lerpedRot;
+        return cameraRotZ;
 	}
 		
 	/**
@@ -292,9 +346,15 @@ public class WallRunController : AbstractBehavior {
 			if (lookAngleGood && rHitValid && rDoubleJumpCheck && (rightGood || isWallRunning())) 
 			{
 				//Flag if we are initializing the wall-run
-				if (!isWallRunning()) {
+				if (!isWallRunning())
+                {
 					initWallRun = true;
 				}
+                //Re-clamp rotation angles if we transition from another wall-run
+                else if (wallRunningLeft || wallRunningBack) 
+                {
+                    reclampRotation = true;
+                }
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
 				wallRunningRight = true;
@@ -303,41 +363,48 @@ public class WallRunController : AbstractBehavior {
 				lastWallName = rHit.collider.name;
 				//Reset the wall jumped flag
 				wallJumped = false;
-				return rHit;
+                return rHit;
 			} 
 			//Left raycast
 			else if (lookAngleGood && lHitValid && lDoubleJumpCheck && (leftGood || isWallRunning())) 
 			{
 				//Flag if we are initializing the wall-run
-				if (!isWallRunning()) {
+				if (!isWallRunning())
+                {
 					initWallRun = true;
-				}
-				//Flag the side we are wall-running
-				wallRunningLeft = true;
+                }
+                //Re-clamp rotation angles if we transition from another wall-run
+                else if (wallRunningRight || wallRunningBack)
+                {
+                    reclampRotation = true;
+                }
+                //Flag the side we are wall-running
+                wallRunningLeft = true;
 				wallRunningRight = false;
 				wallRunningBack = false;
 				//Store the name of the wall we ran on
 				lastWallName = lHit.collider.name;
 				//Reset the wall jumped flag
 				wallJumped = false;
-				return lHit;
+                return lHit;
 			} 
 			//Backwards raycast
 			else if (bHitValid && bDoubleJumpCheck) 
 			{
 				//Flag if we are initializing the wall-run
-				if (!isWallRunning()) {
+				if (!isWallRunning())
+                {
 					initWallRun = true;
-				}
-				//Flag the side we are wall-running
-				wallRunningLeft = false;
+                }
+                //Flag the side we are wall-running
+                wallRunningLeft = false;
 				wallRunningRight = false;
 				wallRunningBack = true;
 				//Store the name of the wall we ran on
 				lastWallName = bHit.collider.name;
 				//Reset the wall jumped flag
 				wallJumped = false;
-				return bHit;
+                return bHit;
 			}
 		}
 		else if(wallRunTimer <= 0 && !wallSticking)
@@ -421,11 +488,9 @@ public class WallRunController : AbstractBehavior {
 			degrees = 0f;
 		}
 		//Disable wall-running
-		wallRunningLeft = false;
-		wallRunningRight = false;
-		wallRunningBack = false;
-		//Reset the y-velocity for rotation calculations
-		velocity.y = 0;
+		ResetActiveVars();
+        //Reset the y-velocity for rotation calculations
+        velocity.y = 0;
 		//Convert degress to radians
 		float radians = degrees * Mathf.Deg2Rad;
 		//Scale the normal of the wall we're running on
@@ -435,7 +500,7 @@ public class WallRunController : AbstractBehavior {
 		velocity *= 1.2f;
 		//Jump upwards
 		velocity.y = jumpSpeed;
-		return velocity;
+        return velocity;
 	}
 
 	/**
@@ -453,4 +518,15 @@ public class WallRunController : AbstractBehavior {
 			wallSticking = false;
 		}
 	}
+
+    //Helper function to reset variables activate while wall-running
+    private void ResetActiveVars()
+    {
+        wallRunningLeft = false;
+        wallRunningRight = false;
+        wallRunningBack = false;
+        reclampRotation = false;
+        wrapAroundRotationCircle = false;
+        wallRunTimer = 0.0f;
+    }
 }

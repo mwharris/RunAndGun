@@ -119,22 +119,22 @@ public class FirstPersonController : AbstractBehavior
 		GatherOptions();
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
-		//Handle any mouse input that occurred
-		HandleControllerInput();
 		//Handle crouching
 		crouchController.HandleCrouching(cc, playerCamera, playerBody, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
-		//Apply gravity
-		HandleGravity();
+        //Handle any mouse input that occurred
+        HandleControllerInput();
+        //Apply gravity
+        HandleGravity();
 		//Handle jumping of the player
 		HandleJumping();
 		//Tell the wall-run controller to handle any wall-running tasks
 		wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
-		//Tell the wall-run controller to also handle any wall-sticking tasks
-		wallRunController.HandleWallSticking(shootContoller.isAiming);
-		//Set a flag if we're airborne this frame
-		if(!inputState.playerIsGrounded)
+        //Tell the wall-run controller to also handle any wall-sticking tasks
+        wallRunController.HandleWallSticking(shootContoller.isAiming);
+        //Set a flag if we're airborne this frame
+        if (!inputState.playerIsGrounded)
 		{
 			wasAirborne = true;
 		}
@@ -255,22 +255,19 @@ public class FirstPersonController : AbstractBehavior
 	{
 		//Apply any horizontal look rotation
 		bool rotationSet = false;
-		//If we are wall-running
-		/*
-		if(wallRunController.isWallRunning())
-		{
-			//Tell the wall run controller to handle our look rotation. This is so we don't look to far into the wall.
-			if(wallRunController.SetWallRunLookRotation(playerCamera))
-			{
-				rotationSet = true;
-			}
-		}
-		*/
 		//Rotate normally if we are not wall-running OR our look rotation while wall-running is normal
 		if(!rotationSet)
 		{
-			float cameraRotZ = wallRunController.CalculateCameraTilt(playerCamera);
-			playerLook.LookRotation(transform, playerCamera.transform, lookInput, Time.deltaTime, mouseSensitivity, invertY, cameraRotZ);
+            //Build a LookRotationInput object for better passing of arguments in the following function calls
+            LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
+            //Apply some special cases while wall-running
+            if (wallRunController.isWallRunning())
+            {
+                //Handle any look rotation updates due to wall-running
+                wallRunController.SetWallRunLookRotationInputs(lri, playerCamera);
+            }
+            //Finally apply our look rotation
+            playerLook.LookRotation(lri);
 		}
 	}
 
