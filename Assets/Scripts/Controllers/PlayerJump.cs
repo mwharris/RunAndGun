@@ -10,6 +10,7 @@ public class PlayerJump : AbstractBehavior {
 	public AudioClip jumpSound;  
 
 	private int jumps;
+    private bool justJumped = false;
 	private WallRunController wallRunController;
 	private FXManager fxManager;
 	private GameManager gm;
@@ -32,11 +33,12 @@ public class PlayerJump : AbstractBehavior {
 		{
 			//Gather inputs needed for jumping
 			bool canJump = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
+            Debug.Log("Num Jumps: " + jumps);
 
 			//Reset our jumps if we're grouded
-			if (inputState.playerIsGrounded) 
+			if (inputState.playerIsGrounded && !justJumped) 
 			{
-				jumps = maxJumps;
+                jumps = maxJumps;
 			}
 
 			//Perform a jump if we've jumped
@@ -46,8 +48,9 @@ public class PlayerJump : AbstractBehavior {
 				StartCoroutine(jumpBob.DoBobCycle());
 				//Decrement our jumps so we can only jump twice
 				jumps--;
-				//Play a sound of use jumping
-				PlayJumpSound(!inputState.playerIsGrounded);
+                justJumped = true;
+                //Play a sound of use jumping
+                PlayJumpSound(!inputState.playerIsGrounded);
 				//Add an immediate velocity upwards to jump
 				inputState.playerVelocity.y = jumpSpeed;
 				//If we're wall-running, angle our jump outwards
@@ -72,6 +75,10 @@ public class PlayerJump : AbstractBehavior {
 					}
 				}	
 			}
+            else
+            {
+                justJumped = false;
+            }
 		}
 	}
 

@@ -55,7 +55,6 @@ public class WallRunController : AbstractBehavior {
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset the jump counter
-			//jumps = 2;
 			jumpController.ResetJumps();
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
@@ -272,7 +271,7 @@ public class WallRunController : AbstractBehavior {
             lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8*Time.deltaTime);
         }
 		//Facing directly away from the wall, no rotation
-		else 
+		else
 		{
             lerpedRot = Mathf.Lerp(cameraRotZ, 0f, 8*Time.deltaTime);
         }
@@ -527,6 +526,8 @@ public class WallRunController : AbstractBehavior {
         wallRunningBack = false;
         reclampRotation = false;
         wrapAroundRotationCircle = false;
+        wallRunAngle1 = 0f;
+        wallRunAngle2 = 0f;
         wallRunTimer = 0.0f;
     }
 }
