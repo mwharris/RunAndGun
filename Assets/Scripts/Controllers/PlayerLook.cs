@@ -45,6 +45,7 @@ public class PlayerLook {
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
+        Quaternion nanTest = lri.player.localRotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
@@ -58,6 +59,16 @@ public class PlayerLook {
         //If we are wall-running then add a rotation in the z-axis
         camLocalRot.z = lri.wallRunZRotation;
         //Update the rotation of our camera
+        if (float.IsNaN(playerLocalRot.x) || float.IsNaN(playerLocalRot.y) || float.IsNaN(playerLocalRot.z))
+        {
+            Debug.LogError("Rotation is NaN!");
+            Debug.LogError("Old rotation is: " + nanTest);
+            Debug.LogError("Current player rotation is: " + lri.player.localRotation);
+            Debug.LogError("NaN is: " + playerLocalRot);
+            if (float.IsNaN(playerLocalRot.x)) { playerLocalRot.x = 0f; }
+            if (float.IsNaN(playerLocalRot.y)) { playerLocalRot.y = 0f; }
+            if (float.IsNaN(playerLocalRot.z)) { playerLocalRot.z = 0f; }
+        }
         lri.player.localRotation = playerLocalRot;
         lri.camera.localRotation = camLocalRot;
     }
