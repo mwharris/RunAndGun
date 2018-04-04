@@ -44,4 +44,10 @@ public class SprintController : AbstractBehavior {
 		}
 	}
 
+    //Outside functions can call this to disable sprinting
+    public void DisableSprinting()
+    {
+        inputState.playerIsSprinting = false;
+    }
+
 }

@@ -148,7 +148,9 @@ public class CrouchController : AbstractBehavior {
 		else 
 		{
 			Crouch();
-		}
+            //Make sure we disable sprinting
+            inputState.playerIsSprinting = false;
+        }
 	}
 
 	/**

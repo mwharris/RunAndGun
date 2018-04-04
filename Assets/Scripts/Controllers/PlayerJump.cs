@@ -33,7 +33,6 @@ public class PlayerJump : AbstractBehavior {
 		{
 			//Gather inputs needed for jumping
 			bool canJump = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
-            Debug.Log("Num Jumps: " + jumps);
 
 			//Reset our jumps if we're grouded
 			if (inputState.playerIsGrounded && !justJumped) 

@@ -172,6 +172,8 @@ public class ShootController : AbstractBehavior
 		}
 		//Flag ourselves as aiming
 		isAiming = true;
+        //Make sure we turn off sprinting
+        inputState.playerIsSprinting = false;
 		//Zoom the camera in
 		playerCamera.fieldOfView = Mathf.Lerp(playerCamera.fieldOfView, 50, 10 * Time.deltaTime);
 	}
