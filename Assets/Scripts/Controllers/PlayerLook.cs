@@ -61,10 +61,10 @@ public class PlayerLook {
         //Update the rotation of our camera
         if (float.IsNaN(playerLocalRot.x) || float.IsNaN(playerLocalRot.y) || float.IsNaN(playerLocalRot.z))
         {
-            Debug.LogError("Rotation is NaN!");
-            Debug.LogError("Old rotation is: " + nanTest);
-            Debug.LogError("Current player rotation is: " + lri.player.localRotation);
-            Debug.LogError("NaN is: " + playerLocalRot);
+            Debug.Log("Rotation is NaN!");
+            Debug.Log("Old rotation is: " + nanTest);
+            Debug.Log("Current player rotation is: " + lri.player.localRotation);
+            Debug.Log("NaN is: " + playerLocalRot);
             if (float.IsNaN(playerLocalRot.x)) { playerLocalRot.x = 0f; }
             if (float.IsNaN(playerLocalRot.y)) { playerLocalRot.y = 0f; }
             if (float.IsNaN(playerLocalRot.z)) { playerLocalRot.z = 0f; }
@@ -121,19 +121,58 @@ public class PlayerLook {
             || (wrapAround && (value > lowerBound && value < upperBound)))
         {
             //Determine which bound the value is "closer" to
-            float lowerBoundAbsDelta = 0;
-            float upperBoundAbsDelta = 0;
-            //Use both the actual value and the inverse of the value.
-            //The reason for this is the way ClampRotationAroundYAxis handles calculating our angleY.
-            //Once it passes the -180 mark, it flips the value.
-            lowerBoundAbsDelta = Mathf.Abs(Mathf.Abs(value) - Mathf.Abs(lowerBound));
-            upperBoundAbsDelta = Mathf.Abs(Mathf.Abs(value) - Mathf.Abs(upperBound));
-            //Determine which value is closer
-            if (lowerBoundAbsDelta < upperBoundAbsDelta)
+            float lowerBoundDelta = 0;
+            float upperBoundDelta = 0;
+            //The lower bound SHOULD always be negative
+            if (lowerBound <= 0)
+            {
+                //If the value is negative as well
+                if (value < 0)
+                {
+                    //The delta is the distance between the two negative values
+                    lowerBoundDelta = Mathf.Abs(lowerBound - value);
+                }
+                //If the value is positive
+                else
+                {
+                    //The delta is the minimum of the path lowerBound -> 0 -> value OR lowerBound -> -180/180 -> value
+                    float a = value + Mathf.Abs(lowerBound);
+                    float b = Mathf.Abs(-180 - lowerBound) + (180 - value);
+                    lowerBoundDelta = Mathf.Min(a, b);
+                }
+            }
+            else
+            {
+                Debug.LogError("LOWER BOUND IS POSITIVE!!!");
+            }
+            //The lower bound SHOULD always be positive
+            if (upperBound >= 0)
+            {
+                //If the value is negative
+                if (value < 0)
+                {
+                    //The delta is the minimum of the path upperBound -> 0 -> value OR upperBound -> -180/180 -> value
+                    float a = upperBound + Mathf.Abs(value);
+                    float b = (180 - upperBound) + Mathf.Abs(-180 - value);
+                    upperBoundDelta = Mathf.Min(a, b);
+                }
+                //If the value is positive as well
+                else
+                {
+                    //The delta is simply the distance between the two
+                    upperBoundDelta = Mathf.Abs(upperBound - value);
+                }
+            }
+            else
+            {
+                Debug.LogError("UPPER BOUND IS NEGATIVE!!!");
+            }
+            //Determine which bound is closer to the value and clamp to that
+            if (lowerBoundDelta < upperBoundDelta)
             {
                 value = lowerBound;
             }
-            else if (upperBoundAbsDelta < lowerBoundAbsDelta)
+            else if (upperBoundDelta < lowerBoundDelta)
             {
                 value = upperBound;
             }

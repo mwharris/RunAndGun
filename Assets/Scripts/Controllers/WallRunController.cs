@@ -30,6 +30,7 @@ public class WallRunController : AbstractBehavior {
     private float wallRunAngle2 = 0f;
     private bool wrapAroundRotationCircle = false;
     private bool reclampRotation = false;
+    private bool curvedWall = false;
 
     void Start() 
 	{
@@ -47,8 +48,8 @@ public class WallRunController : AbstractBehavior {
 		//Raycast in several directions to see if we are wall-running
 		RaycastHit wallRunHit = DoWallRunCheck(velocity, playerBody, isGrounded);
 
-		//Start wall-running if we hit something and we're not already wall-running
-		if(wallRunHit.collider != null && initWallRun)
+        //Start wall-running if we hit something and we're not already wall-running
+        if (wallRunHit.collider != null && initWallRun)
 		{
 			//Start the timer
 			wallRunTimer = wallRunMax;
@@ -63,6 +64,8 @@ public class WallRunController : AbstractBehavior {
 			this.transform.Translate((-wallRunHit.normal/2), Space.World);
             //Set a rotation to make sure we aren't looking too far into the wall
             SetWallRunLookRotation();
+            Debug.DrawRay(wallRunHit.point, wallRunHit.normal, Color.blue, 10f);
+            Debug.DrawRay(playerBody.transform.position, wallRunDirection, Color.red, 10f);
         }
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && isWallRunning())
@@ -72,7 +75,9 @@ public class WallRunController : AbstractBehavior {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
-		}
+            Debug.DrawRay(wallRunHit.point, wallRunHit.normal, Color.blue, 10f);
+            Debug.DrawRay(playerBody.transform.position, wallRunDirection, Color.red, 10f);
+        }
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
 		{
@@ -90,12 +95,12 @@ public class WallRunController : AbstractBehavior {
 		{
 			wallRunningDisabled = false;
 			//wallRunningDisabledTimer = 0;
-		} 
-		//else 
-		//{
-		//	wallRunningDisabledTimer -= Time.deltaTime;
-		//}
-	}
+		}
+        //else 
+        //{
+        //	wallRunningDisabledTimer -= Time.deltaTime;
+        //}
+    }
 
 	/*
 	 * Handle velocity calculations while the player is wall-running
@@ -146,71 +151,87 @@ public class WallRunController : AbstractBehavior {
 		velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
 		velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
         //Determine wall run angles when we start wall-running
-        if (initWallRun || reclampRotation)
-        {
+        //if (initWallRun || reclampRotation)
+        //{
+            //reclampRotation = false;
+            FindWallRunClampAngles(velocity, initWallRun);
             initWallRun = false;
-            reclampRotation = false;
-            FindWallRunClampAngles(velocity);
-        }
+        //}
         return velocity;
 	}
 
     //Calculate the angles to clamp the player's look rotation while wall-running
-    private void FindWallRunClampAngles(Vector3 v)
+    private void FindWallRunClampAngles(Vector3 v, bool init)
     {
-        //Get the angles between velocity and North and velocity and South
-        Vector3 testV = new Vector3(v.x, 0f, v.z);
-        wallRunAngle1 = Vector3.Angle(testV, Vector3.forward);
-        wallRunAngle2 = Vector3.Angle(testV, Vector3.back);
-        //Wall-running N/S: use wall-run side to determine bounded area
-        if (wallRunAngle1 == 0 && wallRunAngle2 == 180 && wallRunningRight)
+        //If we're wall-running backwards we don't want to reclamp
+        if (wallRunningLeft || wallRunningRight)
         {
-            wallRunAngle1 = -wallRunAngle1;
-            wallRunAngle2 = -wallRunAngle2;
-        }
-        //Wall-running N/S: use wall-run side to determine bounded area
-        else if (wallRunAngle1 == 180 && wallRunAngle2 == 0 && wallRunningLeft)
-        {
-            wallRunAngle1 = -wallRunAngle1;
-            wallRunAngle2 = -wallRunAngle2;
-        }
-        //Wall-running E/W (90 degree to 90 degree)
-        else if (wallRunAngle1 == 90 && wallRunAngle2 == 90)
-        {
-            //Reverse one of the angles to get -90 and 90
-            wallRunAngle1 = -wallRunAngle1;
-            //Determine if our range should be -90 -> 90 or -90 -> -180, 180 -> 90 
-            if (Vector3.back == wallRunNormal)
+            //Get the angles between velocity and North and velocity and South
+            Vector3 testV = new Vector3(v.x, 0f, v.z);
+            float angle1 = Vector3.Angle(testV, Vector3.forward);
+            float angle2 = Vector3.Angle(testV, Vector3.back);
+            //Wall-running N/S: use wall-run side to determine bounded area
+            if (angle1 == 0 && angle2 == 180 && wallRunningRight)
             {
-                wrapAroundRotationCircle = true;
+                angle1 = -angle1;
+                angle2 = -angle2;
             }
-        }
-        //Wall-running on an angled surface (not perfectly N/S or E/W) 
-        else if (wallRunAngle1 > 0 && wallRunAngle2 > 0)
-        {
-            //Determine the polarity of these angles using cross product
-            Vector3 cross = Vector3.Cross(testV, Vector3.forward);
-            if (cross.y > 0)
+            //Wall-running N/S: use wall-run side to determine bounded area
+            else if (angle1 == 180 && angle2 == 0 && wallRunningLeft)
             {
-                wallRunAngle1 = -wallRunAngle1;
+                angle1 = -angle1;
+                angle2 = -angle2;
             }
-            cross = Vector3.Cross(testV, Vector3.back);
-            if (cross.y > 0)
+            //Wall-running E/W (90 degree to 90 degree)
+            else if (angle1 == 90 && angle2 == 90)
             {
-                wallRunAngle2 = -wallRunAngle2;
+                //Reverse one of the angles to get -90 and 90
+                angle1 = -angle1;
+                //Determine if our range should be -90 -> 90 or -90 -> -180, 180 -> 90 
+                if (Vector3.back == wallRunNormal)
+                {
+                    wrapAroundRotationCircle = true;
+                }
             }
-            //Determine whether the -180/+180 point is contained in bounded area
-            float normalForwardAngle = Vector3.Angle(wallRunNormal, Vector3.forward);
-            float normalBackAngle = Vector3.Angle(wallRunNormal, Vector3.back);
-            //If the normal is closer to Back vector then it is contained
-            if (normalBackAngle < normalForwardAngle)
+            //Wall-running on an angled surface (not perfectly N/S or E/W) 
+            else if (angle1 > 0 && angle2 > 0)
             {
-                wrapAroundRotationCircle = true;
+                //Determine the polarity of these angles using cross product
+                Vector3 cross = Vector3.Cross(testV, Vector3.forward);
+                if (cross.y > 0)
+                {
+                    angle1 = -angle1;
+                }
+                cross = Vector3.Cross(testV, Vector3.back);
+                if (cross.y > 0)
+                {
+                    angle2 = -angle2;
+                }
+                //Determine whether the -180/+180 point is contained in bounded area
+                float normalForwardAngle = Vector3.Angle(wallRunNormal, Vector3.forward);
+                float normalBackAngle = Vector3.Angle(wallRunNormal, Vector3.back);
+                //If the normal is closer to Back vector then it is contained
+                if (normalBackAngle < normalForwardAngle)
+                {
+                    wrapAroundRotationCircle = true;
+                }
             }
-        }
-        else
-        {
-            wrapAroundRotationCircle = false;
+            else
+            {
+                wrapAroundRotationCircle = false;
+            }
+            //When starting to wall-run simply set the angles immediately
+            //if (init)
+            //{
+                wallRunAngle1 = angle1;
+                wallRunAngle2 = angle2;
+            //}
+            //Lerp between each frame's change in angles for when running along curved walls
+            /*else
+            {
+                wallRunAngle1 = Mathf.Lerp(wallRunAngle1, angle1, 10 * Time.deltaTime);
+                wallRunAngle2 = Mathf.Lerp(wallRunAngle2, angle2, 10 * Time.deltaTime);
+            }*/
         }
     }
 
@@ -308,13 +329,14 @@ public class WallRunController : AbstractBehavior {
 			RaycastHit lHit;
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-			Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 0.825f);
-			Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, 0.825f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, 0.825f);
-			Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, 0.825f);
+            float rayDistance = isWallRunning() ? 2f : 1f;
+            Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 0.825f);
+            Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, rayDistance);
+            Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, rayDistance);
+            Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, rayDistance);
 
-			//Check the angle between our velocity any wall we may have impacted
-			bool rightGood = false;
+            //Check the angle between our velocity any wall we may have impacted
+            bool rightGood = false;
 			bool leftGood = false;
 			Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 			if(Vector3.Angle(testV, rHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
@@ -405,7 +427,7 @@ public class WallRunController : AbstractBehavior {
 				wallJumped = false;
                 return bHit;
 			}
-		}
+        }
 		else if(wallRunTimer <= 0 && !wallSticking)
 		{
 			wallRunningDisabled = true;

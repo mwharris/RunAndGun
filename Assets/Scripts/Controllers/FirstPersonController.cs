@@ -253,18 +253,12 @@ public class FirstPersonController : AbstractBehavior
 
 	void HandleControllerInput()
 	{
-		//Apply any horizontal look rotation
-		bool rotationSet = false;
-		//Rotate normally if we are not wall-running OR our look rotation while wall-running is normal
-		if(!rotationSet)
-		{
-            //Build a LookRotationInput object for better passing of arguments in the following function calls
-            LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
-            //Handle any look rotation updates due to wall-running
-            wallRunController.SetWallRunLookRotationInputs(lri, playerCamera);
-            //Finally apply our look rotation
-            playerLook.LookRotation(lri);
-		}
+        //Build a LookRotationInput object for better passing of arguments in the following function calls
+        LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
+        //Handle any look rotation updates due to wall-running
+        wallRunController.SetWallRunLookRotationInputs(lri, playerCamera);
+        //Finally apply our look rotation
+        playerLook.LookRotation(lri);
 	}
 
 	//Handle any WASD or arrow key movement
