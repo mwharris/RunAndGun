@@ -72,8 +72,6 @@ public class FirstPersonController : AbstractBehavior
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
-		//Lock the mouse cursor
-		Cursor.lockState = CursorLockMode.Locked;
 		//Get a reference to the audio source
 		aSource = GetComponent<AudioSource>();
 		//Keep track of how long our walk audio delay should be

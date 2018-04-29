@@ -62,11 +62,6 @@ public class MenuController : AbstractBehavior
 				TogglePauseMenu(false);
 			}
 		}
-		//Lock the cursor if Lock button was hit
-		if(isGamePlaying && isLockDown) 
-		{
-			Cursor.lockState = CursorLockMode.Locked;
-		}
 	}
 
 	public void TogglePauseMenu(bool mainMenu)
@@ -91,15 +86,17 @@ public class MenuController : AbstractBehavior
 		{
 			//Call the NetworkManager to disconnect from the server
 			nm.Disconnect();
-		}
+            //Unlock the mouse cursor
+            UnlockMouseCursor();
+        }
 	}
 
 	void ShowPauseMenu()
 	{
-		//Unlock the mouse cursor
-		Cursor.lockState = CursorLockMode.None;
-		//Simply set the pause panel to active
-		pausePanel.gameObject.SetActive(true);
+        //Unlock the mouse cursor
+        UnlockMouseCursor();
+        //Simply set the pause panel to active
+        pausePanel.gameObject.SetActive(true);
 		//Default select the main menu button
 		Transform menuButton = pausePanel.GetChild(1);
 		menuButton.GetComponent<Selectable>().Select();
@@ -107,10 +104,10 @@ public class MenuController : AbstractBehavior
 
 	void HidePauseMenu()
 	{
-		//Lock the mouse cursor
-		Cursor.lockState = CursorLockMode.Locked;
-		//Simply set the pause panel to inactive
-		pausePanel.gameObject.SetActive(false);
+        //Lock the mouse cursor
+        LockMouseCursor();
+        //Simply set the pause panel to inactive
+        pausePanel.gameObject.SetActive(false);
 	}
 
 	public void ToggleOptionsMenu()
@@ -134,10 +131,10 @@ public class MenuController : AbstractBehavior
 	{
 		//Hide the pause menu
 		HidePauseMenu();
-		//Unlock the mouse cursor
-		Cursor.lockState = CursorLockMode.None;
-		//Simply set the Options menu to active
-		optionsPanel.gameObject.SetActive(true);
+        //Unlock the mouse cursor
+        UnlockMouseCursor();
+        //Simply set the Options menu to active
+        optionsPanel.gameObject.SetActive(true);
 		//Default select the Close button
 		Transform closeButton = optionsPanel.transform.GetChild(4);
 		closeButton.GetComponent<Selectable>().Select();
@@ -147,10 +144,10 @@ public class MenuController : AbstractBehavior
 	{
 		//Hide the pause menu
 		ShowPauseMenu();
-		//Unlock the mouse cursor
-		Cursor.lockState = CursorLockMode.None;
-		//Simply set the Options menu to active
-		optionsPanel.gameObject.SetActive(false);
+        //Unlock the mouse cursor
+        UnlockMouseCursor();
+        //Simply set the Options menu to active
+        optionsPanel.gameObject.SetActive(false);
 	}
 
 	//Update the mouse sensitivity in the First Person Controller
@@ -164,4 +161,16 @@ public class MenuController : AbstractBehavior
 	{
 		invertY = newValue;
 	}
+
+    private void LockMouseCursor()
+    {
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+    }
+
+    private void UnlockMouseCursor()
+    {
+        Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
+    }
 }

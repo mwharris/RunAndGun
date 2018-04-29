@@ -132,8 +132,11 @@ public class NetworkManager : MonoBehaviour {
 		ammoUI.SetActive(true);
 		//Enable the camera reticle
 		EnableReticle();
-		//Disable the lobby camera
-		lobbyCamera.gameObject.SetActive(false);
+        //Lock the cursor
+        Cursor.lockState = CursorLockMode.Locked;
+        Cursor.visible = false;
+        //Disable the lobby camera
+        lobbyCamera.gameObject.SetActive(false);
 	}
 
 	public void Disconnect()
@@ -156,6 +159,7 @@ public class NetworkManager : MonoBehaviour {
 		menu.transform.GetChild(5).GetComponent<Selectable>().Select();
 		//Unlock the cursor
 		Cursor.lockState = CursorLockMode.None;
+        Cursor.visible = true;
 		//Mark our Game State as none
 		gm.ChangeGameState(GameManager.GameState.none);
 	}
