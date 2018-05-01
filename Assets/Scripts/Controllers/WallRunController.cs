@@ -5,14 +5,17 @@ using UnityEngine;
 public class WallRunController : AbstractBehavior {
 
 	[HideInInspector] public bool wallSticking = false;
+    [HideInInspector] public bool wallStickVelocitySet = false;
 
 	private bool wallRunningLeft = false;
 	private bool wallRunningRight = false;
 	private bool wallRunningBack = false;
 	private bool initWallRun = false;
     private bool wallJumped = false;
+
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
+
 	private bool wallRunningDisabled = false;
 	private float wallRunningDisabledTimer = 0.0f;
 	private float wallRunTimer = 0.0f;
@@ -53,7 +56,7 @@ public class WallRunController : AbstractBehavior {
 		{
 			//Start the timer
 			wallRunTimer = wallRunMax;
-			//Play a networked landing sound
+            //Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset the jump counter
 			jumpController.ResetJumps();
@@ -80,8 +83,8 @@ public class WallRunController : AbstractBehavior {
         }
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
-		{
-			//Deactivate wall-running
+        {
+            //Deactivate wall-running
             ResetActiveVars();
         }
 
@@ -124,6 +127,7 @@ public class WallRunController : AbstractBehavior {
 			{
 				velocity.y = 0;
             }
+            initWallRun = false;
         }
 		//W will speed up movement slightly and S will slow down movement slightly
 		float scaleVal = 0.0f;
@@ -150,21 +154,16 @@ public class WallRunController : AbstractBehavior {
 		//Make sure we don't move too fast
 		velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
 		velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
-        //Determine wall run angles when we start wall-running
-        //if (initWallRun || reclampRotation)
-        //{
-            //reclampRotation = false;
-            FindWallRunClampAngles(velocity, initWallRun);
-            initWallRun = false;
-        //}
+        //Set look rotation clamp angles with a proper velocity
+        FindWallRunClampAngles(velocity);
         return velocity;
 	}
 
     //Calculate the angles to clamp the player's look rotation while wall-running
-    private void FindWallRunClampAngles(Vector3 v, bool init)
+    public void FindWallRunClampAngles(Vector3 v)
     {
         //If we're wall-running backwards we don't want to reclamp
-        if (wallRunningLeft || wallRunningRight)
+        if (wallRunningLeft || wallRunningRight || (wallSticking && initWallRun))
         {
             //Get the angles between velocity and North and velocity and South
             Vector3 testV = new Vector3(v.x, 0f, v.z);
@@ -220,26 +219,19 @@ public class WallRunController : AbstractBehavior {
             {
                 wrapAroundRotationCircle = false;
             }
-            //When starting to wall-run simply set the angles immediately
-            //if (init)
-            //{
-                wallRunAngle1 = angle1;
-                wallRunAngle2 = angle2;
-            //}
-            //Lerp between each frame's change in angles for when running along curved walls
-            /*else
-            {
-                wallRunAngle1 = Mathf.Lerp(wallRunAngle1, angle1, 10 * Time.deltaTime);
-                wallRunAngle2 = Mathf.Lerp(wallRunAngle2, angle2, 10 * Time.deltaTime);
-            }*/
+            wallRunAngle1 = angle1;
+            wallRunAngle2 = angle2;
         }
     }
 
-    public void SetWallRunLookRotationInputs(LookRotationInput lri, Camera playerCamera)
+    public void SetWallRunLookRotationInputs(LookRotationInput lri, Camera playerCamera, Vector3 velocity)
     {
+        //Calculate the correct camera tilt based on wall-run side
         lri.wallRunZRotation = CalculateCameraTilt(playerCamera);
+        //Calculate the clamp angles for look rotation
         lri.wallRunAngle1 = wallRunAngle1;
         lri.wallRunAngle2 = wallRunAngle2;
+        //Also pass whether our angle wrap around the +180/-180 threshold
         lri.wrapAround = wrapAroundRotationCircle;
     }
 
@@ -319,9 +311,10 @@ public class WallRunController : AbstractBehavior {
 	 * Perform raycast to check wall-running rules; return the hit location
 	 */
 	public RaycastHit DoWallRunCheck(Vector3 velocity, GameObject playerBody, bool isGrounded)
-	{
-		//If we're not grounded and we haven't disabled wall-running
-		if(!isGrounded && ((isWallRunning() && (wallRunTimer > 0 || wallSticking)) || !isWallRunning()))
+    {
+        bool currentlyWallRunning = isWallRunning() && (wallRunTimer > 0 || wallSticking);
+        //If we're not grounded and we haven't disabled wall-running
+        if (!isGrounded && (currentlyWallRunning || !isWallRunning()))
 		{
 			//Raycast in several directions to see if we are wall-running
 			RaycastHit vHit;
@@ -375,6 +368,10 @@ public class WallRunController : AbstractBehavior {
                 else if (wallRunningLeft || wallRunningBack) 
                 {
                     reclampRotation = true;
+                }
+                else if (!wallSticking)
+                {
+                    Debug.Log("");
                 }
 				//Flag the side we are wall-running
 				wallRunningLeft = false;
@@ -533,6 +530,7 @@ public class WallRunController : AbstractBehavior {
 		{
 			wallSticking = true;
 			wallRunTimer = 0f;
+            initWallRun = false;
 		}
 		else
 		{

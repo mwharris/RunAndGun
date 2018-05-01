@@ -127,10 +127,10 @@ public class FirstPersonController : AbstractBehavior
         HandleGravity();
 		//Handle jumping of the player
 		HandleJumping();
-		//Tell the wall-run controller to handle any wall-running tasks
-		wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
         //Tell the wall-run controller to also handle any wall-sticking tasks
         wallRunController.HandleWallSticking(shootContoller.isAiming);
+        //Tell the wall-run controller to handle any wall-running tasks
+        wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -148,7 +148,7 @@ public class FirstPersonController : AbstractBehavior
 		}
 		//Move the char controller
 		cc.Move(inputState.playerVelocity * Time.deltaTime);
-	}
+    }
 
 	void GatherOptions()
 	{
@@ -209,7 +209,6 @@ public class FirstPersonController : AbstractBehavior
 			horizontalRot += inputState.GetButtonValue(inputs[7]);
 
 			lookInput = new Vector2(verticalRot, horizontalRot);
-			//Debug.Log(lookInput);
 		}
 	}
 
@@ -254,7 +253,7 @@ public class FirstPersonController : AbstractBehavior
         //Build a LookRotationInput object for better passing of arguments in the following function calls
         LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
         //Handle any look rotation updates due to wall-running
-        wallRunController.SetWallRunLookRotationInputs(lri, playerCamera);
+        wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotation
         playerLook.LookRotation(lri);
 	}
@@ -268,9 +267,11 @@ public class FirstPersonController : AbstractBehavior
 
 		//Grounded movement
 		if(inputState.playerIsGrounded)
-		{
-			//Apply movement speed based on crouching, sprinting, or standing
-			if(inputState.playerIsCrouching || shootContoller.isAiming)
+        {
+            //Make sure we reset wall-sticking vars
+            wallRunController.wallStickVelocitySet = false;
+            //Apply movement speed based on crouching, sprinting, or standing
+            if (inputState.playerIsCrouching || shootContoller.isAiming)
 			{
 				forwardSpeed *= crouchController.CrouchMovementSpeed;
 				sideSpeed *= crouchController.CrouchMovementSpeed;
@@ -321,23 +322,33 @@ public class FirstPersonController : AbstractBehavior
 
 			//If we're wall-sticking
 			if(wallRunController.wallSticking)
-			{
-				//Stop all movement
-				inputState.playerVelocity = Vector3.zero;
-			}
+            {
+                //Calculate our wall-running velocity in order to set clamp angles
+                if (!wallRunController.wallStickVelocitySet)
+                {
+                    wallRunController.wallStickVelocitySet = true;
+                    wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
+                }
+                //Stop all movement
+                inputState.playerVelocity = Vector3.zero;
+            }
 			//If we're wall-running
 			else if(wallRunController.isWallRunning())
-			{
-				//Calculate our wall-running velocity
-				inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
-				//Play footstep FX while wall-running
-				PlayFootStepAudio(false, true);
+            {
+                //Make sure we reset wall-sticking vars
+                wallRunController.wallStickVelocitySet = false;
+                //Calculate our wall-running velocity
+                inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
+                //Play footstep FX while wall-running
+                PlayFootStepAudio(false, true);
 			}
 			//If we're airborne and not wall-running
 			else
-			{
-				//Get the movement input
-				forwardSpeed = forwardSpeed * (movementSpeed/10);
+            {
+                //Make sure we reset wall-sticking vars
+                wallRunController.wallStickVelocitySet = false;
+                //Get the movement input
+                forwardSpeed = forwardSpeed * (movementSpeed/10);
 				sideSpeed = sideSpeed * (movementSpeed/10);
 				//Add the x / z movement
 				if(forwardSpeed != 0 && inputState.allowAirMovement)
