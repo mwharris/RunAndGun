@@ -450,8 +450,16 @@ public class WallRunController : AbstractBehavior {
 				}
 				//..and wall running is not disabled
 				else if(!wallRunningDisabled){
-					//Allow wall running
-					return true;
+                    //Make sure we are not getting caught on another face of the same object
+                    Vector3 testOldNormal = new Vector3(wallRunNormal.x, 0f, wallRunNormal.z);
+                    Vector3 testNewNormal = new Vector3(hit.normal.x, 0f, hit.normal.z);
+                    if (Vector3.Angle(testOldNormal, testNewNormal) >= 90 && lastWallName == hit.transform.name)
+                    {
+                        Debug.Log("Caught!");
+                        return false;
+                    }
+                    //Otherwise we're good to go
+                    return true;
 				}
 			}
 		}
