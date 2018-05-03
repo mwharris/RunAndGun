@@ -113,7 +113,7 @@ public class WallRunController : AbstractBehavior {
 		//Check the angle between where we are looking and the wall's normal
 		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 		//Flip the velocity if we're facing the opposite direction of our velocity
-		if(Vector3.Angle(transform.forward, testV) > 90)
+		if(Vector3.Angle(transform.forward, testV) > 110)
 		{
 			wallRunDirection = new Vector3(-wallRunDirection.x, wallRunDirection.y, -wallRunDirection.z);
 		}
@@ -322,7 +322,7 @@ public class WallRunController : AbstractBehavior {
 			RaycastHit lHit;
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
-            float rayDistance = isWallRunning() ? 2f : 1f;
+            float rayDistance = isWallRunning() ? 1.5f : 0.825f;
             Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 0.825f);
             Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, rayDistance);
             Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, rayDistance);
@@ -368,10 +368,6 @@ public class WallRunController : AbstractBehavior {
                 else if (wallRunningLeft || wallRunningBack) 
                 {
                     reclampRotation = true;
-                }
-                else if (!wallSticking)
-                {
-                    Debug.Log("");
                 }
 				//Flag the side we are wall-running
 				wallRunningLeft = false;

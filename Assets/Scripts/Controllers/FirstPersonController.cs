@@ -104,10 +104,10 @@ public class FirstPersonController : AbstractBehavior
 
 	void Update () {
 		//Test stuff
-		Debug.DrawRay(transform.position, transform.right * 1f);
-		Debug.DrawRay(transform.position, -transform.right * 1f);
-		Debug.DrawRay(transform.position, transform.forward * 1f);
-		Debug.DrawRay(transform.position, -transform.forward * 1f);
+		Debug.DrawRay(transform.position, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(transform.position, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(transform.position, transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(transform.position, -transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
 		Debug.DrawRay(transform.position, testV);
 

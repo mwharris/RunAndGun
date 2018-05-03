@@ -84,7 +84,6 @@ public class ShootController : AbstractBehavior
 	bool CheckForTriggerPull() {
 		bool ret = false;
 		float currTriggerVal = Input.GetAxis("Fire1");
-		Debug.Log("PULL: " + currTriggerVal);
 		if (currTriggerVal > 0 && currTriggerVal > lastTriggerVal + 0.2f) {
 			ret = true;
 		}
