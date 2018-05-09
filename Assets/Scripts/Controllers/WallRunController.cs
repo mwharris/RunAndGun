@@ -105,59 +105,66 @@ public class WallRunController : AbstractBehavior {
         //}
     }
 
-	/*
+    /*
 	 * Handle velocity calculations while the player is wall-running
 	 */
-	public Vector3 SetWallRunVelocity(Vector3 velocity, bool isWPressed, bool isSPressed)
-	{
-		//Check the angle between where we are looking and the wall's normal
-		Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
-		//Flip the velocity if we're facing the opposite direction of our velocity
-		if(Vector3.Angle(transform.forward, testV) > 110)
-		{
-			wallRunDirection = new Vector3(-wallRunDirection.x, wallRunDirection.y, -wallRunDirection.z);
-		}
-		//The velocity should be in the direction we're facing, parallel to the wall
-		velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
-		//If we just initialized wall-running
-		if(initWallRun)
-		{
-			//Reset the y velocity if we're falling but we've activated wall-running
-			if(velocity.y < 0)
-			{
-				velocity.y = 0;
+    public Vector3 SetWallRunVelocity(Vector3 velocity, bool isWPressed, bool isSPressed)
+    {
+        //Check the angle between where we are looking and the wall's normal
+        Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+        //Flip the velocity if we're facing the opposite direction of our velocity
+        if (Vector3.Angle(transform.forward, testV) > 110)
+        {
+            wallRunDirection = new Vector3(-wallRunDirection.x, wallRunDirection.y, -wallRunDirection.z);
+        }
+        //The velocity should be in the direction we're facing, parallel to the wall
+        velocity = new Vector3(wallRunDirection.x, velocity.y, wallRunDirection.z);
+        //Reset the y velocity if we're falling but we've activated wall-running
+        if (initWallRun)
+        {
+            if (velocity.y < 0)
+            {
+                velocity.y = 0;
             }
             initWallRun = false;
         }
-		//W will speed up movement slightly and S will slow down movement slightly
-		float scaleVal = 0.0f;
-		//Scale the Vector up to 14 units if we're holding forward
-		if(isWPressed)
-		{
-			Vector3 temp = new Vector3(velocity.x, 0, velocity.z);
-			Vector3 nVelocity = temp.normalized * 14;
-			//Keep the y-velocity the same
-			nVelocity.y = velocity.y;
-			velocity = nVelocity;
-		}
-		//Slow us down 25% if we're holding backwards
-		if(isSPressed)
-		{
-			scaleVal = 0.75f;
-		}
-		//Scale the X and Z values by the scale value and clamp
-		if(scaleVal > 0)
-		{
-			velocity.x *= scaleVal;
-			velocity.z *= scaleVal;
-		}
-		//Make sure we don't move too fast
-		velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
-		velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
+        //Scale the Vector up to 14 units if we're holding forward
+        if (isWPressed)
+        {
+            //Special case: our wallRunDirection / velocity in X and Z is 0
+            if (velocity.x == 0f && velocity.z == 0f)
+            {
+                //Determine which direction we are looking relative to the wallRunNormal
+                float angle = Vector3.Angle(transform.forward, wallRunNormal);
+                float dir = AngleDir(wallRunNormal, transform.forward, transform.up);
+                //Depending on which way we are looking, start moving in that direction
+                if (angle > 20)
+                {
+                    Vector3 temp = Quaternion.AngleAxis(dir > 0 ? 90 : -90, Vector3.up) * wallRunNormal * 14;
+                    velocity = new Vector3(temp.x, velocity.y, temp.z);
+                }
+            }
+            else
+            {
+                Vector3 temp = new Vector3(velocity.x, 0, velocity.z);
+                Vector3 nVelocity = temp.normalized * 14;
+                nVelocity.y = velocity.y;
+                velocity = nVelocity;
+            }
+        }
+        //Slow us down 25% if we're holding backwards
+        if (isSPressed)
+        {
+            velocity.x *= 0.75f;
+            velocity.z *= 0.75f;
+        }
+        //Make sure we don't move too fast
+        velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
+        velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
         //Set look rotation clamp angles with a proper velocity
         FindWallRunClampAngles(velocity);
         return velocity;
-	}
+    }
 
     //Calculate the angles to clamp the player's look rotation while wall-running
     public void FindWallRunClampAngles(Vector3 v)
@@ -553,5 +560,24 @@ public class WallRunController : AbstractBehavior {
         wallRunAngle1 = 0f;
         wallRunAngle2 = 0f;
         wallRunTimer = 0.0f;
+    }
+
+    //Returns -1 when to the left, 1 to the right, and 0 for forward/backward
+    float AngleDir(Vector3 fwd, Vector3 targetDir, Vector3 up)
+    {
+        Vector3 perp = Vector3.Cross(fwd, targetDir);
+        float dir = Vector3.Dot(perp, up);
+        if (dir > 0f)
+        {
+            return 1f;
+        }
+        else if (dir < 0f)
+        {
+            return -1f;
+        }
+        else
+        {
+            return 0f;
+        }
     }
 }
