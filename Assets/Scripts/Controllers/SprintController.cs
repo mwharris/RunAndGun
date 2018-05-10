@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityStandardAssets.Utility;
 
 [RequireComponent(typeof (ShootController))]
 [RequireComponent(typeof (CrouchController))]

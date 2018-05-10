@@ -97,7 +97,7 @@ public class CrouchController : AbstractBehavior {
 					camLocalPos.y = LowerHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, crouchCamHeight);
 				}
 			}
-			else if(cc.isGrounded)
+			else if(cc.isGrounded && cameraResetting)
 			{
 				if(bodyLocalScale.y < standardBodyScale)
 				{

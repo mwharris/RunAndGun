@@ -1,7 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
-using UnityStandardAssets.Utility;
 
 public class PlayerJump : AbstractBehavior {
 
@@ -15,14 +14,14 @@ public class PlayerJump : AbstractBehavior {
 	private FXManager fxManager;
 	private GameManager gm;
 	private AudioSource aSource;
-
-	[SerializeField] private LerpControlledBob jumpBob = new LerpControlledBob();
+    private LerpControlledBob jumpBob;
 
 	void Start()
 	{
 		jumps = maxJumps;
 		wallRunController = GetComponent<WallRunController>();
-		fxManager = GameObject.FindObjectOfType<FXManager>();
+        jumpBob = GetComponent<LerpControlledBob>();
+        fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
 		gm = GameObject.FindObjectOfType<GameManager>();
 	}

@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using System.Collections;
-using UnityStandardAssets.Utility;
 
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (WallRunController))]
@@ -64,11 +63,11 @@ public class FirstPersonController : AbstractBehavior
 	private ShootController shootContoller;
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
-	[SerializeField] private LerpControlledBob jumpBob = new LerpControlledBob();
+	private LerpControlledBob jumpBob;
 	[SerializeField] private PlayerLook playerLook;
-	////////////////////////////////////////////
+    ////////////////////////////////////////////
 
-	void Start () {
+    void Start () {
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
@@ -86,20 +85,24 @@ public class FirstPersonController : AbstractBehavior
 		crouchController = GetComponent<CrouchController>();
 		wallRunController = GetComponent<WallRunController>();
 		shootContoller = GetComponent<ShootController>();
-		//Initiliaze crouch controller variables
-		crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
-		//Initialize player looking mechanics
-		playerLook.Init(transform, playerCamera.transform);
-	}
+        jumpBob = GetComponent<LerpControlledBob>();
+        //Initiliaze crouch controller variables
+        crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
+        //Initialize player looking mechanics
+        playerLook.Init(transform, playerCamera.transform);
+    }
 
 	void FixedUpdate () {
 		//Crouching camera changes clash with jump bob camera changes
 		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
 		{
-			//Apply a head bob when we jump
+			//Apply updates to local position from crouching and head bob
 			Vector3 localPos = playerCamera.transform.localPosition;
-			playerCamera.transform.localPosition = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
-		}
+            //Not crouching so reset camera to normal position
+			localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
+            //Apply the changes we made above
+            playerCamera.transform.localPosition = localPos;
+        }
 	}
 
 	void Update () {
