@@ -7,6 +7,7 @@
 /[Bb]uilds/
 /Assets/AssetStoreTools*
 /RunNGun_Data/
+/FPS_Pack_Intro_Video/
 
 # Visual Studio 2015 cache directory
 /.vs/
@@ -25,6 +26,8 @@ ExportedObj/
 *.booproj
 *.svd
 *.pdb
+FPS_Pack_Intro_Video.zip
+FPS_Pack_Intro_Video.zip.meta
 
 # Unity3D generated meta files
 *.pidb.meta
