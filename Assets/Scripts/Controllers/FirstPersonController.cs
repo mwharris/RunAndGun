@@ -311,11 +311,13 @@ public class FirstPersonController : AbstractBehavior
 			} 
 			else 
 			{
+                Debug.Log("Before: " + inputState.playerVelocity);
 				inputState.playerVelocity += forwardSpeed * transform.forward;
 				inputState.playerVelocity += sideSpeed * transform.right;
-				//inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
-				//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
-			}
+                Debug.Log("After: " + inputState.playerVelocity);
+                //inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
+                //inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
+            }
 		}
 		//Air / Wall-running movement
 		else
@@ -365,7 +367,7 @@ public class FirstPersonController : AbstractBehavior
 					//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 				}
 			}
-		}
+        }
 	}
 
 	//Pull the player down continuously unless we are grounded
