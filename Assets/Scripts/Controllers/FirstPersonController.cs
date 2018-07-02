@@ -93,7 +93,8 @@ public class FirstPersonController : AbstractBehavior
     }
 
 	void FixedUpdate () {
-		//Crouching camera changes clash with jump bob camera changes
+		/*
+        //Crouching camera changes clash with jump bob camera changes
 		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
 		{
 			//Apply updates to local position from crouching and head bob
@@ -103,6 +104,7 @@ public class FirstPersonController : AbstractBehavior
             //Apply the changes we made above
             playerCamera.transform.localPosition = localPos;
         }
+        */
 	}
 
 	void Update () {
@@ -286,7 +288,7 @@ public class FirstPersonController : AbstractBehavior
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
 				//Enable head bob while sprinting
-				headBobScript.enabled = true;
+				//headBobScript.enabled = true;
 			}
 			else
 			{
@@ -311,10 +313,10 @@ public class FirstPersonController : AbstractBehavior
 			} 
 			else 
 			{
-                Debug.Log("Before: " + inputState.playerVelocity);
+                //Debug.Log("Before: " + inputState.playerVelocity);
 				inputState.playerVelocity += forwardSpeed * transform.forward;
 				inputState.playerVelocity += sideSpeed * transform.right;
-                Debug.Log("After: " + inputState.playerVelocity);
+                //Debug.Log("After: " + inputState.playerVelocity);
                 //inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
                 //inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
             }

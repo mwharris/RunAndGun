@@ -1,72 +1,78 @@
-﻿using System.Collections;
+﻿using UnityEngine;
+using System.Collections;
 using System.Collections.Generic;
-using UnityEngine;
 
-public class ControlAnimations : MonoBehaviour
+public class ControlAnimations : AbstractBehavior
 {
+    public Animator anim;
 
-    private Animator anim;
+    private bool isForwardPressed = false;
+    private bool isBackwardPressed = false;
+    private bool isLeftPressed = false;
+    private bool isRightPressed = false;
+    private bool isAimPressed = false;
+    private bool isJumpPressed = false;
 
-    private void Start()
+    private void setInputVars()
     {
-        anim = GetComponent<Animator>();
+        isForwardPressed  = inputState.GetButtonPressed(inputs[0]);
+        isBackwardPressed = inputState.GetButtonPressed(inputs[1]);
+        isLeftPressed     = inputState.GetButtonPressed(inputs[2]);
+        isRightPressed    = inputState.GetButtonPressed(inputs[3]);
+        isAimPressed      = inputState.GetButtonPressed(inputs[4]);
+        isJumpPressed     = inputState.GetButtonPressed(inputs[5]);
     }
 
     void Update()
     {
-        if (Input.GetKey(KeyCode.W))
-        {
+        setInputVars();
+
+        if (isForwardPressed)
             anim.SetBool("WalkForward", true);
-        }
-        else
-        {
+        else                  
             anim.SetBool("WalkForward", false);
-        }
 
-        if (Input.GetKey(KeyCode.S))
-        {
+        if (isBackwardPressed)
             anim.SetBool("WalkBackward", true);
-        }
         else
-        {
             anim.SetBool("WalkBackward", false);
-        }
 
-        if (Input.GetKey(KeyCode.A))
-        {
+        if (isLeftPressed)
             anim.SetBool("WalkLeft", true);
-        }
         else
-        {
             anim.SetBool("WalkLeft", false);
-        }
 
-        if (Input.GetKey(KeyCode.D))
-        {
+        if (isRightPressed)
             anim.SetBool("WalkRight", true);
-        }
         else
-        {
             anim.SetBool("WalkRight", false);
-        }
 
-        if (Input.GetKey(KeyCode.LeftShift) || Input.GetKey(KeyCode.RightShift))
-        {
+        if (inputState.playerIsSprinting)
             anim.SetBool("Sprinting", true);
-        }
         else
-        { 
             anim.SetBool("Sprinting", false);
-        }
         
-        if (Input.GetKey(KeyCode.Mouse1))
-        {
+        if (isAimPressed)
             anim.SetBool("Aiming", true);
-        }
         else
-        {
             anim.SetBool("Aiming", false);
-        }
+
+        if (inputState.playerIsCrouching)
+            anim.SetBool("Crouching", true);
+        else
+            anim.SetBool("Crouching", false);
+
+        anim.SetBool("Jumping", !inputState.playerIsGrounded);
+        anim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
+
+        var fwdSpeed = Vector3.Dot(inputState.playerVelocity, transform.forward);
+        var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);
+        anim.SetFloat("ForwardSpeed", fwdSpeed);
+        anim.SetFloat("SideSpeed", sideSpeed);
+        Debug.Log("Forward: " + fwdSpeed);
+        Debug.Log("SideSpeed: " + sideSpeed);
     }
     
+
+
 }

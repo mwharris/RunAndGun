@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: af40159c029e746e68386f4b4ddb50cb
+guid: 231c0c4a1dafa41f1babc738094761f2
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
@@ -128,7 +128,7 @@ ModelImporter:
     400120: //RootNode
     400122: WorldJoint
     4300000: HumanoidAvatar2_0
-    7400000: Walk_Forward_HipAimed_SH
+    7400000: Walk_Backward_HipAimed_SH
     9500000: //RootNode
     13700000: HumanoidAvatar2_0
     2186277476908879412: ImportLogs
@@ -165,7 +165,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Walk_Forward_HipAimed_SH
+      name: Walk_Backward_HipAimed_SH
       takeName: Take 001
       firstFrame: 0
       lastFrame: 30
@@ -177,7 +177,7 @@ ModelImporter:
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 0
-      loopBlendOrientation: 0
+      loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 1

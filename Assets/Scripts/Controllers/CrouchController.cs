@@ -59,6 +59,7 @@ public class CrouchController : AbstractBehavior {
 	 */
 	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameObject playerBody, GameManager.GameState gs)
 	{
+        
 		if (gs == GameManager.GameState.playing) 
 		{
 			bool isCrouchDown = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
@@ -67,6 +68,7 @@ public class CrouchController : AbstractBehavior {
 			{
 				ToggleCrouch();
 			}
+            /*
 			//Store the local position for modification
 			Vector3 camLocalPos = playerCamera.transform.localPosition;
 			Vector3 bodyLocalPos = playerBody.transform.localPosition;
@@ -131,13 +133,14 @@ public class CrouchController : AbstractBehavior {
 			playerBody.transform.localScale = bodyLocalScale;
 			cc.height = ccHeight;
 			cc.center = ccCenter;
-		}
-	}
+            */
+		}    
+    }
 
-	/**
-	 * Helper function to toggle crouching flags
-	 */ 
-	public void ToggleCrouch()
+    /**
+        * Helper function to toggle crouching flags
+        */
+    public void ToggleCrouch()
 	{
 		if(inputState.playerIsCrouching)
 		{

@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: 231c0c4a1dafa41f1babc738094761f2
+guid: fe22691c2b3094af1a2e742f101beaf8
 ModelImporter:
   serializedVersion: 22
   fileIDToRecycleName:
@@ -60,10 +60,10 @@ ModelImporter:
     100108: rightThumb1_Joint1
     100110: rightThumb1_Joint2
     100112: rightThumb1_Joint3
-    100114: spine1_loResSpine1
-    100116: spine1_loResSpine2
-    100118: spine1_loResSpine3
-    100120: //RootNode
+    100114: //RootNode
+    100116: spine1_loResSpine1
+    100118: spine1_loResSpine2
+    100120: spine1_loResSpine3
     100122: WorldJoint
     400000: head1_head
     400002: head1_neck
@@ -122,13 +122,13 @@ ModelImporter:
     400108: rightThumb1_Joint1
     400110: rightThumb1_Joint2
     400112: rightThumb1_Joint3
-    400114: spine1_loResSpine1
-    400116: spine1_loResSpine2
-    400118: spine1_loResSpine3
-    400120: //RootNode
+    400114: //RootNode
+    400116: spine1_loResSpine1
+    400118: spine1_loResSpine2
+    400120: spine1_loResSpine3
     400122: WorldJoint
     4300000: HumanoidAvatar2_0
-    7400000: Walk_Backward_HipAimed_SH
+    7400000: Run_Forward_Left_Aimed_SH
     9500000: //RootNode
     13700000: HumanoidAvatar2_0
     2186277476908879412: ImportLogs
@@ -149,9 +149,9 @@ ModelImporter:
     animationImportErrors: 
     animationImportWarnings: "\nClip 'Take 001' has import animation warnings that
       might lower retargeting quality:\nNote: Activate translation DOF on avatar to
-      improve retargeting quality.\n\t'leftLeg1_LoResLowerLeg' has translation animation
-      that will be discarded.\n\t'leftLeg1_LoResFoot' has translation animation that
-      will be discarded.\n"
+      improve retargeting quality.\n\t'spine1_loResSpine3' has translation animation
+      that will be discarded.\n\t'head1_head' has translation animation that will
+      be discarded.\n"
     animationRetargetingWarnings: 
     animationDoRetargetingWarnings: 0
     importAnimatedCustomProperties: 0
@@ -165,10 +165,10 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Walk_Backward_HipAimed_SH
+      name: Run_Forward_Left_Aimed_SH
       takeName: Take 001
       firstFrame: 0
-      lastFrame: 30
+      lastFrame: 20
       wrapMode: 0
       orientationOffsetY: 0
       level: 0
@@ -177,7 +177,7 @@ ModelImporter:
       hasAdditiveReferencePose: 0
       loopTime: 1
       loopBlend: 0
-      loopBlendOrientation: 0
+      loopBlendOrientation: 1
       loopBlendPositionY: 1
       loopBlendPositionXZ: 1
       keepOriginalOrientation: 1
