@@ -133,9 +133,9 @@ public class FirstPersonController : AbstractBehavior
 		//Handle jumping of the player
 		HandleJumping();
         //Tell the wall-run controller to also handle any wall-sticking tasks
-        wallRunController.HandleWallSticking(shootContoller.isAiming);
+        //wallRunController.HandleWallSticking(shootContoller.isAiming);
         //Tell the wall-run controller to handle any wall-running tasks
-        wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
+        //wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -313,10 +313,8 @@ public class FirstPersonController : AbstractBehavior
 			} 
 			else 
 			{
-                //Debug.Log("Before: " + inputState.playerVelocity);
 				inputState.playerVelocity += forwardSpeed * transform.forward;
 				inputState.playerVelocity += sideSpeed * transform.right;
-                //Debug.Log("After: " + inputState.playerVelocity);
                 //inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
                 //inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
             }
@@ -327,8 +325,9 @@ public class FirstPersonController : AbstractBehavior
 			//Disable head bob
 			headBobScript.enabled = false;
 
-			//If we're wall-sticking
-			if(wallRunController.wallSticking)
+            //If we're wall-sticking
+            /*
+            if (wallRunController.wallSticking)
             {
                 //Calculate our wall-running velocity in order to set clamp angles
                 if (!wallRunController.wallStickVelocitySet)
@@ -349,9 +348,10 @@ public class FirstPersonController : AbstractBehavior
                 //Play footstep FX while wall-running
                 PlayFootStepAudio(false, true);
 			}
+            */
 			//If we're airborne and not wall-running
-			else
-            {
+			//else
+            //{
                 //Make sure we reset wall-sticking vars
                 wallRunController.wallStickVelocitySet = false;
                 //Get the movement input
@@ -368,7 +368,7 @@ public class FirstPersonController : AbstractBehavior
 					inputState.playerVelocity += sideSpeed * transform.right;
 					//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 				}
-			}
+			//}
         }
 	}
 

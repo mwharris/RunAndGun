@@ -214,8 +214,11 @@ public class ShootController : AbstractBehavior
 		Vector3 hitPoint = Vector3.zero;
 		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
 
+        //Notify other controllers that we are shooting
+        inputState.playerIsShooting = true;
+
 		//Play the recoil animation AFTER determing shoot vector
-		animator.SetBool("Shoot", true);
+		animator.SetBool("Shoot", inputState.playerIsShooting);
 		StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
@@ -415,6 +418,7 @@ public class ShootController : AbstractBehavior
 	public IEnumerator WaitForRecoilDone(float time)
 	{
 		yield return new WaitForSeconds(time);
-		animator.SetBool("Shoot", false);
+        inputState.playerIsShooting = false;
+        animator.SetBool("Shoot", inputState.playerIsShooting);
 	}
 }

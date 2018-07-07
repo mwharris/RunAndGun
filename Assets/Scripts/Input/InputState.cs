@@ -17,7 +17,8 @@ public class InputState : MonoBehaviour {
 	[HideInInspector] public bool playerIsGrounded = false;
 	[HideInInspector] public bool playerIsSprinting = false;
 	[HideInInspector] public bool playerIsCrouching = false;
-	[HideInInspector] public Vector3 playerVelocity = Vector3.zero;
+    [HideInInspector] public bool playerIsShooting = false;
+    [HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;
 
 	public void SetButtonState(Buttons key, bool pressed, float value)

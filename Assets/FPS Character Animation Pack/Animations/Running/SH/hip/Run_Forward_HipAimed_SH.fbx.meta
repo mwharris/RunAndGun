@@ -166,7 +166,7 @@ ModelImporter:
     - serializedVersion: 16
       name: Run_Forward_HipAimed_SH
       takeName: Take 001
-      firstFrame: 0
+      firstFrame: 10
       lastFrame: 20
       wrapMode: 0
       orientationOffsetY: 0
