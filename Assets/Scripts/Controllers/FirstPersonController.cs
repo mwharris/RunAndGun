@@ -151,8 +151,8 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.x *= 0.9f;
 			inputState.playerVelocity.z *= 0.9f;
 		}
-		//Move the char controller
-		cc.Move(inputState.playerVelocity * Time.deltaTime);
+        //Move the char controller
+        cc.Move(new Vector3(0, inputState.playerVelocity.y, 0) * Time.deltaTime);
     }
 
 	void GatherOptions()
