@@ -2,29 +2,48 @@
 using UnityEngine;
 
 [Serializable]
-public class PlayerLook {
+public class PlayerLook
+{
+    public Transform neck;
+    public Transform firstSpine;
+    public Transform lastSpine;
 
-	private float minVerticalRotation = -90f;
-	private float maxVerticalRotation = 90f;
+    private float minVerticalRotation = -50f;
+	private float maxVerticalRotation = 53f;
 
-	private Quaternion playerLocalRot;
+    private Quaternion playerLocalRot;
 	private Quaternion camLocalRot;
-	private float camOrigZ;
+    private Quaternion neckLocalRot;
+    private Quaternion firstSpineLocalRot;
+    private Quaternion lastSpineLocalRot;
+    private float camOrigZ;
 
-	public void Init(Transform player, Transform camera)
+    public void Init(Transform player, Transform camera)
 	{
 		playerLocalRot = player.localRotation;
 		camLocalRot = camera.localRotation;
-		camOrigZ = camera.localRotation.eulerAngles.z;
-	}
+        neckLocalRot = neck.localRotation;
+        firstSpineLocalRot = firstSpine.localRotation;
+        lastSpineLocalRot = lastSpine.localRotation;
+        camOrigZ = camera.localRotation.eulerAngles.z;
+    }
 
     //Called from FirstPersonController to handle look rotations
-	public void LookRotation(LookRotationInput lri)
-	{
+    public void LookRotation(LookRotationInput lri)
+    {
         //Update inputs according to Options menu
         Vector2 inputs = ApplyOptionsToInput(lri);
         //Update player and camera rotations based on inputs
-        ApplyRotations(inputs, lri);
+        ApplyCameraRotations(inputs, lri);
+    }
+
+    //Called from FirstPersonController - LateUpdate to override animations
+    public void HeadRotation(LookRotationInput lri)
+    {
+        //Update inputs according to Options menu
+        Vector2 inputs = ApplyOptionsToInput(lri);
+        //Update player body rotations based on inputs
+        ApplyBoneRotations(inputs, lri);
     }
 
     //Update inputs with settings from Options menu
@@ -40,8 +59,19 @@ public class PlayerLook {
         return inputs;
     }
 
-    //Handle all updating of player rotations, vertical and horizontal
-    private void ApplyRotations(Vector2 inputs, LookRotationInput lri)
+    //Handle all updating of bone rotations (neck, chest, arms) up/down
+    public void ApplyBoneRotations(Vector2 inputs, LookRotationInput lri)
+    {
+        //Apply a rotation to our running rotated Quaternion
+        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
+        //Clamp so our bones don't rotate too far
+        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
+        //Update the actual bone values
+        neck.localRotation = neckLocalRot;
+    }
+
+    //Handle all updating of camera rotations and horizontal player body rotations
+    private void ApplyCameraRotations(Vector2 inputs, LookRotationInput lri)
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
@@ -52,10 +82,10 @@ public class PlayerLook {
         //Clamp the rotations in the y axis if we are wall-running
         if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
         {
-            playerLocalRot = ClampRotationAroundYAxis(playerLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
+            playerLocalRot = ClampWallRunRotation(playerLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
         }
         //Clamp the x rotation as well
-        camLocalRot = ClampRotationAroundXAxis(camLocalRot);
+        camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         //If we are wall-running then add a rotation in the z-axis
         camLocalRot.z = lri.wallRunZRotation;
         //Update the rotation of our camera
@@ -73,7 +103,39 @@ public class PlayerLook {
         lri.camera.localRotation = camLocalRot;
     }
 
-    private Quaternion ClampRotationAroundYAxis(Quaternion q, float angle1, float angle2, bool wrapAround)
+    private Quaternion ClampRotationAroundAxis(Quaternion q, string axis)
+    {
+        q.x /= q.w;
+        q.y /= q.w;
+        q.z /= q.w;
+        q.w = 1.0f;
+    
+        float angle = 0;
+        if (axis == "x")
+        {
+            angle = 2.0f * Mathf.Rad2Deg * Mathf.Atan(q.x);
+        }
+        else if (axis == "y")
+        {
+            angle = 2.0f * Mathf.Rad2Deg * Mathf.Atan(q.y);
+        }
+
+        angle = Mathf.Clamp(angle, minVerticalRotation, maxVerticalRotation);
+
+        float newVal = Mathf.Tan(0.5f * Mathf.Deg2Rad * angle);
+        if (axis == "x")
+        {
+            q.x = newVal;
+        }
+        else if (axis == "y")
+        {
+            q.y = newVal;
+        }
+
+        return q;
+    }
+
+    private Quaternion ClampWallRunRotation(Quaternion q, float angle1, float angle2, bool wrapAround)
     {
         q.x /= q.w;
         q.y /= q.w;
@@ -95,22 +157,6 @@ public class PlayerLook {
 
         return q;
     }
-
-    private Quaternion ClampRotationAroundXAxis(Quaternion q)
-	{
-		q.x /= q.w;
-		q.y /= q.w;
-		q.z /= q.w;
-		q.w = 1.0f;
-
-		float angleX = 2.0f * Mathf.Rad2Deg * Mathf.Atan (q.x);
-
-		angleX = Mathf.Clamp (angleX, minVerticalRotation, maxVerticalRotation);
-
-		q.x = Mathf.Tan (0.5f * Mathf.Deg2Rad * angleX);
-
-		return q;
-	}
 
     //Custom clamp method to handle fixing our circular rotation issue in ClampRotationAroundYAxis
     private float CustomClamp(float value, float lowerBound, float upperBound, bool wrapAround)

@@ -6,6 +6,7 @@ public class LookRotationInput {
 
     public Transform player;
     public Transform camera;
+    public Transform neck;
     public Vector2 lookInput;
     public float mouseSensitivity;
     public bool invertY;
@@ -16,7 +17,8 @@ public class LookRotationInput {
     public float wallRunAngle2;
     public bool wrapAround;
 
-    public LookRotationInput(Transform p, Transform c, Vector2 li, float ms, bool iy, float wrz, Vector3 wrc, float a1, float a2, bool wrap)
+    public LookRotationInput(Transform p, Transform c, Vector2 li, float ms, bool iy, 
+        float wrz, Vector3 wrc, float a1, float a2, bool wrap)
     {
         player = p;
         camera = c;

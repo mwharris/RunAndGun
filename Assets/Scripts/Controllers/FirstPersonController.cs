@@ -64,7 +64,7 @@ public class FirstPersonController : AbstractBehavior
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
 	private LerpControlledBob jumpBob;
-	[SerializeField] private PlayerLook playerLook;
+    [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
     void Start () {
@@ -92,22 +92,7 @@ public class FirstPersonController : AbstractBehavior
         playerLook.Init(transform, playerCamera.transform);
     }
 
-	void FixedUpdate () {
-		/*
-        //Crouching camera changes clash with jump bob camera changes
-		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
-		{
-			//Apply updates to local position from crouching and head bob
-			Vector3 localPos = playerCamera.transform.localPosition;
-            //Not crouching so reset camera to normal position
-			localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
-            //Apply the changes we made above
-            playerCamera.transform.localPosition = localPos;
-        }
-        */
-	}
-
-	void Update () {
+    void Update () {
 		//Test stuff
 		Debug.DrawRay(transform.position, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Debug.DrawRay(transform.position, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
@@ -152,10 +137,36 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        cc.Move(new Vector3(0, inputState.playerVelocity.y, 0) * Time.deltaTime);
+        cc.Move(inputState.playerVelocity * Time.deltaTime);
     }
 
-	void GatherOptions()
+    //Used to apply rotation and position updates to the camera
+    void FixedUpdate()
+    {
+        /*
+        //Crouching camera changes clash with jump bob camera changes
+		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
+		{
+			//Apply updates to local position from crouching and head bob
+			Vector3 localPos = playerCamera.transform.localPosition;
+            //Not crouching so reset camera to normal position
+			localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
+            //Apply the changes we made above
+            playerCamera.transform.localPosition = localPos;
+        }
+        */
+    }
+
+    //Used to apply changes to body after animations have run
+    private void LateUpdate()
+    {
+        //Build a LookRotationInput object for better passing of arguments in the following function calls
+        LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
+        //Rotate the head up/down depending of mouse input
+        playerLook.HeadRotation(lri);
+    }
+
+    void GatherOptions()
 	{
 		if (menuController != null) {
 			mouseSensitivity = menuController.mouseSensitivity;
@@ -261,7 +272,7 @@ public class FirstPersonController : AbstractBehavior
         wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotation
         playerLook.LookRotation(lri);
-	}
+    }
 
 	//Handle any WASD or arrow key movement
 	void HandleMovement()
