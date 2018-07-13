@@ -21,8 +21,9 @@ public class InputState : MonoBehaviour {
     [HideInInspector] public Vector3 playerLookVec = new Vector3(0, 0, 0);
     [HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;
+    [HideInInspector] public float playerLookAngle = 0f;
 
-	public void SetButtonState(Buttons key, bool pressed, float value)
+    public void SetButtonState(Buttons key, bool pressed, float value)
 	{
 		//Add this button to our states list if it doesn't exist already
 		if (!buttonStates.ContainsKey(key))

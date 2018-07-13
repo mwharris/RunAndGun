@@ -32,5 +32,7 @@ public class ControlAnimations : AbstractBehavior
         var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);
         anim.SetFloat("ForwardSpeed", fwdSpeed);
         anim.SetFloat("SideSpeed", sideSpeed);
+
+        anim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 }

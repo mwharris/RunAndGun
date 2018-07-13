@@ -38,12 +38,12 @@ public class PlayerLook
     }
 
     //Called from FirstPersonController - LateUpdate to override animations
-    public void HeadRotation(LookRotationInput lri)
+    public float HeadRotation(LookRotationInput lri)
     {
         //Update inputs according to Options menu
         Vector2 inputs = ApplyOptionsToInput(lri);
         //Update player body rotations based on inputs
-        ApplyBoneRotations(inputs, lri);
+        return ApplyBoneRotations(inputs, lri);
     }
 
     //Update inputs with settings from Options menu
@@ -60,14 +60,15 @@ public class PlayerLook
     }
 
     //Handle all updating of bone rotations (neck, chest, arms) up/down
-    public void ApplyBoneRotations(Vector2 inputs, LookRotationInput lri)
+    public float ApplyBoneRotations(Vector2 inputs, LookRotationInput lri)
     {
         //Apply a rotation to our running rotated Quaternion
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
         //Clamp so our bones don't rotate too far
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //Update the actual bone values
-        neck.localRotation = neckLocalRot;
+        //neck.localRotation = neckLocalRot;
+        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }
 
     //Handle all updating of camera rotations and horizontal player body rotations
