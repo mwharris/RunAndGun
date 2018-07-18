@@ -160,11 +160,13 @@ public class FirstPersonController : AbstractBehavior
     //Used to apply changes to body after animations have run
     private void LateUpdate()
     {
+        /*
         //Build a LookRotationInput object for better passing of arguments in the following function calls
         LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
         //Rotate the head up/down depending of mouse input
         inputState.playerLookAngle = playerLook.HeadRotation(lri);
         Debug.Log("Player Look's Angle: " + inputState.playerLookAngle);
+        */
     }
 
     void GatherOptions()
@@ -271,8 +273,8 @@ public class FirstPersonController : AbstractBehavior
         LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
         //Handle any look rotation updates due to wall-running
         wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
-        //Finally apply our look rotation
-        playerLook.LookRotation(lri);
+        //Finally apply our look rotations and calculate head angle
+        inputState.playerLookAngle = playerLook.LookRotation(lri);
     }
 
 	//Handle any WASD or arrow key movement

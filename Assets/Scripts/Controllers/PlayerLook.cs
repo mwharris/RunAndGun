@@ -29,21 +29,12 @@ public class PlayerLook
     }
 
     //Called from FirstPersonController to handle look rotations
-    public void LookRotation(LookRotationInput lri)
+    public float LookRotation(LookRotationInput lri)
     {
         //Update inputs according to Options menu
         Vector2 inputs = ApplyOptionsToInput(lri);
-        //Update player and camera rotations based on inputs
-        ApplyCameraRotations(inputs, lri);
-    }
-
-    //Called from FirstPersonController - LateUpdate to override animations
-    public float HeadRotation(LookRotationInput lri)
-    {
-        //Update inputs according to Options menu
-        Vector2 inputs = ApplyOptionsToInput(lri);
-        //Update player body rotations based on inputs
-        return ApplyBoneRotations(inputs, lri);
+        //Update player, camera, and head rotations based on inputs
+        return ApplyLookRotations(inputs, lri);
     }
 
     //Update inputs with settings from Options menu
@@ -59,20 +50,8 @@ public class PlayerLook
         return inputs;
     }
 
-    //Handle all updating of bone rotations (neck, chest, arms) up/down
-    public float ApplyBoneRotations(Vector2 inputs, LookRotationInput lri)
-    {
-        //Apply a rotation to our running rotated Quaternion
-        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
-        //Clamp so our bones don't rotate too far
-        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
-        //Update the actual bone values
-        //neck.localRotation = neckLocalRot;
-        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
-    }
-
     //Handle all updating of camera rotations and horizontal player body rotations
-    private void ApplyCameraRotations(Vector2 inputs, LookRotationInput lri)
+    private float ApplyLookRotations(Vector2 inputs, LookRotationInput lri)
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
@@ -80,28 +59,29 @@ public class PlayerLook
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
-        //Clamp the rotations in the y axis if we are wall-running
+        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
+        //Clamp the player rotation in the y axis if we are wall-running
         if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
         {
             playerLocalRot = ClampWallRunRotation(playerLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
         }
-        //Clamp the x rotation as well
+        //Clamp rotation camera and head rotations to not look too far up/down
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
+        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //If we are wall-running then add a rotation in the z-axis
         camLocalRot.z = lri.wallRunZRotation;
-        //Update the rotation of our camera
+        //Special Case to catch error with player local rotations
         if (float.IsNaN(playerLocalRot.x) || float.IsNaN(playerLocalRot.y) || float.IsNaN(playerLocalRot.z))
         {
-            Debug.Log("Rotation is NaN!");
-            Debug.Log("Old rotation is: " + nanTest);
-            Debug.Log("Current player rotation is: " + lri.player.localRotation);
-            Debug.Log("NaN is: " + playerLocalRot);
             if (float.IsNaN(playerLocalRot.x)) { playerLocalRot.x = 0f; }
             if (float.IsNaN(playerLocalRot.y)) { playerLocalRot.y = 0f; }
             if (float.IsNaN(playerLocalRot.z)) { playerLocalRot.z = 0f; }
         }
+        //Update the rotation of our player and camera
         lri.player.localRotation = playerLocalRot;
         lri.camera.localRotation = camLocalRot;
+        //Return the angle of our head for the animator
+        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }
 
     private Quaternion ClampRotationAroundAxis(Quaternion q, string axis)
