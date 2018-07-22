@@ -137,7 +137,8 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        cc.Move(inputState.playerVelocity * Time.deltaTime);
+        //cc.Move(inputState.playerVelocity * Time.deltaTime);
+        cc.Move(new Vector3(0f, inputState.playerVelocity.y, 0f)  * Time.deltaTime);
     }
 
     //Used to apply rotation and position updates to the camera
