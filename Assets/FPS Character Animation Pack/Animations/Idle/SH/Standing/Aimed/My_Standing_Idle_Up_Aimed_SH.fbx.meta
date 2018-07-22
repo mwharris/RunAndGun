@@ -131,7 +131,7 @@ ModelImporter:
     2100002: Avatar_SKIN
     2100004: Avater_PANTS
     4300000: HumanoidAvatar2_0
-    7400000: Take001
+    7400000: My_Standing_Idle_Up_Aimed_SH
     9500000: //RootNode
     13700000: HumanoidAvatar2_0
   externalObjects: {}
@@ -163,7 +163,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: Take001
+      name: My_Standing_Idle_Up_Aimed_SH
       takeName: Take 001
       firstFrame: 0
       lastFrame: 190
