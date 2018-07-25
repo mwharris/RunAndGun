@@ -7,6 +7,7 @@ public class IKHandler : MonoBehaviour
     Animator anim;
 
     public Transform playerCamera;
+    private Vector3 lookAtPosition;
 
     public Transform weaponHolder;
     public Transform overrideLookTarget;
@@ -31,23 +32,39 @@ public class IKHandler : MonoBehaviour
         aimHelper = new GameObject().transform;
         anim = GetComponent<Animator>();
     }
-	
-	void FixedUpdate ()
+
+    //Helper function to set isAiming and isReloading variables based on player inputs
+    void setInputVars()
     {
+        isAiming = Input.GetKey(KeyCode.Mouse1);
+        isReloading = false;
+    }
+
+    void FixedUpdate ()
+    {
+        //Make sure our Right Shoulder transform is connected to the right shoulder bone
         if (rightShoulder == null)
         {
             rightShoulder = anim.GetBoneTransform(HumanBodyBones.RightShoulder);
         }
+        //If we already have Right Shoulder position then move our Weapon Holder there
         else
         {
             weaponHolder.position = rightShoulder.position;
         }
 
+        //Set variables based on inputs
         setInputVars();
 
-        Vector3 dirTowardsTarget = aimHelper.position - transform.position;
-        float angle = Vector3.Angle(transform.forward, dirTowardsTarget);
+        //Set up our lookAt position
+        lookAtPosition = getLookPosition(playerCamera);
 
+        //Determine the direction between our position and where we are looking (aim helper position)
+        Vector3 dirTowardsTarget = aimHelper.position - transform.position;
+
+        //Find the angle between where we are currently looking and where we want to look.
+        //REMOVE THIS?...this may not apply in our case since we are a FPS are are technically constantly aiming.
+        float angle = Vector3.Angle(transform.forward, dirTowardsTarget);
         if (angle < 90)
         {
             targetWeight = 1;
@@ -57,24 +74,54 @@ public class IKHandler : MonoBehaviour
             targetWeight = 0;
         }
 
-        float multiplier = 50f;// isAiming ? 30f : 30f;
+        //The speed at which our IKs will move...do we want different speeds for aiming?
+        float multiplier = isAiming ? 5f : 30f;
 
+        //Lerp between our current look position and target look position
         lookWeight = Mathf.Lerp(lookWeight, targetWeight, Time.deltaTime * multiplier);
 
+        //Store our new look weight as our IK weights
         rightHandIKWeight = lookWeight;
-
         leftHandIKWeight = lookWeight;// - anim.GetFloat("LeftHandIKWeightOverride");
 
+        //Handle the actual rotations of our IKs
         HandleShoulderRotation();
     }
 
+    //Handle the actual rotations of our IKs and GameObjects
     void HandleShoulderRotation()
     {
-        aimHelper.position = Vector3.Lerp(aimHelper.position, getLookPosition(playerCamera), Time.deltaTime * 5);
+        //Move the aim helper to our new look position
+        aimHelper.position = Vector3.Lerp(aimHelper.position, lookAtPosition, Time.deltaTime * 5);
+        //Rotate our weapon holder to point at this new position
         weaponHolder.LookAt(aimHelper.position);
+        //Update the right hand's parent to point at this new position as well
         rightHandIKTarget.parent.transform.LookAt(aimHelper.position);
     }
 
+    //Set the both hand's IK position and rotations based on calculations above
+    void OnAnimatorIK(int layerIndex)
+    {
+        //Head IK
+        anim.SetLookAtWeight(lookWeight, 0f, 1f, 1f, 0f);
+        anim.SetLookAtPosition(lookAtPosition);
+
+        //Hand IK - Position
+        anim.SetIKPositionWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
+        anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
+
+        anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
+        anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
+
+        //Hand IK - Rotation
+        anim.SetIKRotationWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
+        anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
+
+        anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
+        anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
+    }
+
+    //Helper function to find a position based on our look direction
     Vector3 getLookPosition(Transform camera)
     {
         //Raycast out from Camera.forward and get all hit objects
@@ -106,26 +153,5 @@ public class IKHandler : MonoBehaviour
             //Simply return a point 25 units away from camera.forward
             return playerCamera.position + (playerCamera.forward * 10);
         }
-    }
-
-    void setInputVars()
-    {
-        isAiming = Input.GetKey(KeyCode.Mouse1);
-        isReloading = false;
-    }
-
-    void OnAnimatorIK(int layerIndex)
-    {
-        anim.SetIKPositionWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
-        anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
-
-        anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
-        anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
-
-        anim.SetIKRotationWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
-        anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
-
-        anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
-        anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
     }
 }
