@@ -4,8 +4,9 @@ using System.Collections.Generic;
 
 public class ControlAnimations : AbstractBehavior
 {
-    public Animator anim;
-    
+    public Animator bodyAnim;
+    public Animator weaponAnim;
+
     private bool isAimPressed = false;
 
     private void setInputVars()
@@ -17,22 +18,23 @@ public class ControlAnimations : AbstractBehavior
     {
         setInputVars();
         
-        anim.SetBool("Sprinting", inputState.playerIsSprinting);
+        bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
         
-        anim.SetBool("Aiming", isAimPressed);
+        bodyAnim.SetBool("Aiming", isAimPressed);
+        weaponAnim.SetBool("Aiming", isAimPressed);
 
-        anim.SetBool("Crouching", inputState.playerIsCrouching);
+        bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
 
-        anim.SetBool("Shooting", inputState.playerIsShooting);
+        bodyAnim.SetBool("Shooting", inputState.playerIsShooting);
 
-        anim.SetBool("Jumping", !inputState.playerIsGrounded);
-        anim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
+        bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
+        bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
 
         var fwdSpeed = Vector3.Dot(inputState.playerVelocity, transform.forward);
         var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);
-        anim.SetFloat("ForwardSpeed", fwdSpeed);
-        anim.SetFloat("SideSpeed", sideSpeed);
+        bodyAnim.SetFloat("ForwardSpeed", fwdSpeed);
+        bodyAnim.SetFloat("SideSpeed", sideSpeed);
 
-        anim.SetFloat("LookAngle", inputState.playerLookAngle);
+        bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 }

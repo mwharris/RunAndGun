@@ -40,7 +40,7 @@ public class IKHandler : MonoBehaviour
         isReloading = false;
     }
 
-    void FixedUpdate ()
+    void LateUpdate ()
     {
         //Make sure our Right Shoulder transform is connected to the right shoulder bone
         if (rightShoulder == null)
@@ -57,7 +57,7 @@ public class IKHandler : MonoBehaviour
         setInputVars();
 
         //Set up our lookAt position
-        lookAtPosition = getLookPosition(playerCamera);
+        lookAtPosition = playerCamera.position + (playerCamera.forward * 10);
 
         //Determine the direction between our position and where we are looking (aim helper position)
         Vector3 dirTowardsTarget = aimHelper.position - transform.position;
@@ -92,11 +92,22 @@ public class IKHandler : MonoBehaviour
     void HandleShoulderRotation()
     {
         //Move the aim helper to our new look position
-        aimHelper.position = Vector3.Lerp(aimHelper.position, lookAtPosition, Time.deltaTime * 5);
+        aimHelper.position = Vector3.Lerp(aimHelper.position, lookAtPosition, Time.deltaTime * 10f);
         //Rotate our weapon holder to point at this new position
-        weaponHolder.LookAt(aimHelper.position);
+        LerpLookAt(weaponHolder, aimHelper);
         //Update the right hand's parent to point at this new position as well
-        rightHandIKTarget.parent.transform.LookAt(aimHelper.position);
+        LerpLookAt(rightHandIKTarget.parent.transform, aimHelper);
+    }
+
+    //Helper function to perform lookAt except lerped
+    void LerpLookAt(Transform a, Transform b)
+    {
+        //Determine our lerp speed depending on if we're aiming or not
+        float lerpSpeed = isAiming ? 20f : 15f; 
+        //Get a quaternion from the vector between the two transforms
+        Quaternion targetRotation = Quaternion.LookRotation(b.position - a.position);
+        //Lerp the current rotation to the rotation determined above
+        a.rotation = Quaternion.Lerp(a.rotation, targetRotation, Time.deltaTime * lerpSpeed);
     }
 
     //Set the both hand's IK position and rotations based on calculations above
@@ -119,39 +130,5 @@ public class IKHandler : MonoBehaviour
 
         anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
         anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
-    }
-
-    //Helper function to find a position based on our look direction
-    Vector3 getLookPosition(Transform camera)
-    {
-        //Raycast out from Camera.forward and get all hit objects
-        RaycastHit[] hits = Physics.RaycastAll(camera.position, camera.forward);
-        //If we hit something...
-        if (hits.Length > 0)
-        {
-            Transform closestHit = null;
-            float distance = 0f;
-            Vector3 hitPoint = Vector3.zero;
-            //Try and find the closest thing we hit that isn't ourselves
-            foreach (RaycastHit hit in hits)
-            {
-                if (hit.transform != this.transform
-                    && !hit.transform.IsChildOf(this.GetComponentInParent<Transform>())
-                    && (closestHit == null || hit.distance < distance))
-                {
-                    closestHit = hit.transform;
-                    distance = hit.distance;
-                    hitPoint = hit.point;
-                }
-            }
-            //Return that closest thing's position
-            return hitPoint;
-        }
-        //If we didn't hit anything...
-        else
-        {
-            //Simply return a point 25 units away from camera.forward
-            return playerCamera.position + (playerCamera.forward * 10);
-        }
     }
 }
