@@ -69,7 +69,12 @@ public class PlayerLook
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //If we are wall-running then add a rotation in the z-axis
+        Debug.Log("Z Rot: " + lri.wallRunZRotation);
         camLocalRot.z = lri.wallRunZRotation;
+        if (lri.wallRunZRotation == 0)
+        {
+            camLocalRot.y = 0;
+        }
         //Special Case to catch error with player local rotations
         if (float.IsNaN(playerLocalRot.x) || float.IsNaN(playerLocalRot.y) || float.IsNaN(playerLocalRot.z))
         {

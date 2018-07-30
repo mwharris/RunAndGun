@@ -118,9 +118,9 @@ public class FirstPersonController : AbstractBehavior
 		//Handle jumping of the player
 		HandleJumping();
         //Tell the wall-run controller to also handle any wall-sticking tasks
-        //wallRunController.HandleWallSticking(shootContoller.isAiming);
+        wallRunController.HandleWallSticking(shootContoller.isAiming);
         //Tell the wall-run controller to handle any wall-running tasks
-        //wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
+        wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -144,7 +144,6 @@ public class FirstPersonController : AbstractBehavior
     //Used to apply rotation and position updates to the camera
     void FixedUpdate()
     {
-        /*
         //Crouching camera changes clash with jump bob camera changes
 		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
 		{
@@ -155,19 +154,6 @@ public class FirstPersonController : AbstractBehavior
             //Apply the changes we made above
             playerCamera.transform.localPosition = localPos;
         }
-        */
-    }
-
-    //Used to apply changes to body after animations have run
-    private void LateUpdate()
-    {
-        /*
-        //Build a LookRotationInput object for better passing of arguments in the following function calls
-        LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
-        //Rotate the head up/down depending of mouse input
-        inputState.playerLookAngle = playerLook.HeadRotation(lri);
-        Debug.Log("Player Look's Angle: " + inputState.playerLookAngle);
-        */
     }
 
     void GatherOptions()
@@ -341,7 +327,6 @@ public class FirstPersonController : AbstractBehavior
 			headBobScript.enabled = false;
 
             //If we're wall-sticking
-            /*
             if (wallRunController.wallSticking)
             {
                 //Calculate our wall-running velocity in order to set clamp angles
@@ -363,10 +348,9 @@ public class FirstPersonController : AbstractBehavior
                 //Play footstep FX while wall-running
                 PlayFootStepAudio(false, true);
 			}
-            */
 			//If we're airborne and not wall-running
-			//else
-            //{
+			else
+            {
                 //Make sure we reset wall-sticking vars
                 wallRunController.wallStickVelocitySet = false;
                 //Get the movement input
@@ -383,7 +367,7 @@ public class FirstPersonController : AbstractBehavior
 					inputState.playerVelocity += sideSpeed * transform.right;
 					//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 				}
-			//}
+			}
         }
 	}
 

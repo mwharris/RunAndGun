@@ -280,20 +280,27 @@ public class WallRunController : AbstractBehavior {
 	public float CalculateCameraTilt(Camera playerCamera)
     {
         float lerpedRot = 0f;
-        //Wall-running left, tilt right
-        if (wallRunningLeft)
+        if (!inputState.playerIsGrounded)
         {
-            lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, 8*Time.deltaTime);
+            //Wall-running left, tilt right
+            if (wallRunningLeft)
+            {
+                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, 8 * Time.deltaTime);
+            }
+            //Wall-running right, tilt left
+            else if (wallRunningRight)
+            {
+                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8 * Time.deltaTime);
+            }
+            //Facing directly away from the wall, no rotation
+            else
+            {
+                lerpedRot = Mathf.Lerp(cameraRotZ, 0f, 8 * Time.deltaTime);
+            }
         }
-        //Wall-running right, tilt left
-        else if (wallRunningRight)
+        else 
         {
-            lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8*Time.deltaTime);
-        }
-		//Facing directly away from the wall, no rotation
-		else
-		{
-            lerpedRot = Mathf.Lerp(cameraRotZ, 0f, 8*Time.deltaTime);
+            cameraRotZ = 0;
         }
         cameraRotZ = lerpedRot;
         return cameraRotZ;
