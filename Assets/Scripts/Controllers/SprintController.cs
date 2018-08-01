@@ -1,16 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof (ShootController))]
 [RequireComponent(typeof (CrouchController))]
 public class SprintController : AbstractBehavior {
 
-	private ShootController shootContoller;
 	private CrouchController crouchController;
 
 	void Start()
 	{
-		shootContoller = GetComponent<ShootController>();
 		crouchController = GetComponent<CrouchController>();
 	}
 
@@ -21,7 +18,7 @@ public class SprintController : AbstractBehavior {
 		float sprintHoldTime = inputState.GetButtonHoldTime(inputs[0]);
 		bool isForwardDown = inputState.GetButtonPressed(inputs[1]);
 		//Toggle Sprinting whenever we hit the sprint button except while aiming
-		if (isSprintDown && sprintHoldTime == 0f && !shootContoller.isAiming)
+		if (isSprintDown && sprintHoldTime == 0f && !inputState.playerIsAiming)
 		{
 			//Flag us as sprinting
 			inputState.playerIsSprinting = !inputState.playerIsSprinting;
@@ -32,7 +29,7 @@ public class SprintController : AbstractBehavior {
 			}
 		}
 		//If we Aim while Sprinting, toggle Sprinting off in order to allow Aim out of Sprint
-		else if (isSprintDown && shootContoller.isAiming)
+		else if (isSprintDown && inputState.playerIsAiming)
 		{
 			inputState.playerIsSprinting = false;
 		}

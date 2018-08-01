@@ -127,7 +127,10 @@ public class NetworkManager : MonoBehaviour {
 		myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
 		myPlayer.GetComponentInChildren<Camera>().enabled = true;
 		myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
-		myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
+        myPlayer.GetComponentInChildren<ControlAnimations>().enabled = true;
+        myPlayer.GetComponentInChildren<IKHandler>().enabled = true;
+        myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
+        myPlayer.GetComponentInChildren<Animator>().SetLayerWeight(1, 0);
 		//Enable the displayed ammo counter
 		ammoUI.SetActive(true);
 		//Enable the camera reticle

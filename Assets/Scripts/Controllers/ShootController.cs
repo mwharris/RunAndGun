@@ -5,10 +5,8 @@ using System.Collections;
 public class ShootController : AbstractBehavior 
 {
 	//General global variables - public
-	public Animator animator;
 	public Camera playerCamera;
 	public AudioSource aSource;
-	public bool isAiming;
 
 	//General global variables - private
 	private float baseFOV;
@@ -99,10 +97,12 @@ public class ShootController : AbstractBehavior
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
 		//Reset the reload animation
+        /*
 		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
 		{
 			animator.SetBool("Reload", false);
 		}
+        */
 		//Hide the hit indicators from last frame
 		HideHitIndicator();			
 
@@ -163,14 +163,12 @@ public class ShootController : AbstractBehavior
 	void Aim()
 	{
 		//Tell the animator to pull the gun to our face
-		animator.SetBool("Aim", true);
+		inputState.playerIsAiming = true;
 		//Disable the crosshairs
 		foreach(Transform child in reticleParent.transform)
 		{
 			child.GetComponent<Image>().enabled = false;
 		}
-		//Flag ourselves as aiming
-		isAiming = true;
         //Make sure we turn off sprinting
         inputState.playerIsSprinting = false;
 		//Zoom the camera in
@@ -182,9 +180,7 @@ public class ShootController : AbstractBehavior
 	public void StopAiming()
 	{
 		//Tell the animator to pull the gun to the hip
-		animator.SetBool("Aim", false);
-		//Flag ourselves as not aiming
-		isAiming = false;
+        inputState.playerIsAiming = false;
 		//Make sure reticle parent is NOT null
 		if(reticleParent == null)
 		{
@@ -218,19 +214,18 @@ public class ShootController : AbstractBehavior
         inputState.playerIsShooting = true;
 
 		//Play the recoil animation AFTER determing shoot vector
-		animator.SetBool("Shoot", inputState.playerIsShooting);
 		StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
 		if(isAimDown)
 		{
 			rc.StartRecoil(aimRecoilAmount);
-			ac.AddShootingOffset(isAiming);
+			ac.AddShootingOffset(inputState.playerIsAiming);
 		}
 		else
 		{
 			rc.StartRecoil(hipRecoilAmount);
-			ac.AddShootingOffset(isAiming);
+			ac.AddShootingOffset(inputState.playerIsAiming);
 		}
 
 		//Check if we hit a red object
@@ -293,9 +288,6 @@ public class ShootController : AbstractBehavior
 		shootVector.x += WeightedRandomAccuracy(ac.totalOffset);
 		shootVector.y += WeightedRandomAccuracy(ac.totalOffset);
 		shootVector.z += WeightedRandomAccuracy(ac.totalOffset);
-		//shootVector.x += Random.Range(-0.1F, 0.1F);
-		//shootVector.y += Random.Range(-0.1F, 0.1F);
-		//shootVector.z += Random.Range(-0.1F, 0.1F);
 		return shootVector;
 	}
 
@@ -330,7 +322,7 @@ public class ShootController : AbstractBehavior
 		//Play a sound
 		aSource.PlayOneShot(reloadClip);
 		//Play the reload animation
-		animator.SetBool("Reload", true);
+        inputState.playerIsReloading = true;
 		//Hide the reload indicator
 		HideReloadIndicator();
 	}
@@ -419,6 +411,5 @@ public class ShootController : AbstractBehavior
 	{
 		yield return new WaitForSeconds(time);
         inputState.playerIsShooting = false;
-        animator.SetBool("Shoot", inputState.playerIsShooting);
 	}
 }

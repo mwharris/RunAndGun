@@ -1,46 +1,71 @@
 ﻿using UnityEngine;
 using System.Collections;
 
+[RequireComponent(typeof (InputState))]
 public class NetworkCharacter : Photon.MonoBehaviour 
 {
 	public Camera playerCamera;
-	public GameObject body;
+    public Animator bodyAnimator;
 
+    private InputState inputState;
+
+    //Player postion and rotation need to be passed so preserve look rotations
 	private Vector3 realPos = Vector3.zero;
-	private Quaternion realRot = Quaternion.identity;
-	private Vector3 bodyScale = Vector3.zero;
-	private Vector3 bodyPos = Vector3.zero;
-	private Quaternion weaponRot = Quaternion.identity;
-	private Vector3 weaponPos = Vector3.zero;
-	private Vector3 bodyCenter = Vector3.zero;
-	private float ccHeight = 0f;
-	private float ccCenter = 0f;
-	private CharacterController cc;
+	private Quaternion realRot = Quaternion.identity; //Maybe only the y-rotation is needed here?...
+
+    //Animation variables
+    private bool isSprinting;
+    private bool isAiming;
+    private bool isJumping;
+    private bool isCrouching;
+    private bool isShooting;
+    private float jumpSpeed;
+    private float lookAngle;
+
+    //MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
+    private float forwardSpeed;
+    private float sideSpeed;
+
+    //Character Controller properties need to be passed due to Crouch animations
+    private CharacterController cc;
+    private float ccHeight = 0f;
+    private float ccRadius = 0f;
+    private Vector3 ccCenter = Vector3.zero;
 
 	void Awake()
 	{
-		cc = transform.GetComponent<CharacterController>();
-	}
+		cc = GetComponent<CharacterController>();
+        inputState = GetComponent<InputState>();
+    }
 
 	/**
 	 * Handle updating non-local player's variables sent over the network
 	 */
 	void Update()
-	{
-		//Only update a non-local player. Local players are updated by First Person Controller
-		if(!photonView.isMine)
-		{
-			//Smooth our movement from the current position to the received position
-			transform.position = Vector3.Lerp(transform.position, realPos, Time.deltaTime * 5);
-			transform.rotation = Quaternion.Lerp(transform.rotation, realRot, Time.deltaTime * 5);
-			body.transform.localScale = Vector3.Lerp(body.transform.localScale, bodyScale, Time.deltaTime * 5);
-			body.transform.position = Vector3.Lerp(body.transform.position, bodyPos, Time.deltaTime * 5);
-			playerCamera.transform.rotation = Quaternion.Lerp(playerCamera.transform.rotation, weaponRot, Time.deltaTime * 5);
-			playerCamera.transform.position = Vector3.Lerp(playerCamera.transform.position, weaponPos, Time.deltaTime * 5);
-			//Set Capsule Collider and Character Controller variables for crouching
-			cc.height = Mathf.Lerp(cc.height, ccHeight, Time.deltaTime * 5);
-			cc.center = Vector3.Lerp(cc.center, new Vector3(cc.center.x, ccCenter, cc.center.z), Time.deltaTime * 5);
-		}
+    {
+        //Only update a non-local player. Local players are updated by First Person Controller
+        if (!photonView.isMine)
+        {
+            float lerpSpeed = Time.deltaTime * 8f;
+            //Smooth our movement from the current position to the received position
+            transform.position = Vector3.Lerp(transform.position, realPos, lerpSpeed);
+            transform.rotation = Quaternion.Lerp(transform.rotation, realRot, lerpSpeed);
+            //Animation variables
+            bodyAnimator.SetBool("Sprinting", isSprinting);
+            bodyAnimator.SetBool("Aiming", isAiming);
+            bodyAnimator.SetBool("Jumping", isJumping);
+            bodyAnimator.SetBool("Crouching", isCrouching);
+            bodyAnimator.SetBool("Shooting", isShooting);
+            bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
+            bodyAnimator.SetFloat("SideSpeed", sideSpeed);
+            bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
+            float la = Mathf.Lerp(bodyAnimator.GetFloat("LookAngle"), lookAngle, lerpSpeed);
+            bodyAnimator.SetFloat("LookAngle", la);
+            //Set Capsule Collider and Character Controller variables for crouching
+            cc.height = Mathf.Lerp(cc.height, ccHeight, lerpSpeed);
+            cc.radius = Mathf.Lerp(cc.radius, ccRadius, lerpSpeed);
+            cc.center = Vector3.Lerp(cc.center, ccCenter, lerpSpeed);
+        }
 	}
 
 	/**
@@ -53,24 +78,40 @@ public class NetworkCharacter : Photon.MonoBehaviour
 			//This is our local player, send our position to the network
 			stream.SendNext(transform.position);
 			stream.SendNext(transform.rotation);
-			stream.SendNext(body.transform.localScale);
-			stream.SendNext(body.transform.position);
-			stream.SendNext(playerCamera.transform.rotation);
-			stream.SendNext(playerCamera.transform.position);
-			stream.SendNext(cc.height);
-			stream.SendNext(cc.center.y);
+            //Send animator variable information
+            stream.SendNext(inputState.playerIsSprinting);
+            stream.SendNext(inputState.playerIsAiming);
+            stream.SendNext(!inputState.playerIsGrounded);
+            stream.SendNext(inputState.playerIsCrouching);
+            stream.SendNext(inputState.playerIsShooting);
+            stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
+            stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.right));
+            stream.SendNext(inputState.playerVelocity.y);
+            stream.SendNext(inputState.playerLookAngle);
+            //Send Character Controller information
+            stream.SendNext(cc.height);
+            stream.SendNext(cc.radius);
+            stream.SendNext(cc.center);
 		}
 		else
 		{
 			//This is a networked player, receive their position an update the player accordingly
 			realPos = (Vector3) stream.ReceiveNext();
 			realRot = (Quaternion) stream.ReceiveNext();
-			bodyScale = (Vector3) stream.ReceiveNext();
-			bodyPos = (Vector3) stream.ReceiveNext();
-			weaponRot = (Quaternion) stream.ReceiveNext();
-			weaponPos = (Vector3) stream.ReceiveNext();
-			ccHeight = (float) stream.ReceiveNext();
-			ccCenter = (float) stream.ReceiveNext();
+            //Receive animator variable information
+            isSprinting =  (bool) stream.ReceiveNext();
+            isAiming =     (bool) stream.ReceiveNext();
+            isJumping =    (bool) stream.ReceiveNext();
+            isCrouching =  (bool) stream.ReceiveNext();
+            isShooting =   (bool) stream.ReceiveNext();
+            forwardSpeed = (float) stream.ReceiveNext();
+            sideSpeed =    (float) stream.ReceiveNext();
+            jumpSpeed =    (float) stream.ReceiveNext();
+            lookAngle =    (float) stream.ReceiveNext();
+            //Receive character controller information
+            ccHeight = (float) stream.ReceiveNext();
+            ccRadius = (float) stream.ReceiveNext();
+            ccCenter = (Vector3) stream.ReceiveNext();
 		}
 	}
 }

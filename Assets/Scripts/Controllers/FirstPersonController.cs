@@ -3,14 +3,12 @@ using System.Collections;
 
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (WallRunController))]
-[RequireComponent(typeof (ShootController))]
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]
 [RequireComponent(typeof (LerpControlledBob))]
 public class FirstPersonController : AbstractBehavior 
 {
 	[HideInInspector] public CharacterController cc;
-	public GameObject playerBody;
 	public AudioClip jumpSound;  
 
 	[SerializeField] private Camera playerCamera;   
@@ -60,7 +58,6 @@ public class FirstPersonController : AbstractBehavior
 	private CrouchController crouchController;
 	private WallRunController wallRunController;
 	private MenuController menuController;
-	private ShootController shootContoller;
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
 	private LerpControlledBob jumpBob;
@@ -84,7 +81,6 @@ public class FirstPersonController : AbstractBehavior
 		//Set up the various controllers
 		crouchController = GetComponent<CrouchController>();
 		wallRunController = GetComponent<WallRunController>();
-		shootContoller = GetComponent<ShootController>();
         jumpBob = GetComponent<LerpControlledBob>();
         //Initiliaze crouch controller variables
         crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
@@ -108,7 +104,7 @@ public class FirstPersonController : AbstractBehavior
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
 		//Handle crouching
-		crouchController.HandleCrouching(cc, playerCamera, playerBody, gm.GetGameState());
+		crouchController.HandleCrouching(cc, playerCamera, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
         //Handle any mouse input that occurred
@@ -118,9 +114,9 @@ public class FirstPersonController : AbstractBehavior
 		//Handle jumping of the player
 		HandleJumping();
         //Tell the wall-run controller to also handle any wall-sticking tasks
-        wallRunController.HandleWallSticking(shootContoller.isAiming);
+        wallRunController.HandleWallSticking();
         //Tell the wall-run controller to handle any wall-running tasks
-        wallRunController.HandleWallRunning(inputState.playerVelocity, playerBody, inputState.playerIsGrounded);//, ref jumps);
+        wallRunController.HandleWallRunning(inputState.playerVelocity, inputState.playerIsGrounded);//, ref jumps);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -277,7 +273,7 @@ public class FirstPersonController : AbstractBehavior
             //Make sure we reset wall-sticking vars
             wallRunController.wallStickVelocitySet = false;
             //Apply movement speed based on crouching, sprinting, or standing
-            if (inputState.playerIsCrouching || shootContoller.isAiming)
+            if (inputState.playerIsCrouching || inputState.playerIsAiming)
 			{
 				forwardSpeed *= crouchController.CrouchMovementSpeed;
 				sideSpeed *= crouchController.CrouchMovementSpeed;

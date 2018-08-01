@@ -18,6 +18,8 @@ public class InputState : MonoBehaviour {
 	[HideInInspector] public bool playerIsSprinting = false;
 	[HideInInspector] public bool playerIsCrouching = false;
     [HideInInspector] public bool playerIsShooting = false;
+    [HideInInspector] public bool playerIsAiming = false;
+    [HideInInspector] public bool playerIsReloading = false;
     [HideInInspector] public Vector3 playerLookVec = new Vector3(0, 0, 0);
     [HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;

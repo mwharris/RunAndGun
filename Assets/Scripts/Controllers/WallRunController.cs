@@ -46,10 +46,10 @@ public class WallRunController : AbstractBehavior {
 	 * Raycast outwards from the player (left, right, and back) to detect walls.  
 	 * If either any are hit while the player is in the air, activate wall-running.
 	 */
-	public void HandleWallRunning(Vector3 velocity, GameObject playerBody, bool isGrounded) //, ref int jumps)
+	public void HandleWallRunning(Vector3 velocity, bool isGrounded) //, ref int jumps)
 	{
 		//Raycast in several directions to see if we are wall-running
-		RaycastHit wallRunHit = DoWallRunCheck(velocity, playerBody, isGrounded);
+		RaycastHit wallRunHit = DoWallRunCheck(velocity, isGrounded);
 
         //Start wall-running if we hit something and we're not already wall-running
         if (wallRunHit.collider != null && initWallRun)
@@ -67,8 +67,6 @@ public class WallRunController : AbstractBehavior {
 			this.transform.Translate((-wallRunHit.normal/2), Space.World);
             //Set a rotation to make sure we aren't looking too far into the wall
             SetWallRunLookRotation();
-            Debug.DrawRay(wallRunHit.point, wallRunHit.normal, Color.blue, 10f);
-            Debug.DrawRay(playerBody.transform.position, wallRunDirection, Color.red, 10f);
         }
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && isWallRunning())
@@ -78,8 +76,6 @@ public class WallRunController : AbstractBehavior {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
-            Debug.DrawRay(wallRunHit.point, wallRunHit.normal, Color.blue, 10f);
-            Debug.DrawRay(playerBody.transform.position, wallRunDirection, Color.red, 10f);
         }
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
@@ -324,7 +320,7 @@ public class WallRunController : AbstractBehavior {
 	/**
 	 * Perform raycast to check wall-running rules; return the hit location
 	 */
-	public RaycastHit DoWallRunCheck(Vector3 velocity, GameObject playerBody, bool isGrounded)
+	public RaycastHit DoWallRunCheck(Vector3 velocity, bool isGrounded)
     {
         bool currentlyWallRunning = isWallRunning() && (wallRunTimer > 0 || wallSticking);
         //If we're not grounded and we haven't disabled wall-running
@@ -337,10 +333,10 @@ public class WallRunController : AbstractBehavior {
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
             float rayDistance = isWallRunning() ? 1.5f : 0.825f;
-            Physics.Raycast(playerBody.transform.position, pushDir, out vHit, 0.825f);
-            Physics.Raycast(playerBody.transform.position, playerBody.transform.right, out rHit, rayDistance);
-            Physics.Raycast(playerBody.transform.position, -playerBody.transform.right, out lHit, rayDistance);
-            Physics.Raycast(playerBody.transform.position, -playerBody.transform.forward, out bHit, rayDistance);
+            Physics.Raycast(transform.position, pushDir, out vHit, 0.825f);
+            Physics.Raycast(transform.position, transform.right, out rHit, rayDistance);
+            Physics.Raycast(transform.position, -transform.right, out lHit, rayDistance);
+            Physics.Raycast(transform.position, -transform.forward, out bHit, rayDistance);
 
             //Check the angle between our velocity any wall we may have impacted
             bool rightGood = false;
@@ -542,9 +538,9 @@ public class WallRunController : AbstractBehavior {
 	/**
 	 * Stick to the wall if we aim while wall-running 
 	 */
-	public void HandleWallSticking(bool isAiming)
+	public void HandleWallSticking()
 	{
-		if(isAiming && isWallRunning())
+		if(inputState.playerIsAiming && isWallRunning())
 		{
 			wallSticking = true;
 			wallRunTimer = 0f;

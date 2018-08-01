@@ -38,8 +38,7 @@ public class MenuController : AbstractBehavior
 	{
 		//Gather button presses for processing below
 		bool isPauseDown = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
-		bool isLockDown = inputState.GetButtonPressed(inputs[1]) && inputState.GetButtonHoldTime(inputs[1]) == 0;
-		bool isCancelDown = inputState.GetButtonPressed(inputs[2]) && inputState.GetButtonHoldTime(inputs[2]) == 0;
+		bool isCancelDown = inputState.GetButtonPressed(inputs[1]) && inputState.GetButtonHoldTime(inputs[1]) == 0;
 		//Game state variables
 		bool isGamePlaying = gm.GetGameState() == GameManager.GameState.playing;
 		bool isGamePaused = gm.GetGameState() == GameManager.GameState.paused;

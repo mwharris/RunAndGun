@@ -22,14 +22,12 @@ public class CrouchController : AbstractBehavior {
 
 	private float crouchDeltaHeight;
     private float crouchDeltaDepth;
-	private float crouchDeltaPos;
 	private float crouchDeltaCCHeight;
     private float crouchDeltaCCRadius;
     private Vector3 crouchDeltaCCCenter;
 
 	private float standardCamHeight;
     private float standardCamDepth;
-	private float standardBodyPos;
 	private float standardCCHeight;
     private float standardCCRadius;
     private Vector3 standardCCCenter;
@@ -43,15 +41,12 @@ public class CrouchController : AbstractBehavior {
 		standardCamHeight = playerCamera.transform.localPosition.y;
         standardCamDepth = playerCamera.transform.localPosition.z;
         //Store the standard body/character controller heights and depths
-        Transform body = player.transform.GetChild(0);
-		standardBodyPos = body.localPosition.y;
 		standardCCHeight = player.GetComponent<CharacterController>().height;
 		standardCCCenter = player.GetComponent<CharacterController>().center;
         standardCCRadius = player.GetComponent<CharacterController>().radius;
         //Calculate the change in positions based on desired crouch variables
         crouchDeltaHeight = standardCamHeight - crouchCamHeight;
         crouchDeltaDepth = crouchCamDepth - standardCamDepth;
-		crouchDeltaPos = standardBodyPos + crouchBodyPos;
 		crouchDeltaCCHeight = standardCCHeight - crouchCCHeight;
         crouchDeltaCCRadius = crouchCCRadius - standardCCRadius;
         //Calculate the movement speed while crouched
@@ -61,7 +56,7 @@ public class CrouchController : AbstractBehavior {
 	/**
 	 * Handle shrinking / expanding the player and attached components when crouching or standing 
 	 */
-	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameObject playerBody, GameManager.GameState gs)
+	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameManager.GameState gs)
 	{
 		if (gs == GameManager.GameState.playing) 
 		{
@@ -73,7 +68,6 @@ public class CrouchController : AbstractBehavior {
 			}
 			//Store the local position for modification
 			Vector3 camLocalPos = playerCamera.transform.localPosition;
-			//Vector3 bodyLocalPos = playerBody.transform.localPosition;
 			float ccHeight = cc.height;
             float ccRadius = cc.radius;
 			Vector3 ccCenter = cc.center;

@@ -14,18 +14,12 @@ public class PlayerLook
     private Quaternion playerLocalRot;
 	private Quaternion camLocalRot;
     private Quaternion neckLocalRot;
-    private Quaternion firstSpineLocalRot;
-    private Quaternion lastSpineLocalRot;
-    private float camOrigZ;
 
     public void Init(Transform player, Transform camera)
 	{
 		playerLocalRot = player.localRotation;
 		camLocalRot = camera.localRotation;
         neckLocalRot = neck.localRotation;
-        firstSpineLocalRot = firstSpine.localRotation;
-        lastSpineLocalRot = lastSpine.localRotation;
-        camOrigZ = camera.localRotation.eulerAngles.z;
     }
 
     //Called from FirstPersonController to handle look rotations
@@ -69,7 +63,6 @@ public class PlayerLook
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //If we are wall-running then add a rotation in the z-axis
-        Debug.Log("Z Rot: " + lri.wallRunZRotation);
         camLocalRot.z = lri.wallRunZRotation;
         if (lri.wallRunZRotation == 0)
         {

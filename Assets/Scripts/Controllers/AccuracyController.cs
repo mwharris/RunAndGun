@@ -11,7 +11,6 @@ public class AccuracyController : AbstractBehavior
 	private float baseOffset;
 	private float shootingOffset;
 	private float maxAccuracyOffset = 0.08F;
-	private float accuracyChangeSpeed = 1.5F;
 	private float sprintAccuracy = 0.03F;
 	private float walkAccuracy = 0.015F;
 	private float crouchAccuracy = 0.01F;
@@ -28,7 +27,6 @@ public class AccuracyController : AbstractBehavior
 	private float botRetY;
 	private float leftRetX;
 	private float rightRetX;
-	private float reticleSpreadSpeed = 0.01F;
 
 	private bool reticlesFuckedUp = false;
 
