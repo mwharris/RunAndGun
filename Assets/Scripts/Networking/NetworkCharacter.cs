@@ -19,6 +19,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
     private bool isJumping;
     private bool isCrouching;
     private bool isShooting;
+    private bool isReloading;
     private float jumpSpeed;
     private float lookAngle;
 
@@ -56,6 +57,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             bodyAnimator.SetBool("Jumping", isJumping);
             bodyAnimator.SetBool("Crouching", isCrouching);
             bodyAnimator.SetBool("Shooting", isShooting);
+            bodyAnimator.SetBool("Reloading", isReloading);
             bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
             bodyAnimator.SetFloat("SideSpeed", sideSpeed);
             bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
@@ -84,6 +86,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             stream.SendNext(!inputState.playerIsGrounded);
             stream.SendNext(inputState.playerIsCrouching);
             stream.SendNext(inputState.playerIsShooting);
+            stream.SendNext(inputState.playerIsReloading);
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.right));
             stream.SendNext(inputState.playerVelocity.y);
@@ -104,6 +107,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             isJumping =    (bool) stream.ReceiveNext();
             isCrouching =  (bool) stream.ReceiveNext();
             isShooting =   (bool) stream.ReceiveNext();
+            isReloading =   (bool) stream.ReceiveNext();
             forwardSpeed = (float) stream.ReceiveNext();
             sideSpeed =    (float) stream.ReceiveNext();
             jumpSpeed =    (float) stream.ReceiveNext();

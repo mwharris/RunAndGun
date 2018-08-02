@@ -27,6 +27,8 @@ public class ControlAnimations : AbstractBehavior
 
         bodyAnim.SetBool("Shooting", inputState.playerIsShooting);
 
+        bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
+
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
 

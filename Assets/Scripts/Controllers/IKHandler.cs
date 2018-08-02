@@ -87,8 +87,8 @@ public class IKHandler : MonoBehaviour
             lookWeight = Mathf.Lerp(lookWeight, targetWeight, Time.deltaTime * multiplier);
 
             //Store our new look weight as our IK weights
-            rightHandIKWeight = lookWeight;
-            leftHandIKWeight = lookWeight;// - anim.GetFloat("LeftHandIKWeightOverride");
+            rightHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverride");
+            leftHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverride");
 
             //Handle the actual rotations of our IKs
             HandleShoulderRotation();

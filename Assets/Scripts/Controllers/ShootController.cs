@@ -8,7 +8,8 @@ public class ShootController : AbstractBehavior
 	public Camera playerCamera;
 	public AudioSource aSource;
 
-	//General global variables - private
+    //General global variables - private
+    private Animator reloadAnimator;
 	private float baseFOV;
 	private PhotonView pView;
 	private float aimRecoilAmount = 0.05f;
@@ -46,18 +47,17 @@ public class ShootController : AbstractBehavior
 		cooldownTimer = 0.0f;
 		hitIndicatorTimerMax = 0.3f;
 		hitIndicatorTimer = hitIndicatorTimerMax;
-
 		//Initialize a reference to the FXManager
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Initialize a reference to the GameManager
 		gm = GameObject.FindObjectOfType<GameManager>();
 		//Initialize a reference to the Recoil and Accuracy controllers
-		rc = this.gameObject.GetComponent<RecoilController>();
-		ac = this.gameObject.GetComponent<AccuracyController>();
-		//Initialize a reference to the Hit Indicators
-		hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
+		rc = GetComponent<RecoilController>();
+		ac = GetComponent<AccuracyController>();
+        reloadAnimator = GetComponentInChildren<Animator>();
+        //Initialize a reference to the Hit Indicators
+        hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
 		reloadIndicator = GameObject.FindGameObjectWithTag("ReloadIndicator");
-
 		//Initialize a reference to the bullet count
 		GameObject txt = GameObject.FindGameObjectWithTag("BulletCount");
 		bulletCountText = txt.GetComponent<Text>();
@@ -65,28 +65,14 @@ public class ShootController : AbstractBehavior
 		txt = GameObject.FindGameObjectWithTag("ClipSize");
 		clipSizeText = txt.GetComponent<Text>();
 		clipSizeText.text = magazineCapacity.ToString();
-
 		//Get a reference to the Reticle object
 		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
-
 		//Default the bullet count to the max magazin capacity
 		bulletCount = magazineCapacity;
-
 		//Get the attached PhotonView
 		pView = GetComponent<PhotonView>();
-
 		//Get the camera's original FOV range
 		baseFOV = playerCamera.fieldOfView;
-	}
-
-	bool CheckForTriggerPull() {
-		bool ret = false;
-		float currTriggerVal = Input.GetAxis("Fire1");
-		if (currTriggerVal > 0 && currTriggerVal > lastTriggerVal + 0.2f) {
-			ret = true;
-		}
-		lastTriggerVal = currTriggerVal;
-		return ret;
 	}
 
 	void Update() 
@@ -97,12 +83,11 @@ public class ShootController : AbstractBehavior
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
 		//Reset the reload animation
-        /*
-		if(animator.GetCurrentAnimatorStateInfo(0).IsName("Reload"))
+		if(reloadAnimator.GetCurrentAnimatorStateInfo(3).IsName("Standing_Reload_SH")
+            || reloadAnimator.GetCurrentAnimatorStateInfo(3).IsName("Crouch_Reload_SH"))
 		{
-			animator.SetBool("Reload", false);
+            inputState.playerIsReloading = false;
 		}
-        */
 		//Hide the hit indicators from last frame
 		HideHitIndicator();			
 
