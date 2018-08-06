@@ -6,6 +6,7 @@ public class LerpControlledBob : MonoBehaviour
 {
     [SerializeField] private float BobDuration;
     [SerializeField] private float BobAmount;
+    [SerializeField] private float JumpRaiseAmount;
 
     //Provides the current offset that can be used to manipulate the camera
     private float m_Offset = 0f;
@@ -14,25 +15,38 @@ public class LerpControlledBob : MonoBehaviour
         return m_Offset;
     }
 
-    public IEnumerator DoBobCycle()
+    public IEnumerator DoBobCycle(bool landing)
     {
-        // make the camera move down slightly
-        float t = 0f;
-        while (t < BobDuration)
+        if (landing)
         {
-            m_Offset = Mathf.Lerp(0f, BobAmount, t/BobDuration);
-            t += Time.deltaTime;
-            yield return new WaitForFixedUpdate();
+            // make the camera move down slightly
+            float t = 0f;
+            while (t < BobDuration)
+            {
+                m_Offset = Mathf.Lerp(JumpRaiseAmount, BobAmount, t / (BobDuration / 2));
+                t += Time.deltaTime;
+                yield return new WaitForFixedUpdate();
+            }
+            t = 0f;
+            while (t < BobDuration)
+            {
+                m_Offset = Mathf.Lerp(BobAmount, 0f, t / (BobDuration / 2));
+                t += Time.deltaTime;
+                yield return new WaitForFixedUpdate();
+            }
+            m_Offset = 0f;
         }
-
-        // make it move back to neutral
-        t = 0f;
-        while (t < BobDuration)
+        else
         {
-            m_Offset = Mathf.Lerp(BobAmount, 0f, t/BobDuration);
-            t += Time.deltaTime;
-            yield return new WaitForFixedUpdate();
+            // make it to our raise head height
+            float t = 0f;
+            while (t < BobDuration)
+            {
+                m_Offset = Mathf.Lerp(0f, JumpRaiseAmount, t / BobDuration);
+                t += Time.deltaTime;
+                yield return new WaitForFixedUpdate();
+            }
+            m_Offset = JumpRaiseAmount;
         }
-        m_Offset = 0f;
     }
 }

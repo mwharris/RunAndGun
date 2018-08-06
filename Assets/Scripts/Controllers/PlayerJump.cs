@@ -6,7 +6,8 @@ public class PlayerJump : AbstractBehavior {
 
 	public int maxJumps;
 	public float jumpSpeed = 8f;
-	public AudioClip jumpSound;  
+	public AudioClip jumpSound;
+    public Transform playerCamera;
 
 	private int jumps;
     private bool justJumped = false;
@@ -42,8 +43,8 @@ public class PlayerJump : AbstractBehavior {
 			//Perform a jump if we've jumped
 			if (canJump && jumps > 0) 
 			{
-				//Add a head bob to our jump
-				StartCoroutine(jumpBob.DoBobCycle());
+                //Add a head bob to our jump
+                StartCoroutine(jumpBob.DoBobCycle(false));
 				//Decrement our jumps so we can only jump twice
 				jumps--;
                 justJumped = true;
@@ -55,7 +56,7 @@ public class PlayerJump : AbstractBehavior {
 				if(wallRunController.isWallRunning())
 				{
 					//Handle double jumping
-					inputState.playerVelocity = wallRunController.WallJump(inputState.playerVelocity, jumpSpeed);
+					inputState.playerVelocity = wallRunController.WallJump(inputState.playerVelocity, jumpSpeed, playerCamera);
 				}
 				else
 				{

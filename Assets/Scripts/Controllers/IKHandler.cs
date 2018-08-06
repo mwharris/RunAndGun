@@ -10,11 +10,11 @@ public class IKHandler : MonoBehaviour
     public Transform rightShoulder;
 
     public Transform rightHandIKTarget;
-    public float rightHandIKWeight = 1;
+    private float rightHandIKWeight = 1;
     public Transform leftHandIKTarget;
-    public float leftHandIKWeight = 1;
+    private float leftHandIKWeight = 1;
 
-    private PhotonView photonView;
+    public PhotonView photonView;
 
     private Animator anim;
     private Transform aimHelper;
@@ -33,7 +33,6 @@ public class IKHandler : MonoBehaviour
     {
         aimHelper = new GameObject().transform;
         anim = GetComponent<Animator>();
-        photonView = transform.parent.GetComponent<PhotonView>();
     }
 
     //Helper function to set isAiming and isReloading variables based on player inputs
@@ -45,54 +44,40 @@ public class IKHandler : MonoBehaviour
 
     void LateUpdate ()
     {
-        //IK is controller by network when player is not ours
-        if (photonView.isMine)
+        //Make sure our Right Shoulder transform is connected to the right shoulder bone
+        if (rightShoulder == null)
         {
-            //Make sure our Right Shoulder transform is connected to the right shoulder bone
-            if (rightShoulder == null)
-            {
-                rightShoulder = anim.GetBoneTransform(HumanBodyBones.RightShoulder);
-            }
-            //If we already have Right Shoulder position then move our Weapon Holder there
-            else
-            {
-                weaponHolder.position = rightShoulder.position;
-            }
-
-            //Set variables based on inputs
-            setInputVars();
-
-            //Set up our lookAt position
-            lookAtPosition = playerCamera.position + (playerCamera.forward * 10);
-
-            //Determine the direction between our position and where we are looking (aim helper position)
-            Vector3 dirTowardsTarget = aimHelper.position - transform.position;
-
-            //Find the angle between where we are currently looking and where we want to look.
-            //REMOVE THIS?...this may not apply in our case since we are a FPS are are technically constantly aiming.
-            float angle = Vector3.Angle(transform.forward, dirTowardsTarget);
-            if (angle < 90)
-            {
-                targetWeight = 1;
-            }
-            else
-            {
-                targetWeight = 0;
-            }
-
-            //The speed at which our IKs will move...do we want different speeds for aiming?
-            float multiplier = isAiming ? 5f : 30f;
-
-            //Lerp between our current look position and target look position
-            lookWeight = Mathf.Lerp(lookWeight, targetWeight, Time.deltaTime * multiplier);
-
-            //Store our new look weight as our IK weights
-            rightHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverride");
-            leftHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverride");
-
-            //Handle the actual rotations of our IKs
-            HandleShoulderRotation();
+            rightShoulder = anim.GetBoneTransform(HumanBodyBones.RightShoulder);
         }
+        //If we already have Right Shoulder position then move our Weapon Holder there
+        else
+        {
+            weaponHolder.position = rightShoulder.position;
+        }
+
+        //Set variables based on inputs
+        setInputVars();
+
+        //Set up our lookAt position
+        lookAtPosition = playerCamera.position + (playerCamera.forward * 10);
+
+        //Determine the direction between our position and where we are looking (aim helper position)
+        Vector3 dirTowardsTarget = aimHelper.position - transform.position;
+
+        //The speed at which our IKs will move...do we want different speeds for aiming?
+        float multiplier = isAiming ? 5f : 30f;
+
+        //Lerp between our current look position and target look position
+        targetWeight = 1;
+        lookWeight = Mathf.Lerp(lookWeight, targetWeight, Time.deltaTime * multiplier);
+
+        //Store our new look weight as our IK weights
+        //Debug.Log("Override Left: " + anim.GetFloat("IKWeightOverrideLeft") + ", Override Right: " + anim.GetFloat("IKWeightOverrideRight"));
+        rightHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverrideRight");
+        leftHandIKWeight = lookWeight - anim.GetFloat("IKWeightOverrideLeft");
+
+        //Handle the actual rotations of our IKs
+        HandleShoulderRotation();
     }
 
     //Handle the actual rotations of our IKs and GameObjects
@@ -120,44 +105,18 @@ public class IKHandler : MonoBehaviour
     //Set the both hand's IK position and rotations based on calculations above
     void OnAnimatorIK(int layerIndex)
     {
-        //If we're controlling our player then set calculated position/rotation values
-        if (photonView.isMine)
-        {
-            //Head IK
-            anim.SetLookAtWeight(lookWeight, 0f, 1f, 1f, 0f);
-            anim.SetLookAtPosition(lookAtPosition);
-            //Hand IK - Position
-            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
-            anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
-            anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
-            anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
-            //Hand IK - Rotation
-            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
-            anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
-            anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
-            anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
-        }
-        //If we're controlling a network character, override with networked values
-        else
-        {
-            //Hand IK - Position
-            anim.SetIKPositionWeight(AvatarIKGoal.RightHand, 1);
-            anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, 1);
-            anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKPositionOverride);
-            anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKPositionOverride);
-            //Hand IK - Rotation
-            anim.SetIKRotationWeight(AvatarIKGoal.RightHand, 1);
-            anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, 1);
-            anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKRotationOverride);
-            anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKRotationOverride);
-        }
-    }
-
-    public void setNetworkedIKValues(Vector3 rightHandPos, Vector3 leftHandPos, Quaternion rightHandRot, Quaternion leftHandRot)
-    {
-        rightHandIKPositionOverride = rightHandPos;
-        leftHandIKPositionOverride = leftHandPos;
-        rightHandIKRotationOverride = rightHandRot;
-        leftHandIKRotationOverride = leftHandRot;
+        //Head IK
+        anim.SetLookAtWeight(lookWeight, 0f, 1f, 1f, 0f);
+        anim.SetLookAtPosition(lookAtPosition);
+        //Hand IK - Position
+        anim.SetIKPositionWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
+        anim.SetIKPositionWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
+        anim.SetIKPosition(AvatarIKGoal.RightHand, rightHandIKTarget.position);
+        anim.SetIKPosition(AvatarIKGoal.LeftHand, leftHandIKTarget.position);
+        //Hand IK - Rotation
+        anim.SetIKRotationWeight(AvatarIKGoal.RightHand, rightHandIKWeight);
+        anim.SetIKRotationWeight(AvatarIKGoal.LeftHand, leftHandIKWeight);
+        anim.SetIKRotation(AvatarIKGoal.RightHand, rightHandIKTarget.rotation);
+        anim.SetIKRotation(AvatarIKGoal.LeftHand, leftHandIKTarget.rotation);
     }
 }

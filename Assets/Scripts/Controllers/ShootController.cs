@@ -14,7 +14,6 @@ public class ShootController : AbstractBehavior
 	private PhotonView pView;
 	private float aimRecoilAmount = 0.05f;
 	private float hipRecoilAmount = 0.1f;
-	private float lastTriggerVal = 0.0f;
 
 	//Weapon specific stuff
 	[HideInInspector] public float cooldownTimer;

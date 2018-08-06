@@ -186,7 +186,7 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves:
-      - name: IKWeightOverride
+      - name: IKWeightOverrideLeft
         curve:
           serializedVersion: 2
           curve:
@@ -237,6 +237,58 @@ ModelImporter:
             outWeight: 0
           preInfinity: 2
           postInfinity: 2
+          rotationOrder: 4
+      - name: IKWeightOverrideRight
+        curve:
+          serializedVersion: 2
+          curve:
+          - serializedVersion: 3
+            time: 0
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          - serializedVersion: 3
+            time: 0.051472146
+            value: 0.6003159
+            inSlope: 0.9388038
+            outSlope: 0.9388038
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.7096954
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.50378007
+            value: 0.80102813
+            inSlope: 0.04765892
+            outSlope: 0.04765892
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.33333334
+          - serializedVersion: 3
+            time: 0.9514766
+            value: 0.5980118
+            inSlope: -0.95152825
+            outSlope: -0.95152825
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0.33333334
+            outWeight: 0.6306084
+          - serializedVersion: 3
+            time: 1
+            value: 0
+            inSlope: 0
+            outSlope: 0
+            tangentMode: 0
+            weightedMode: 0
+            inWeight: 0
+            outWeight: 0
+          preInfinity: 3
+          postInfinity: 3
           rotationOrder: 4
       events: []
       transformMask:

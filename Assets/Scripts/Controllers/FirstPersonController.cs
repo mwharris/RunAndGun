@@ -64,6 +64,8 @@ public class FirstPersonController : AbstractBehavior
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
+    public Vector3 drawMe = Vector3.zero;
+
     void Start () {
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
@@ -133,7 +135,16 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        cc.Move(inputState.playerVelocity * Time.deltaTime);
+        //if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
+        //{
+        //    cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
+        //}
+        //else
+        //{
+            cc.Move(inputState.playerVelocity * Time.deltaTime);
+        //}
+        Debug.DrawRay(transform.position, transform.forward * 5f, Color.red);
+        Debug.DrawRay(transform.position, drawMe, Color.blue);
         //cc.Move(new Vector3(0f, inputState.playerVelocity.y, 0f)  * Time.deltaTime);
     }
 
@@ -146,7 +157,7 @@ public class FirstPersonController : AbstractBehavior
 			//Apply updates to local position from crouching and head bob
 			Vector3 localPos = playerCamera.transform.localPosition;
             //Not crouching so reset camera to normal position
-			localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
+            localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
             //Apply the changes we made above
             playerCamera.transform.localPosition = localPos;
         }
@@ -253,7 +264,8 @@ public class FirstPersonController : AbstractBehavior
 	void HandleControllerInput()
 	{
         //Build a LookRotationInput object for better passing of arguments in the following function calls
-        LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, invertY, 0f, new Vector3(), 0f, 0f, false);
+        LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, 
+            invertY, wallRunController.isWallRunning(), 0f, 0f, 0f, false);
         //Handle any look rotation updates due to wall-running
         wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotations and calculate head angle
@@ -404,7 +416,7 @@ public class FirstPersonController : AbstractBehavior
 		if(wasAirborne && inputState.playerIsGrounded)
 		{
 			//Add a head bob to our landing
-			StartCoroutine(jumpBob.DoBobCycle());
+			StartCoroutine(jumpBob.DoBobCycle(true));
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset our air movement flag

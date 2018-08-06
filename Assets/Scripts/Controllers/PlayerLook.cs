@@ -47,9 +47,46 @@ public class PlayerLook
     //Handle all updating of camera rotations and horizontal player body rotations
     private float ApplyLookRotations(Vector2 inputs, LookRotationInput lri)
     {
+        if (lri.isWallRunning)
+        {
+            return HandleWallRunningRotations(inputs, lri);
+        }
+        else
+        {
+            return HandleNormalRotations(inputs, lri);
+        }
+    }
+
+    private float HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
+    {
+        camLocalRot = lri.camera.localRotation;
+        //Apply the rotation to camera (vertical look rotation)
+        camLocalRot *= Quaternion.Euler(-inputs.x, inputs.y, 0f);
+        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
+        //Clamp the player rotation in the y axis if we are wall-running
+        if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
+        {
+            camLocalRot = ClampWallRunRotation(camLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
+        }
+        //Clamp rotation camera and head rotations to not look too far up/down
+        camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
+        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
+        //If we are wall-running then add a rotation in the z-axis
+        camLocalRot.z = lri.wallRunZRotation;
+        if (lri.wallRunZRotation == 0)
+        {
+            camLocalRot.y = 0;
+        }
+        //Update the rotation of our player and camera
+        lri.camera.localRotation = camLocalRot;
+        //Return the angle of our head for the animator
+        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+    }
+
+    private float HandleNormalRotations(Vector2 inputs, LookRotationInput lri)
+    {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
-        Quaternion nanTest = lri.player.localRotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);

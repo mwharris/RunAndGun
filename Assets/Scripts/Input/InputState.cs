@@ -3,11 +3,9 @@ using System.Collections.Generic;
 using UnityEngine;
 
 public class ButtonState {
-	
 	public bool pressed;
 	public float value;
 	public float holdTime = 0f;
-
 }
 
 public class InputState : MonoBehaviour {
@@ -20,6 +18,9 @@ public class InputState : MonoBehaviour {
     [HideInInspector] public bool playerIsShooting = false;
     [HideInInspector] public bool playerIsAiming = false;
     [HideInInspector] public bool playerIsReloading = false;
+    [HideInInspector] public bool playerIsWallRunningLeft = false;
+    [HideInInspector] public bool playerIsWallRunningRight = false;
+    [HideInInspector] public bool playerIsWallRunningBack = false;
     [HideInInspector] public Vector3 playerLookVec = new Vector3(0, 0, 0);
     [HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;

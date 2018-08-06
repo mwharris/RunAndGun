@@ -6,10 +6,7 @@ public class WallRunController : AbstractBehavior {
 
 	[HideInInspector] public bool wallSticking = false;
     [HideInInspector] public bool wallStickVelocitySet = false;
-
-	private bool wallRunningLeft = false;
-	private bool wallRunningRight = false;
-	private bool wallRunningBack = false;
+    
 	private bool initWallRun = false;
     private bool wallJumped = false;
 
@@ -35,12 +32,16 @@ public class WallRunController : AbstractBehavior {
     private bool reclampRotation = false;
     private bool curvedWall = false;
 
+    private FirstPersonController fpsC;
+
     void Start() 
 	{
 		//Initialize references to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		jumpController = GetComponent<PlayerJump>();
-	}
+        fpsC = GetComponent<FirstPersonController>();
+
+    }
 
 	/*
 	 * Raycast outwards from the player (left, right, and back) to detect walls.  
@@ -63,8 +64,9 @@ public class WallRunController : AbstractBehavior {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
 			wallRunNormal = wallRunHit.normal;
-			//Move the player closer to the wall to ensure rotation doesn't cause us to come off the wall
-			this.transform.Translate((-wallRunHit.normal/2), Space.World);
+            //Move the player closer to the wall to ensure rotation doesn't cause us to come off the wall
+            Vector3 trans = -wallRunHit.normal * 0.29f;
+			transform.Translate(trans, Space.World);
             //Set a rotation to make sure we aren't looking too far into the wall
             SetWallRunLookRotation();
         }
@@ -75,7 +77,7 @@ public class WallRunController : AbstractBehavior {
 			wallRunTimer -= Time.deltaTime;
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
-			wallRunNormal = wallRunHit.normal;
+            wallRunNormal = wallRunHit.normal;
         }
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
@@ -166,34 +168,21 @@ public class WallRunController : AbstractBehavior {
     public void FindWallRunClampAngles(Vector3 v)
     {
         //If we're wall-running backwards we don't want to reclamp
-        if (wallRunningLeft || wallRunningRight || (wallSticking && initWallRun))
+        if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || (wallSticking && initWallRun))
         {
             //Get the angles between velocity and North and velocity and South
             Vector3 testV = new Vector3(v.x, 0f, v.z);
             float angle1 = Vector3.Angle(testV, Vector3.forward);
             float angle2 = Vector3.Angle(testV, Vector3.back);
-            //Wall-running N/S: use wall-run side to determine bounded area
-            if (angle1 == 0 && angle2 == 180 && wallRunningRight)
+            if (inputState.playerIsWallRunningLeft)
             {
-                angle1 = -angle1;
-                angle2 = -angle2;
+                angle1 = 0;
+                angle2 = 180;
             }
-            //Wall-running N/S: use wall-run side to determine bounded area
-            else if (angle1 == 180 && angle2 == 0 && wallRunningLeft)
+            else if (inputState.playerIsWallRunningRight)
             {
-                angle1 = -angle1;
-                angle2 = -angle2;
-            }
-            //Wall-running E/W (90 degree to 90 degree)
-            else if (angle1 == 90 && angle2 == 90)
-            {
-                //Reverse one of the angles to get -90 and 90
-                angle1 = -angle1;
-                //Determine if our range should be -90 -> 90 or -90 -> -180, 180 -> 90 
-                if (Vector3.back == wallRunNormal)
-                {
-                    wrapAroundRotationCircle = true;
-                }
+                angle1 = 0;
+                angle2 = -180;
             }
             //Wall-running on an angled surface (not perfectly N/S or E/W) 
             else if (angle1 > 0 && angle2 > 0)
@@ -256,11 +245,11 @@ public class WallRunController : AbstractBehavior {
 		{
 			//We looked too far left/right, rotate towards the cross product
 			Vector3 otherCross = new Vector3();
-			if(wallRunningRight)
+			if(inputState.playerIsWallRunningRight)
 			{ 
 				otherCross = Vector3.Cross(Vector3.up, wallRunNormal); 
 			}
-			if(wallRunningLeft)
+			if(inputState.playerIsWallRunningLeft)
 			{ 
 				otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 			}
@@ -269,22 +258,20 @@ public class WallRunController : AbstractBehavior {
 		}
 	}
 
-	/**
-	 * Tilt the camera left or right depending on which side we are wall-running.
-	 * No tilt while facing directly away from the wall.
-	 */
+	//Tilt the camera left or right depending on which side we are wall-running.
+	//No tilt while facing directly away from the wall.
 	public float CalculateCameraTilt(Camera playerCamera)
     {
         float lerpedRot = 0f;
         if (!inputState.playerIsGrounded)
         {
             //Wall-running left, tilt right
-            if (wallRunningLeft)
+            if (inputState.playerIsWallRunningLeft)
             {
                 lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, 8 * Time.deltaTime);
             }
             //Wall-running right, tilt left
-            else if (wallRunningRight)
+            else if (inputState.playerIsWallRunningRight)
             {
                 lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8 * Time.deltaTime);
             }
@@ -302,12 +289,10 @@ public class WallRunController : AbstractBehavior {
         return cameraRotZ;
 	}
 		
-	/**
-	 * Helper function to return if we are wall-running in any direction
-	 */
+	//Helper function to return if we are wall-running in any direction
 	public bool isWallRunning()
 	{
-		if(wallRunningBack || wallRunningLeft || wallRunningRight)
+		if(inputState.playerIsWallRunningBack || inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight)
 		{
 			return true;
 		}
@@ -317,12 +302,11 @@ public class WallRunController : AbstractBehavior {
 		}
 	}
 
-	/**
-	 * Perform raycast to check wall-running rules; return the hit location
-	 */
+	//Perform raycast to check wall-running rules; return the hit location
 	public RaycastHit DoWallRunCheck(Vector3 velocity, bool isGrounded)
     {
-        bool currentlyWallRunning = isWallRunning() && (wallRunTimer > 0 || wallSticking);
+        //bool currentlyWallRunning = isWallRunning() && (wallRunTimer > 0 || wallSticking);
+        bool currentlyWallRunning = isWallRunning() || wallSticking;
         //If we're not grounded and we haven't disabled wall-running
         if (!isGrounded && (currentlyWallRunning || !isWallRunning()))
 		{
@@ -341,7 +325,8 @@ public class WallRunController : AbstractBehavior {
             //Check the angle between our velocity any wall we may have impacted
             bool rightGood = false;
 			bool leftGood = false;
-			Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
+            bool backGood = false;
+            Vector3 testV = new Vector3(velocity.x, 0, velocity.z);
 			if(Vector3.Angle(testV, rHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
 			{
 				rightGood = true;	
@@ -349,9 +334,13 @@ public class WallRunController : AbstractBehavior {
 			if(Vector3.Angle(testV, lHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
 			{
 				leftGood = true;
-			}			
-			//Also check the angle between our look direction and our velocity
-			bool lookAngleGood = false;
+            }
+            if (Vector3.Angle(testV, bHit.normal) > 90 && Vector3.Magnitude(testV) > 1)
+            {
+                backGood = true;
+            }
+            //Also check the angle between our look direction and our velocity
+            bool lookAngleGood = false;
 			float lookVeloAngle = Vector3.Angle(transform.forward, testV);
 			if(lookVeloAngle <= 90) 
 			{
@@ -375,14 +364,14 @@ public class WallRunController : AbstractBehavior {
 					initWallRun = true;
 				}
                 //Re-clamp rotation angles if we transition from another wall-run
-                else if (wallRunningLeft || wallRunningBack) 
+                else if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningBack) 
                 {
                     reclampRotation = true;
                 }
-				//Flag the side we are wall-running
-				wallRunningLeft = false;
-				wallRunningRight = true;
-				wallRunningBack = false;
+                //Flag the side we are wall-running
+                inputState.playerIsWallRunningLeft = false;
+                inputState.playerIsWallRunningRight = true;
+                inputState.playerIsWallRunningBack = false;
 				//Store the name of the wall we ran on
 				lastWallName = rHit.collider.name;
 				//Reset the wall jumped flag
@@ -398,14 +387,14 @@ public class WallRunController : AbstractBehavior {
 					initWallRun = true;
                 }
                 //Re-clamp rotation angles if we transition from another wall-run
-                else if (wallRunningRight || wallRunningBack)
+                else if (inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
                 {
                     reclampRotation = true;
                 }
                 //Flag the side we are wall-running
-                wallRunningLeft = true;
-				wallRunningRight = false;
-				wallRunningBack = false;
+                inputState.playerIsWallRunningLeft = true;
+                inputState.playerIsWallRunningRight = false;
+                inputState.playerIsWallRunningBack = false;
 				//Store the name of the wall we ran on
 				lastWallName = lHit.collider.name;
 				//Reset the wall jumped flag
@@ -413,7 +402,7 @@ public class WallRunController : AbstractBehavior {
                 return lHit;
 			} 
 			//Backwards raycast
-			else if (bHitValid && bDoubleJumpCheck) 
+			else if (bHitValid && bHitValid && bDoubleJumpCheck && (backGood || isWallRunning())) 
 			{
 				//Flag if we are initializing the wall-run
 				if (!isWallRunning())
@@ -421,9 +410,9 @@ public class WallRunController : AbstractBehavior {
 					initWallRun = true;
                 }
                 //Flag the side we are wall-running
-                wallRunningLeft = false;
-				wallRunningRight = false;
-				wallRunningBack = true;
+                inputState.playerIsWallRunningLeft = false;
+                inputState.playerIsWallRunningRight = false;
+                inputState.playerIsWallRunningBack = true;
 				//Store the name of the wall we ran on
 				lastWallName = bHit.collider.name;
 				//Reset the wall jumped flag
@@ -431,17 +420,16 @@ public class WallRunController : AbstractBehavior {
                 return bHit;
 			}
         }
-		else if(wallRunTimer <= 0 && !wallSticking)
-		{
+		//else if(wallRunTimer <= 0 && !wallSticking)
+        else if (!wallSticking)
+        {
 			wallRunningDisabled = true;
 		}
 
 		return new RaycastHit();
 	}
 
-	/**
-	 * Checks to make sure we didn't jump off and back onto the same wall
-	 */
+	//Checks to make sure we didn't jump off and back onto the same wall
 	public bool DoubleWallRunCheck(RaycastHit hit){
 		//If the raycast hit a wall...
 		if(hit.collider != null && hit.collider.tag != "Player"){
@@ -476,69 +464,67 @@ public class WallRunController : AbstractBehavior {
 		//Did not pass rule checks
 		return false;
 	}
-	//rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || (!wallJumped && !wallRunningDisabled));
 
-	/*
-	 * This function handles jumping while wall-running.  
-	 * Depending on any keys held down, the jump will be angled away from the wall.
-	 */
-	public Vector3 WallJump(Vector3 velocity, float jumpSpeed)
-	{
-		bool isWPressed = inputState.GetButtonPressed(inputs[0]);
-		bool isAPressed = inputState.GetButtonPressed(inputs[2]);
-		bool isDPressed = inputState.GetButtonPressed(inputs[3]);
-
-		//The angle we want to jump relative to the wall
-		float degrees = 45f;
-		//Flag us as having wall jumped
-		wallJumped = true;
-		//Depending on the button held and our wall-running side, increase the angle
-		if(wallRunningLeft)
-		{
-			if(isDPressed)
-			{
-				degrees = 45f;
-			}
-			else if(isWPressed)
-			{
-				degrees = 70f;
-			}
-		}
-		else if(wallRunningRight)
-		{
-			if(isAPressed)
-			{
-				degrees = 45f;
-			}
-			else if(isWPressed)
-			{
-				degrees = 70f;
-			}
-		}
-		else 
-		{
-			degrees = 0f;
-		}
-		//Disable wall-running
-		ResetActiveVars();
-        //Reset the y-velocity for rotation calculations
-        velocity.y = 0;
-		//Convert degress to radians
-		float radians = degrees * Mathf.Deg2Rad;
-		//Scale the normal of the wall we're running on
-		Vector3 dir = wallRunNormal * 14f;
-		//Rotate the current velocity towards the target direction the amount of radians determined above
-		velocity = Vector3.RotateTowards(dir, velocity, radians, 0.0f);
-		velocity *= 1.2f;
-		//Jump upwards
-		velocity.y = jumpSpeed;
+	//This function handles jumping while wall-running.  
+	//Depending on any keys held down, the jump will be angled away from the wall.
+    public Vector3 WallJump(Vector3 velocity, float jumpSpeed, Transform playerCamera)
+    {
+        Quaternion cameraRot = playerCamera.rotation;
+        //Disable wall-running
+        ResetActiveVars();
+        //Flag us as having wall jumped
+        wallJumped = true;
+        //First rotate the player object towards camera forward
+        RotatePlayerBody(playerCamera);
+        //Next rotate our velocity in a direction dependent on controller input
+        velocity = RotatePlayerVelocity(velocity, cameraRot);
+        fpsC.drawMe = velocity;
+        //Jump upwards
+        velocity.y = jumpSpeed;
         return velocity;
 	}
 
-	/**
-	 * Stick to the wall if we aim while wall-running 
-	 */
-	public void HandleWallSticking()
+    //Rotate our player body to match the camera forward
+    private void RotatePlayerBody(Transform playerCamera)
+    {
+        Quaternion origCamRot = playerCamera.rotation;
+        //We want to match the rotation of the player camera
+        Vector3 targetDir = new Vector3(playerCamera.forward.x, 0f, playerCamera.forward.z);
+        //Calculate radians between current and target rotation
+        float degrees = Vector3.Angle(transform.forward, targetDir);
+        float radians = degrees * Mathf.Deg2Rad;
+        //Perform the actual rotation
+        Vector3 newForward = Vector3.RotateTowards(transform.forward, targetDir, radians, 0.0f);
+        transform.rotation = Quaternion.LookRotation(newForward);
+        //The above rotates our camera as well, so rotate it back
+        playerCamera.rotation = origCamRot;
+    }
+
+    //Rotate our velocity to match direction of new forward taking into account player input
+    private Vector3 RotatePlayerVelocity(Vector3 velocity, Quaternion cameraRot)
+    {
+        //Get keyboard or controller input using raw axis values
+        float forwardAxis = inputState.GetButtonValue(inputs[0]);
+        float backwardAxis = inputState.GetButtonValue(inputs[1]);
+        float leftAxis = inputState.GetButtonValue(inputs[2]);
+        float rightAxis = inputState.GetButtonValue(inputs[3]);
+        //Determine our target jump direction relative to player based on input
+        Vector3 targetDir = new Vector3(leftAxis + rightAxis, 0, forwardAxis + backwardAxis) * 14f;
+        targetDir = cameraRot * targetDir;
+        //Disable wall-running
+        ResetActiveVars();
+        //Find the angle, in radians, between our target direction and current direction
+        Vector3 dir = wallRunNormal * 14f;
+        float degrees = Vector3.Angle(dir, targetDir);
+        float radians = degrees * Mathf.Deg2Rad;
+        //Rotate the current direction the amount of radians determined above
+        velocity = Vector3.RotateTowards(dir, targetDir, radians, 0.0f);
+        velocity *= 1.2f;
+        return velocity;
+    }
+
+	//Stick to the wall if we aim while wall-running 
+    public void HandleWallSticking()
 	{
 		if(inputState.playerIsAiming && isWallRunning())
 		{
@@ -555,9 +541,9 @@ public class WallRunController : AbstractBehavior {
     //Helper function to reset variables activate while wall-running
     private void ResetActiveVars()
     {
-        wallRunningLeft = false;
-        wallRunningRight = false;
-        wallRunningBack = false;
+        inputState.playerIsWallRunningLeft = false;
+        inputState.playerIsWallRunningRight = false;
+        inputState.playerIsWallRunningBack = false;
         reclampRotation = false;
         wrapAroundRotationCircle = false;
         wallRunAngle1 = 0f;

@@ -11,25 +11,23 @@ public class LookRotationInput {
     public float mouseSensitivity;
     public bool invertY;
     public float wallRunZRotation;
-    public bool wallRunRotationOK;
-    public Vector3 wallRunCorrection;
+    public bool isWallRunning;
     public float wallRunAngle1;
     public float wallRunAngle2;
     public bool wrapAround;
 
     public LookRotationInput(Transform p, Transform c, Vector2 li, float ms, bool iy, 
-        float wrz, Vector3 wrc, float a1, float a2, bool wrap)
+        bool wallRunningFlag, float wrz, float wrAngle1, float wrAngle2, bool wrap)
     {
         player = p;
         camera = c;
         lookInput = li;
         mouseSensitivity = ms;
         invertY = iy;
+        isWallRunning = wallRunningFlag;
         wallRunZRotation = wrz;
-        wallRunCorrection = wrc;
-        wallRunRotationOK = true;
-        wallRunAngle1 = a1;
-        wallRunAngle2 = a2;
+        wallRunAngle1 = wrAngle1;
+        wallRunAngle2 = wrAngle2;
         wrapAround = wrap;
     }
 
