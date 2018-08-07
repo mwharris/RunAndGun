@@ -131,6 +131,15 @@ public class NetworkManager : MonoBehaviour {
         myPlayer.GetComponentInChildren<IKHandler>().enabled = true;
         myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
         myPlayer.GetComponentInChildren<Animator>().SetLayerWeight(1, 0);
+        //Shrink out head so it's no longer visible
+        Transform[] childTransforms = myPlayer.GetComponentsInChildren<Transform>();
+        for (int i = 0; i < childTransforms.Length; i++)
+        {
+            if (childTransforms[i].name == "head1_neck")
+            {
+                childTransforms[i].localScale = new Vector3(0, 0, 0);
+            }
+        }
 		//Enable the displayed ammo counter
 		ammoUI.SetActive(true);
 		//Enable the camera reticle
