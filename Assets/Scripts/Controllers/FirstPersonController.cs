@@ -5,7 +5,6 @@ using System.Collections;
 [RequireComponent(typeof (WallRunController))]
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]
-[RequireComponent(typeof (LerpControlledBob))]
 public class FirstPersonController : AbstractBehavior 
 {
 	[HideInInspector] public CharacterController cc;
@@ -60,7 +59,6 @@ public class FirstPersonController : AbstractBehavior
 	private MenuController menuController;
 	private FXManager fxManager;
 	private MyHeadBob headBobScript;
-	private LerpControlledBob jumpBob;
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
@@ -83,7 +81,6 @@ public class FirstPersonController : AbstractBehavior
 		//Set up the various controllers
 		crouchController = GetComponent<CrouchController>();
 		wallRunController = GetComponent<WallRunController>();
-        jumpBob = GetComponent<LerpControlledBob>();
         //Initiliaze crouch controller variables
         crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
         //Initialize player looking mechanics
@@ -135,14 +132,14 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        //if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
-        //{
-        //    cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
-        //}
-        //else
-        //{
+        if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
+        {
+            cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
+        }
+        else
+        {
             cc.Move(inputState.playerVelocity * Time.deltaTime);
-        //}
+        }
         Debug.DrawRay(transform.position, transform.forward * 5f, Color.red);
         Debug.DrawRay(transform.position, drawMe, Color.blue);
         //cc.Move(new Vector3(0f, inputState.playerVelocity.y, 0f)  * Time.deltaTime);
@@ -151,16 +148,6 @@ public class FirstPersonController : AbstractBehavior
     //Used to apply rotation and position updates to the camera
     void FixedUpdate()
     {
-        //Crouching camera changes clash with jump bob camera changes
-		if(!inputState.playerIsCrouching && !crouchController.cameraResetting) 
-		{
-			//Apply updates to local position from crouching and head bob
-			Vector3 localPos = playerCamera.transform.localPosition;
-            //Not crouching so reset camera to normal position
-            localPos = new Vector3(localPos.x, ogCamPos.y - jumpBob.Offset(), localPos.z);
-            //Apply the changes we made above
-            playerCamera.transform.localPosition = localPos;
-        }
     }
 
     void GatherOptions()
@@ -415,13 +402,11 @@ public class FirstPersonController : AbstractBehavior
 		//If we just landed on the ground
 		if(wasAirborne && inputState.playerIsGrounded)
 		{
-			//Add a head bob to our landing
-			StartCoroutine(jumpBob.DoBobCycle(true));
 			//Play a networked landing sound
 			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset our air movement flag
 			inputState.allowAirMovement = false;
-		}
+        }
 	}
 
 	/*

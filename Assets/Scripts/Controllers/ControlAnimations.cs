@@ -11,13 +11,18 @@ public class ControlAnimations : AbstractBehavior
     public Transform weapon;
     public Transform leftHandTarget;
     public Transform rightHandTarget;
-    private Vector3 origWeaponPosition;
-    private Quaternion origWeaponRotation;
 
     public Vector3 wallRunLeftTargetRot = Vector3.zero;
     public Vector3 wallRunRightTargetRot = Vector3.zero;
     private Quaternion origBodyRotation;
     private Quaternion currBodyRotation;
+
+    public Vector3 leftHandWallRunWeaponPosition;
+    public Vector3 leftHandWallRunWeaponRotation;
+    public Vector3 rightHandWallRunWeaponPosition;
+    public Vector3 rightHandWallRunWeaponRotation;
+    private Vector3 origWeaponPosition;
+    private Quaternion origWeaponRotation;
 
     void Start()
     {
@@ -61,19 +66,25 @@ public class ControlAnimations : AbstractBehavior
         weaponAnim.SetBool("WallRunningLeft", wrLeft);
         bodyAnim.SetBool("WallRunningRight", wrRight);
         weaponAnim.SetBool("WallRunningRight", wrRight);
+        //Rotate our body to match the turned animation
+        HandleBodyRotation(wrLeft, wrRight);
+        //Fix issues with the wall-running animation weapon placement
+        HandleWeaponPlacement(wrLeft, wrRight);
+    }
+
+    void HandleBodyRotation(bool wrLeft, bool wrRight)
+    {
         if (wrLeft || wrRight || origBodyRotation != currBodyRotation)
         {
-            //Rotate the body left/right to match the animation being played
             if (wrLeft)
             {
                 Quaternion rot = Quaternion.Euler(wallRunLeftTargetRot.x, wallRunLeftTargetRot.y, wallRunLeftTargetRot.z);
-                currBodyRotation = Quaternion.Lerp(currBodyRotation, rot, Time.deltaTime * 5f); 
+                currBodyRotation = Quaternion.Lerp(currBodyRotation, rot, Time.deltaTime * 5f);
             }
             else if (wrRight)
             {
                 Quaternion rot = Quaternion.Euler(wallRunRightTargetRot.x, wallRunRightTargetRot.y, wallRunRightTargetRot.z);
                 currBodyRotation = Quaternion.Lerp(currBodyRotation, rot, Time.deltaTime * 5f);
-                HandleWeaponHandSwap(leftHandTarget, false);
             }
             else
             {
@@ -81,20 +92,25 @@ public class ControlAnimations : AbstractBehavior
             }
             body.localRotation = currBodyRotation;
         }
-        //Reset the weapon back to the right hand once we stop wall-running
-        if (!wrLeft && !wrRight && weapon.parent == leftHandTarget)
-        {
-            HandleWeaponHandSwap(rightHandTarget, true);
-        }
     }
 
-    //Helper function to switch the weapon between hands when wall-running
-    void HandleWeaponHandSwap(Transform newParent, bool fixPlacement)
+    void HandleWeaponPlacement(bool wrLeft, bool wrRight)
     {
-        weapon.SetParent(newParent);
-        //When returning to the right hand we need to fix the weapon placement
-        if (fixPlacement)
+        if (wrLeft)
         {
+            weapon.SetParent(rightHandTarget);
+            weapon.localPosition = rightHandWallRunWeaponPosition;
+            weapon.localRotation = Quaternion.Euler(rightHandWallRunWeaponRotation);
+        }
+        else if (wrRight)
+        {
+            weapon.SetParent(leftHandTarget);
+            weapon.localPosition = leftHandWallRunWeaponPosition;
+            weapon.localRotation = Quaternion.Euler(leftHandWallRunWeaponRotation);
+        }
+        else
+        {
+            weapon.SetParent(rightHandTarget);
             weapon.localPosition = origWeaponPosition;
             weapon.localRotation = origWeaponRotation;
         }

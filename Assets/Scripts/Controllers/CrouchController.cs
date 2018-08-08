@@ -72,7 +72,7 @@ public class CrouchController : AbstractBehavior {
             float ccRadius = cc.radius;
 			Vector3 ccCenter = cc.center;
 			//Modify the local position over time based on if we are/aren't crouching
-			if(inputState.playerIsCrouching)
+			if(inputState.playerIsCrouching && inputState.playerIsGrounded)
 			{
 				if(ccHeight > crouchCCHeight)
 				{
@@ -97,7 +97,7 @@ public class CrouchController : AbstractBehavior {
                     camLocalPos.z = RaiseHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime, crouchCamDepth);
                 }
             }
-			else if(cc.isGrounded && cameraResetting)
+			else if(cameraResetting && inputState.playerIsGrounded)
 			{
 				if(ccHeight < standardCCHeight)
 				{

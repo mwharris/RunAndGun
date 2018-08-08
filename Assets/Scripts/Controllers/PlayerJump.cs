@@ -15,13 +15,11 @@ public class PlayerJump : AbstractBehavior {
 	private FXManager fxManager;
 	private GameManager gm;
 	private AudioSource aSource;
-    private LerpControlledBob jumpBob;
 
 	void Start()
 	{
 		jumps = maxJumps;
 		wallRunController = GetComponent<WallRunController>();
-        jumpBob = GetComponent<LerpControlledBob>();
         fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
 		gm = GameObject.FindObjectOfType<GameManager>();
@@ -43,8 +41,6 @@ public class PlayerJump : AbstractBehavior {
 			//Perform a jump if we've jumped
 			if (canJump && jumps > 0) 
 			{
-                //Add a head bob to our jump
-                StartCoroutine(jumpBob.DoBobCycle(false));
 				//Decrement our jumps so we can only jump twice
 				jumps--;
                 justJumped = true;
