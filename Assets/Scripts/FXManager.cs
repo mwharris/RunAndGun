@@ -42,9 +42,10 @@ public class FXManager : MonoBehaviour {
 	{
 		//Find our player
 		GameObject ourPlayer = FindOurPlayer();
+        PhotonView pView = ourPlayer.GetComponent<PhotonView>();
 
-		//Only show notification for ourselves
-		if(ourPlayer != null && ourPlayer.GetComponent<PhotonView>().owner.name == killerName) 
+        //Only show notification for ourselves
+        if (ourPlayer != null && pView.owner.name == killerName) 
 		{
 			//Get a reference to the overlay
 			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");

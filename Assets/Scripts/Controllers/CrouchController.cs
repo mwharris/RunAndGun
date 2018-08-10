@@ -142,8 +142,6 @@ public class CrouchController : AbstractBehavior {
 		if(inputState.playerIsCrouching)
 		{
 			StopCrouching();
-			//Flag the camera as being moved
-			cameraResetting = true;
 		}
 		else 
 		{
@@ -162,8 +160,10 @@ public class CrouchController : AbstractBehavior {
 	}
 	public void StopCrouching()
 	{
-		inputState.playerIsCrouching = false;		
-	}
+		inputState.playerIsCrouching = false;
+        //Flag the camera as being moved
+        cameraResetting = true;
+    }
 
     /**
 	 * Helper function to lower the height of the player due to crouching

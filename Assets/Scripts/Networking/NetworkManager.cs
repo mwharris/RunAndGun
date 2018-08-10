@@ -3,7 +3,7 @@ using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
 
-public class NetworkManager : MonoBehaviour {
+public class NetworkManager : AbstractBehavior {
 
 	public Camera lobbyCamera;
 	public bool offlineMode;
@@ -39,7 +39,7 @@ public class NetworkManager : MonoBehaviour {
 		if(respawnAvailable)
 		{
 			//Prompt the user to hit space
-			if(Input.GetKey(KeyCode.Space))
+			if(inputState.GetButtonPressed(inputs[0]))
 			{
 				//Reset the flag
 				respawnAvailable = false;

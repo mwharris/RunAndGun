@@ -323,7 +323,6 @@ public class Health : MonoBehaviour {
 		deathOverlay.transform.GetChild(1).GetComponent<Text>().text = enemyName;
 	}
 
-	/*
 	//Suicide button for testing respawn
 	void OnGUI()
 	{
@@ -346,5 +345,4 @@ public class Health : MonoBehaviour {
 			}	
 		}
 	}
-	*/
 }

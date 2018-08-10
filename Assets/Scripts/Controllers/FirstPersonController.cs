@@ -88,13 +88,14 @@ public class FirstPersonController : AbstractBehavior
     }
 
     void Update () {
-		//Test stuff
-		Debug.DrawRay(transform.position, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(transform.position, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(transform.position, transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(transform.position, -transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+        //Test stuff
+        Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+        Debug.DrawRay(rayPos, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, -transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
-		Debug.DrawRay(transform.position, testV);
+		Debug.DrawRay(rayPos, testV);
 
 		//Keep track ourselves if we are grounded or not
 		inputState.playerIsGrounded = cc.isGrounded;
@@ -132,22 +133,16 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
-        {
-            cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
-        }
-        else
-        {
+        //if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
+        //{
+        //    cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
+        //}
+        //else
+        //{
             cc.Move(inputState.playerVelocity * Time.deltaTime);
-        }
+        //}
         Debug.DrawRay(transform.position, transform.forward * 5f, Color.red);
-        Debug.DrawRay(transform.position, drawMe, Color.blue);
         //cc.Move(new Vector3(0f, inputState.playerVelocity.y, 0f)  * Time.deltaTime);
-    }
-
-    //Used to apply rotation and position updates to the camera
-    void FixedUpdate()
-    {
     }
 
     void GatherOptions()

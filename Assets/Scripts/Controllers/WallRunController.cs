@@ -67,8 +67,8 @@ public class WallRunController : AbstractBehavior {
             //Move the player closer to the wall to ensure rotation doesn't cause us to come off the wall
             Vector3 trans = -wallRunHit.normal * 0.29f;
 			transform.Translate(trans, Space.World);
-            //Set a rotation to make sure we aren't looking too far into the wall
-            SetWallRunLookRotation();
+            //Make sure we are rotated parallel to the wall
+            SetWallRunLookRotation(true);
         }
 		//Continue wall-running if we are already and the rules passed
 		else if(wallRunHit.collider != null && isWallRunning())
@@ -78,6 +78,8 @@ public class WallRunController : AbstractBehavior {
 			//Project our wall-run direction and store the hit point information
 			wallRunDirection = Vector3.ProjectOnPlane(velocity, wallRunHit.normal);
             wallRunNormal = wallRunHit.normal;
+            //Make sure we are rotated parallel to the wall
+            SetWallRunLookRotation(false);
         }
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
@@ -232,30 +234,39 @@ public class WallRunController : AbstractBehavior {
 	 * When we are wall-running, we don't want to be able to look into the wall.
 	 * This function will clamp our look rotation so that we cannot look too far towards the wall.
 	 */
-    public void SetWallRunLookRotation()
-	{
-		Vector3 testNormal = wallRunNormal;
+    public void SetWallRunLookRotation(bool initial)
+    {
+        /*
+         * An idea to match the animations but requires large changes
+        testForward = Vector3.RotateTowards(transform.forward, -wallRunNormal, 10f, 0f);
+        transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+        */
+        Vector3 testNormal = wallRunNormal;
 		Vector3 testForward = transform.forward;
-		//Get a vector 90 degrees to the left and right of the normal
-		testNormal = Quaternion.Euler(0,90,0) * testNormal;
+        //Get a vector 90 degrees to the left and right of the normal
+        testNormal = Quaternion.Euler(0,90,0) * testNormal;
 		//Calculate cross products between where we're looking and these two vectors
 		Vector3 cross = Vector3.Cross(testNormal, testForward);
-		//Mess with the rotation based on our forward vector relative to the boundaries
-		if(cross.y > 0.05)
-		{
-			//We looked too far left/right, rotate towards the cross product
-			Vector3 otherCross = new Vector3();
-			if(inputState.playerIsWallRunningRight)
-			{ 
-				otherCross = Vector3.Cross(Vector3.up, wallRunNormal); 
-			}
-			if(inputState.playerIsWallRunningLeft)
-			{ 
-				otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); 
-			}
-			testForward = Vector3.RotateTowards(testForward, otherCross, 10, 0.0f);
-			transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+		//We looked too far left/right, rotate towards the cross product
+		Vector3 otherCross = new Vector3();
+		if(inputState.playerIsWallRunningRight)
+		{ 
+			otherCross = Vector3.Cross(Vector3.up, wallRunNormal); 
 		}
+		if(inputState.playerIsWallRunningLeft)
+		{ 
+			otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); 
+		}
+		testForward = Vector3.RotateTowards(testForward, otherCross, 10, 0.0f);
+        if (initial)
+        {
+            transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+        }
+        else
+        {
+            Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+            transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
+        }
 	}
 
 	//Tilt the camera left or right depending on which side we are wall-running.
@@ -317,10 +328,11 @@ public class WallRunController : AbstractBehavior {
 			RaycastHit bHit;
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
             float rayDistance = isWallRunning() ? 1.5f : 0.825f;
-            Physics.Raycast(transform.position, pushDir, out vHit, 0.825f);
-            Physics.Raycast(transform.position, transform.right, out rHit, rayDistance);
-            Physics.Raycast(transform.position, -transform.right, out lHit, rayDistance);
-            Physics.Raycast(transform.position, -transform.forward, out bHit, rayDistance);
+            Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+            Physics.Raycast(rayPos, pushDir, out vHit, 0.825f);
+            Physics.Raycast(rayPos, transform.right, out rHit, rayDistance);
+            Physics.Raycast(rayPos, -transform.right, out lHit, rayDistance);
+            Physics.Raycast(rayPos, -transform.forward, out bHit, rayDistance);
 
             //Check the angle between our velocity any wall we may have impacted
             bool rightGood = false;
@@ -478,7 +490,6 @@ public class WallRunController : AbstractBehavior {
         RotatePlayerBody(playerCamera);
         //Next rotate our velocity in a direction dependent on controller input
         velocity = RotatePlayerVelocity(velocity, cameraRot);
-        fpsC.drawMe = velocity;
         //Jump upwards
         velocity.y = jumpSpeed;
         return velocity;

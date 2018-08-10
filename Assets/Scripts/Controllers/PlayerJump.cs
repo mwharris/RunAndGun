@@ -15,6 +15,7 @@ public class PlayerJump : AbstractBehavior {
 	private FXManager fxManager;
 	private GameManager gm;
 	private AudioSource aSource;
+    private CharacterController cc;
 
 	void Start()
 	{
@@ -23,6 +24,7 @@ public class PlayerJump : AbstractBehavior {
         fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
 		gm = GameObject.FindObjectOfType<GameManager>();
+        cc = GetComponent<CharacterController>();
 	}
 
 	void Update()
