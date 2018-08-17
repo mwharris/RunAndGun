@@ -151,7 +151,10 @@ public class ShootController : AbstractBehavior
 		//Disable the crosshairs
 		foreach(Transform child in reticleParent.transform)
 		{
-			child.GetComponent<Image>().enabled = false;
+            if (child.name != "Center")
+            {
+                child.GetComponent<Image>().enabled = false;
+            }
 		}
         //Make sure we turn off sprinting
         inputState.playerIsSprinting = false;

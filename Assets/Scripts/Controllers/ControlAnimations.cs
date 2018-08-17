@@ -7,7 +7,9 @@ public class ControlAnimations : AbstractBehavior
     public Transform body;
     public Animator bodyAnim;
 
+    public Animator weaponIKAnim;
     public Animator weaponAnim;
+
     public Transform weapon;
     public Transform leftHandTarget;
     public Transform rightHandTarget;
@@ -38,11 +40,13 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
         
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
+        weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
 
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
 
         bodyAnim.SetBool("Shooting", inputState.playerIsShooting);
+        weaponAnim.SetBool("Shooting", inputState.playerIsShooting);
 
         bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
 
@@ -63,9 +67,9 @@ public class ControlAnimations : AbstractBehavior
     {
         //Tell the animator we are wall-running
         bodyAnim.SetBool("WallRunningLeft", wrLeft);
-        weaponAnim.SetBool("WallRunningLeft", wrLeft);
+        weaponIKAnim.SetBool("WallRunningLeft", wrLeft);
         bodyAnim.SetBool("WallRunningRight", wrRight);
-        weaponAnim.SetBool("WallRunningRight", wrRight);
+        weaponIKAnim.SetBool("WallRunningRight", wrRight);
         //Rotate our body to match the turned animation
         HandleBodyRotation(wrLeft, wrRight);
         //Fix issues with the wall-running animation weapon placement

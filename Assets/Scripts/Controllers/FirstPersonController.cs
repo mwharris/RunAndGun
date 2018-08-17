@@ -247,7 +247,7 @@ public class FirstPersonController : AbstractBehavior
 	{
         //Build a LookRotationInput object for better passing of arguments in the following function calls
         LookRotationInput lri = new LookRotationInput(transform, playerCamera.transform, lookInput, mouseSensitivity, 
-            invertY, wallRunController.isWallRunning(), 0f, 0f, 0f, false);
+            invertY, inputState.playerIsAiming, wallRunController.isWallRunning(), 0f, 0f, 0f, false);
         //Handle any look rotation updates due to wall-running
         wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotations and calculate head angle

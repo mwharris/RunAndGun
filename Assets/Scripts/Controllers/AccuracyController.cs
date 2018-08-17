@@ -10,15 +10,24 @@ public class AccuracyController : AbstractBehavior
 	//Private class globals
 	private float baseOffset;
 	private float shootingOffset;
-	private float maxAccuracyOffset = 0.08F;
-	private float sprintAccuracy = 0.03F;
-	private float walkAccuracy = 0.015F;
-	private float crouchAccuracy = 0.01F;
+	private float maxAccuracyOffset = 0.06F;
+	private float sprintAccuracy = 0.0225F;
+	private float walkAccuracy = 0.01125F;
+	private float crouchAccuracy = 0.0075F;
 	private float accuracyReduceTimer = 0F;
 	private float accuracyReduceTimerMax = 0.45F;
 
-	//Reticles
-	private GameObject reticleParent;
+    /*
+    private float maxAccuracyOffset = 0.08F;
+    private float sprintAccuracy = 0.03F;
+    private float walkAccuracy = 0.015F;
+    private float crouchAccuracy = 0.01F;
+    private float accuracyReduceTimer = 0F;
+    private float accuracyReduceTimerMax = 0.45F;
+    */
+
+    //Reticles
+    private GameObject reticleParent;
 	private RectTransform topRet; 
 	private RectTransform botRet;
 	private RectTransform leftRet;
@@ -128,11 +137,12 @@ public class AccuracyController : AbstractBehavior
 	{
 		if(!reticlesFuckedUp)
 		{
-			//Lerp values to pass to the new positions
-			float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, (totalOffset * 800) + topRetY, Time.deltaTime * 3F);
-			float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, (-totalOffset * 800) + botRetY, Time.deltaTime * 3F);
-			float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, (-totalOffset * 800) + leftRetX, Time.deltaTime * 3F);
-			float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, (totalOffset * 800) + rightRetX, Time.deltaTime * 3F);
+            //Lerp values to pass to the new positions
+            float lerpSpeed = Time.deltaTime * 2.25f;
+            float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, (totalOffset * 600) + topRetY, lerpSpeed);
+			float botRetLerp = Mathf.Lerp(botRet.anchoredPosition3D.y, (-totalOffset * 600) + botRetY, lerpSpeed);
+			float leftRetLerp = Mathf.Lerp(leftRet.anchoredPosition3D.x, (-totalOffset * 600) + leftRetX, lerpSpeed);
+			float rightRetLerp = Mathf.Lerp(rightRet.anchoredPosition3D.x, (totalOffset * 600) + rightRetX, lerpSpeed);
 			//Increase the distance of reticles
 			topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetLerp, topRet.anchoredPosition3D.z);
 			botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetLerp, botRet.anchoredPosition3D.z);

@@ -76,25 +76,24 @@ public class CrouchController : AbstractBehavior {
 			{
 				if(ccHeight > crouchCCHeight)
 				{
-					ccHeight = LowerHeight(ccHeight, crouchDeltaCCHeight, Time.deltaTime, crouchCCHeight);
+					ccHeight = LowerHeight(ccHeight, crouchDeltaCCHeight, Time.deltaTime * 4, crouchCCHeight);
                 }
                 if (ccRadius < crouchCCRadius)
                 {
-                    ccRadius = RaiseHeight(ccRadius, crouchDeltaCCRadius, Time.deltaTime, crouchCCRadius);
+                    ccRadius = RaiseHeight(ccRadius, crouchDeltaCCRadius, Time.deltaTime * 4, crouchCCRadius);
                 }
                 if(ccCenter != crouchCCCenter)
 				{
-                    //ccCenter = LowerCCCenter(ccCenter, crouchDeltaCCCenter, Time.deltaTime * 10, crouchCCCenter);
                     ccCenter = crouchCCCenter;
 				}
                 if (camLocalPos.y > crouchCamHeight)
 				{
-					camLocalPos.y = LowerHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, crouchCamHeight);
+					camLocalPos.y = LowerHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime * 4, crouchCamHeight);
 				}
                 //The camera Z position is increases when crouching, not decreased
                 if(camLocalPos.z < crouchCamDepth)
                 {
-                    camLocalPos.z = RaiseHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime, crouchCamDepth);
+                    camLocalPos.z = RaiseHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime * 4, crouchCamDepth);
                 }
             }
 			else if(cameraResetting && inputState.playerIsGrounded)
@@ -113,7 +112,7 @@ public class CrouchController : AbstractBehavior {
                 }
                 if (camLocalPos.y < standardCamHeight)
 				{
-					camLocalPos.y = RaiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime, standardCamHeight);
+					camLocalPos.y = RaiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime * 4, standardCamHeight);
                 }
 				//Special case: when we are standing, we need to mark the camera as being moved since other scripts try to adjust the camera's position while standing
 				else 
@@ -123,7 +122,7 @@ public class CrouchController : AbstractBehavior {
                 //The Z position of the camera is decreased when standing
                 if (camLocalPos.z > standardCamDepth)
                 {
-                    camLocalPos.z = LowerHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime, standardCamDepth);
+                    camLocalPos.z = LowerHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime * 4, standardCamDepth);
                 }
             }
 			//Apply the local position updates
