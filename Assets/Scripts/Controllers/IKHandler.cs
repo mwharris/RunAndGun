@@ -15,7 +15,9 @@ public class IKHandler : MonoBehaviour
     public Transform leftHandIKTarget;
     private float leftHandIKWeight = 1;
 
-    public PhotonView photonView;
+    public bool useCamera = true;
+
+    private PhotonView photonView;
 
     private Animator anim;
     private Transform aimHelper;
@@ -30,10 +32,13 @@ public class IKHandler : MonoBehaviour
     private Quaternion rightHandIKRotationOverride = Quaternion.identity;
     private Quaternion leftHandIKRotationOverride = Quaternion.identity;
 
+    private bool weaponHolderPosSet = false;
+
     void Start ()
     {
         aimHelper = new GameObject().transform;
         anim = GetComponent<Animator>();
+        photonView = GetComponent<PhotonView>();
     }
 
     //Helper function to set isAiming and isReloading variables based on player inputs
@@ -51,16 +56,23 @@ public class IKHandler : MonoBehaviour
             rightShoulder = anim.GetBoneTransform(HumanBodyBones.RightShoulder);
         }
         //If we already have Right Shoulder position then move our Weapon Holder there
-        else
+        else 
         {
-            weaponHolder.position = rightShoulder.position;
+            if (useCamera)
+            {
+                weaponHolder.position = playerCamera.position;
+            }
+            else
+            {
+                weaponHolder.position = rightShoulder.position;
+            }
         }
 
         //Set variables based on inputs
         setInputVars();
 
         //Set up our lookAt position
-        lookAtPosition = playerCamera.position + (playerCamera.forward * 10);
+        lookAtPosition = playerCamera.position + (playerCamera.forward * 2);
 
         //Determine the direction between our position and where we are looking (aim helper position)
         Vector3 dirTowardsTarget = aimHelper.position - transform.position;
@@ -96,7 +108,7 @@ public class IKHandler : MonoBehaviour
         else
         {
             //Move the aim helper to our new look position
-            float aimHelperLerpSpeed = 15f;
+            float aimHelperLerpSpeed = 30f;
             aimHelper.position = Vector3.Lerp(aimHelper.position, lookAtPosition, Time.deltaTime * aimHelperLerpSpeed);
             //Rotate our weapon holder to point at this new position
             LerpLookAt(weaponHolder, aimHelper);
@@ -114,7 +126,7 @@ public class IKHandler : MonoBehaviour
     void LerpLookAt(Transform a, Transform b)
     {
         //Determine our lerp speed depending on if we're aiming or not
-        float lerpSpeed = 15f;
+        float lerpSpeed = 30f;
         //Get a quaternion from the vector between the two transforms
         Quaternion targetRotation = Quaternion.LookRotation(b.position - a.position);
         //Lerp the current rotation to the rotation determined above

@@ -17,7 +17,7 @@ public class PlayerController : AbstractBehavior {
 	void Start()
 	{
 		cc = GetComponent<CharacterController>();
-		playerLook.Init(transform, playerCam.transform);
+		//playerLook.Init(transform, playerCam.transform);
 	}
 
 	private void Update()

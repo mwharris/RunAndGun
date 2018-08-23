@@ -4,9 +4,12 @@ using UnityEngine;
 [Serializable]
 public class PlayerLook
 {
-    public Transform neck;
-    public Transform firstSpine;
-    public Transform lastSpine;
+    public Transform rightShoulder;
+    public Transform shoulderAxis;
+
+    private Transform neck;
+    private Transform firstSpine;
+    private Transform lastSpine;
 
     private float minVerticalRotation = -50f;
 	private float maxVerticalRotation = 53f;
@@ -14,12 +17,17 @@ public class PlayerLook
     private Quaternion playerLocalRot;
 	private Quaternion camLocalRot;
     private Quaternion neckLocalRot;
+    private Quaternion shoulderRot;
 
-    public void Init(Transform player, Transform camera)
+    public void Init(Transform player, Transform camera, PlayerBodyData bodyData)
 	{
-		playerLocalRot = player.localRotation;
+        neck = bodyData.neck;
+        firstSpine = bodyData.firstSpine;
+        lastSpine = bodyData.lastSpine;
+        playerLocalRot = player.localRotation;
 		camLocalRot = camera.localRotation;
         neckLocalRot = neck.localRotation;
+        shoulderRot = rightShoulder.rotation;
     }
 
     //Called from FirstPersonController to handle look rotations
@@ -88,10 +96,12 @@ public class PlayerLook
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
+        //shoulderRot = rightShoulder.rotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
+        //shoulderLocalRot *= Quaternion.AngleAxis(-inputs.x, -lri.player.right);
         //Clamp the player rotation in the y axis if we are wall-running
         if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
         {
@@ -116,6 +126,7 @@ public class PlayerLook
         //Update the rotation of our player and camera
         lri.player.localRotation = playerLocalRot;
         lri.camera.localRotation = camLocalRot;
+        //rightShoulder.localRotation = shoulderLocalRot;
         //Return the angle of our head for the animator
         return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }

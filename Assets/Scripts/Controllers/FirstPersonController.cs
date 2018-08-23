@@ -62,8 +62,6 @@ public class FirstPersonController : AbstractBehavior
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
-    public Vector3 drawMe = Vector3.zero;
-
     void Start () {
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
@@ -84,7 +82,12 @@ public class FirstPersonController : AbstractBehavior
         //Initiliaze crouch controller variables
         crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
         //Initialize player looking mechanics
-        playerLook.Init(transform, playerCamera.transform);
+        playerLook.Init(transform, playerCamera.transform, GetComponent<BodyController>().PlayerBodyData);
+    }
+
+    private void LateUpdate()
+    {
+        HandleControllerInput();
     }
 
     void Update () {
@@ -133,16 +136,7 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        //if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
-        //{
-        //    cc.Move(new Vector3(0f, 0f, 0f) * Time.deltaTime);
-        //}
-        //else
-        //{
-            cc.Move(inputState.playerVelocity * Time.deltaTime);
-        //}
-        Debug.DrawRay(transform.position, transform.forward * 5f, Color.red);
-        //cc.Move(new Vector3(0f, inputState.playerVelocity.y, 0f)  * Time.deltaTime);
+        cc.Move(inputState.playerVelocity * Time.deltaTime);
     }
 
     void GatherOptions()

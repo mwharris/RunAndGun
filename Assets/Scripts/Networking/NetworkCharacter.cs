@@ -1,29 +1,9 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof (InputState))]
 public class NetworkCharacter : Photon.MonoBehaviour 
 {
-	public Camera playerCamera;
-    public Animator bodyAnimator;
-
-    private InputState inputState;
-
-    //Animation variables
-    private bool isSprinting;
-    private bool isAiming;
-    private bool isJumping;
-    private bool isCrouching;
-    private bool isShooting;
-    private bool isReloading;
-    private float jumpSpeed;
-    private float lookAngle;
-
-    //MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
-    private float forwardSpeed;
-    private float sideSpeed;
-
-    //Character Controller properties need to be passed due to Crouch animations
+	//Character Controller properties need to be passed due to Crouch animations
     private CharacterController cc;
     private float ccHeight = 0f;
     private float ccRadius = 0f;
@@ -32,7 +12,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
 	void Awake()
 	{
 		cc = GetComponent<CharacterController>();
-        inputState = GetComponent<InputState>();
     }
 
 	/**

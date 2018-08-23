@@ -4,9 +4,6 @@ using UnityEngine;
 
 public class CameraController : MonoBehaviour {
 
-    public Transform weaponHolder;
-    public InputState inputState;
-
     public float crouchCamHeight;
     public float crouchCamDepth;
 
@@ -23,10 +20,17 @@ public class CameraController : MonoBehaviour {
     private bool wallRan = false;
     private bool jumped = false;
 
+    private PlayerBodyData playerBodyData;
+    private InputState inputState;
+
     void Start ()
     {
         originalLocalPosition = transform.localPosition;
         originalCrouchLocalPosition = new Vector3(transform.localPosition.x, crouchCamHeight, crouchCamDepth);
+        //Retrieve the player body data from our parent's parent (which is our player gameobject)
+        GameObject player = transform.parent.parent.gameObject;
+        playerBodyData = player.GetComponent<BodyController>().PlayerBodyData;
+        inputState = player.GetComponent<InputState>();
     }
 	
 	void Update ()
@@ -74,7 +78,7 @@ public class CameraController : MonoBehaviour {
     {
         if (inputState.playerIsAiming)
         {
-            transform.position = weaponHolder.position;
+            transform.position = playerBodyData.weaponHolder.position;
             aimed = true;
         }
         else if (!inputState.playerIsAiming && aimed)

@@ -3,17 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ControlAnimations : AbstractBehavior
-{
-    public Transform body;
-    public Animator bodyAnim;
-
-    public Animator weaponIKAnim;
-    public Animator weaponAnim;
-
-    public Transform weapon;
-    public Transform leftHandTarget;
-    public Transform rightHandTarget;
-
+{    
     public Vector3 wallRunLeftTargetRot = Vector3.zero;
     public Vector3 wallRunRightTargetRot = Vector3.zero;
     private Quaternion origBodyRotation;
@@ -26,19 +16,29 @@ public class ControlAnimations : AbstractBehavior
     private Vector3 origWeaponPosition;
     private Quaternion origWeaponRotation;
 
+    private PlayerBodyData playerBodyData;
+
     void Start()
     {
-        origBodyRotation = body.localRotation;
+        //PlayerBodyData stores all info needed to control either our 1st or 3rd person body
+        playerBodyData = GetComponent<BodyController>().PlayerBodyData;
+        //Store original body and weapon position / rotations for later calculations
+        origBodyRotation = playerBodyData.body.localRotation;
         currBodyRotation = origBodyRotation;
-
-        origWeaponPosition = weapon.localPosition;
-        origWeaponRotation = weapon.localRotation;
+        origWeaponPosition = playerBodyData.weapon.localPosition;
+        origWeaponRotation = playerBodyData.weapon.localRotation;
     }
 
     void Update()
-    {        
+    {
+        //Alias player body data information for later
+        Animator bodyAnim = playerBodyData.bodyAnimator;
+        Animator weaponIKAnim = playerBodyData.weaponIKAnim;
+        Animator weaponAnim = playerBodyData.weaponAnim;
+
+        //Set various Animator properties to control the animators properly
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
-        
+
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
@@ -50,7 +50,7 @@ public class ControlAnimations : AbstractBehavior
 
         bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
 
-        HandleWallRunningAnimations(inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
@@ -63,7 +63,7 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 
-    void HandleWallRunningAnimations(bool wrLeft, bool wrRight)
+    void HandleWallRunningAnimations(Animator bodyAnim, Animator weaponIKAnim, bool wrLeft, bool wrRight)
     {
         //Tell the animator we are wall-running
         bodyAnim.SetBool("WallRunningLeft", wrLeft);
@@ -76,6 +76,9 @@ public class ControlAnimations : AbstractBehavior
         HandleWeaponPlacement(wrLeft, wrRight);
     }
 
+    //Rotate the player's body 90-degrees depending on wall-run side.
+    //This is to overcome an issue with the animations being rotated 90-degrees.
+    //ANIMATIONS SHOULD BE FIXED AND THIS CODE SHOULD BE REMOVED
     void HandleBodyRotation(bool wrLeft, bool wrRight)
     {
         if (wrLeft || wrRight || origBodyRotation != currBodyRotation)
@@ -94,29 +97,32 @@ public class ControlAnimations : AbstractBehavior
             {
                 currBodyRotation = Quaternion.Lerp(currBodyRotation, origBodyRotation, Time.deltaTime * 10f);
             }
-            body.localRotation = currBodyRotation;
+            playerBodyData.body.localRotation = currBodyRotation;
         }
     }
 
+    //When wall-running, one hand is on the wall and one hand aims/holds the weapon.
+    //This will handle swapping the weapon to the opposite hand when wall-running right.
+    //UPDATE THIS TO NOT HAPPEN IN FIRST-PERSON
     void HandleWeaponPlacement(bool wrLeft, bool wrRight)
     {
         if (wrLeft)
         {
-            weapon.SetParent(rightHandTarget);
-            weapon.localPosition = rightHandWallRunWeaponPosition;
-            weapon.localRotation = Quaternion.Euler(rightHandWallRunWeaponRotation);
+            playerBodyData.weapon.SetParent(playerBodyData.rightHandTarget);
+            playerBodyData.weapon.localPosition = rightHandWallRunWeaponPosition;
+            playerBodyData.weapon.localRotation = Quaternion.Euler(rightHandWallRunWeaponRotation);
         }
         else if (wrRight)
         {
-            weapon.SetParent(leftHandTarget);
-            weapon.localPosition = leftHandWallRunWeaponPosition;
-            weapon.localRotation = Quaternion.Euler(leftHandWallRunWeaponRotation);
+            playerBodyData.weapon.SetParent(playerBodyData.leftHandTarget);
+            playerBodyData.weapon.localPosition = leftHandWallRunWeaponPosition;
+            playerBodyData.weapon.localRotation = Quaternion.Euler(leftHandWallRunWeaponRotation);
         }
         else
         {
-            weapon.SetParent(rightHandTarget);
-            weapon.localPosition = origWeaponPosition;
-            weapon.localRotation = origWeaponRotation;
+            //playerBodyData.weapon.SetParent(playerBodyData.rightHandTarget);
+            //playerBodyData.weapon.localPosition = origWeaponPosition;
+            //playerBodyData.weapon.localRotation = origWeaponRotation;
         }
     }
 }
