@@ -150,8 +150,6 @@ public class NetworkManager : AbstractBehavior {
         myPlayer.GetComponentInChildren<ControlAnimations>().enabled = true;
         //myPlayer.GetComponentInChildren<IKHandler>().enabled = true;
         myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
-        //IS THIS NEEDED ANYMORE?
-        myPlayer.GetComponentInChildren<Animator>().SetLayerWeight(1, 0);
     }
 
 	public void Disconnect()
