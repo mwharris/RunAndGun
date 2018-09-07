@@ -7,9 +7,9 @@ public class PlayerJump : AbstractBehavior {
 	public int maxJumps;
 	public float jumpSpeed = 8f;
 	public AudioClip jumpSound;
-    public Transform playerCamera;
 
-	private int jumps;
+    private Transform playerCamera;
+    private int jumps;
     private bool justJumped = false;
 	private WallRunController wallRunController;
 	private FXManager fxManager;
@@ -20,6 +20,7 @@ public class PlayerJump : AbstractBehavior {
 	void Start()
 	{
 		jumps = maxJumps;
+        playerCamera = GetComponent<BodyController>().PlayerBodyData.playerCamera;
 		wallRunController = GetComponent<WallRunController>();
         fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();

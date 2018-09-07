@@ -118,15 +118,6 @@ public class NetworkManager : AbstractBehavior {
         inputManager.inputState = myPlayer.GetComponent<InputState>();
         //Enable local player controls
         EnableLocalPlayer(myPlayer);
-        //Shrink out head so it's no longer visible
-        Transform[] childTransforms = myPlayer.GetComponentsInChildren<Transform>();
-        for (int i = 0; i < childTransforms.Length; i++)
-        {
-            if (childTransforms[i].name == "head1_neck")
-            {
-                childTransforms[i].localScale = new Vector3(0, 0, 0);
-            }
-        }
         //Enable the displayed ammo counter
         ammoUI.SetActive(true);
         //Enable the camera reticle
@@ -141,8 +132,10 @@ public class NetworkManager : AbstractBehavior {
     private void EnableLocalPlayer(GameObject myPlayer)
     {
         //Only show the animated arms in first-person
-        Transform arms = myPlayer.transform.GetChild(0);
-        arms.gameObject.SetActive(true);
+        Transform fps = myPlayer.transform.GetChild(0);
+        fps.gameObject.SetActive(true);
+        Transform tps = myPlayer.transform.GetChild(1);
+        tps.gameObject.SetActive(false);
         //Enable various scripts that only run on the local player
         myPlayer.GetComponent<FirstPersonController>().enabled = true;
         myPlayer.GetComponent<ShootController>().enabled = true;

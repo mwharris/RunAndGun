@@ -3,13 +3,19 @@ using System.Collections;
 
 public class RecoilController : MonoBehaviour 
 {	
-	public Transform recoilMod;
 	public float maxRecoil_x;
 	public float recoilSpeed;
 	public float recoil;
 	public float currentRecoil;
 
-	void Update () {
+    private Transform recoilMod;
+
+    private void Start()
+    {
+        recoilMod = GetComponent<BodyController>().PlayerBodyData.playerCamera.parent;
+    }
+
+    void Update () {
 		//Handle the recoiling
 		Recoiling();
 	}

@@ -15,8 +15,6 @@ public class IKHandler : MonoBehaviour
     public Transform leftHandIKTarget;
     private float leftHandIKWeight = 1;
 
-    public bool useCamera = true;
-
     private PhotonView photonView;
 
     private Animator anim;
@@ -58,14 +56,7 @@ public class IKHandler : MonoBehaviour
         //If we already have Right Shoulder position then move our Weapon Holder there
         else 
         {
-            if (useCamera)
-            {
-                weaponHolder.position = playerCamera.position;
-            }
-            else
-            {
-                weaponHolder.position = rightShoulder.position;
-            }
+            weaponHolder.position = rightShoulder.position;
         }
 
         //Set variables based on inputs

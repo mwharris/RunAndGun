@@ -4,19 +4,8 @@ using UnityEngine;
 [Serializable]
 public class PlayerBodyData
 {
-    /*
-    - Arms / Body enabled
-    - FirstPersonController - Player Look 
-	    - Neck
-	    - First Spine
-	    - Last Spine
-    - ControlAnimations
-	    - Body
-	    - Weapon
-	    - Weapon IK Anim
-	    - LH Target
-	    - RH Target
-    */
+    public Transform parentGameObject;
+    public Transform playerCamera;
     public Transform body;
     public Transform neck;
     public Transform firstSpine;
@@ -27,6 +16,8 @@ public class PlayerBodyData
     public Transform leftHandTarget;
     public Transform rightHandIKTarget;
     public Transform rightHandTarget;
+    public Transform rightShoulder;
+    public Transform rightShoulderAxis;
 
     public Animator bodyAnimator;
     public Animator weaponAnim;

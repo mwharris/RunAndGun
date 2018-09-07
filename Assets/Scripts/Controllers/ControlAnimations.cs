@@ -3,7 +3,17 @@ using System.Collections;
 using System.Collections.Generic;
 
 public class ControlAnimations : AbstractBehavior
-{    
+{
+    public Vector3 crouchLocalPos = Vector3.zero;
+    public Vector3 crouchLocalRot = Vector3.zero;
+    private Vector3 origCrouchLocalPos;
+    private Quaternion origCrouchLocalRot;
+
+    public Vector3 aimingLocalPos = Vector3.zero;
+    public Vector3 aimingLocalRot = Vector3.zero;
+    private Vector3 origLocalPos;
+    private Quaternion origLocalRot;
+
     public Vector3 wallRunLeftTargetRot = Vector3.zero;
     public Vector3 wallRunRightTargetRot = Vector3.zero;
     private Quaternion origBodyRotation;
@@ -27,6 +37,8 @@ public class ControlAnimations : AbstractBehavior
         currBodyRotation = origBodyRotation;
         origWeaponPosition = playerBodyData.weapon.localPosition;
         origWeaponRotation = playerBodyData.weapon.localRotation;
+        origLocalPos = playerBodyData.body.localPosition;
+        origLocalRot = playerBodyData.body.localRotation;
     }
 
     void Update()
@@ -39,6 +51,8 @@ public class ControlAnimations : AbstractBehavior
         //Set various Animator properties to control the animators properly
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
 
+        HandleBodyPlacement(inputState.playerIsAiming);
+
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
@@ -50,7 +64,7 @@ public class ControlAnimations : AbstractBehavior
 
         bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
 
-        HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        //HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
@@ -61,6 +75,38 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetFloat("SideSpeed", sideSpeed);
 
         bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
+    }
+
+    //Lerp the body in place to make it look like the player is aiming
+    void HandleBodyPlacement(bool isAiming)
+    {
+        float lerpSpeed = Time.deltaTime * 20f;
+        Vector3 currPos = playerBodyData.body.localPosition;
+        Quaternion currRot = playerBodyData.body.localRotation;
+        if (inputState.playerIsCrouching)
+        {
+            if (isAiming)
+            {
+
+            }
+            else
+            {
+                currPos = Vector3.Lerp(currPos, crouchLocalPos, Time.deltaTime * 10f);
+                currRot = Quaternion.Lerp(currRot, Quaternion.Euler(crouchLocalRot), Time.deltaTime * 10f);
+            }
+        }
+        else if (isAiming)
+        {
+            currPos = Vector3.Lerp(currPos, aimingLocalPos, lerpSpeed);
+            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(aimingLocalRot), lerpSpeed);
+        }
+        else 
+        {
+            currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
+            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0,0,0)), lerpSpeed);
+        }
+        playerBodyData.body.localPosition = currPos;
+        playerBodyData.body.localRotation = currRot;
     }
 
     void HandleWallRunningAnimations(Animator bodyAnim, Animator weaponIKAnim, bool wrLeft, bool wrRight)
@@ -120,9 +166,9 @@ public class ControlAnimations : AbstractBehavior
         }
         else
         {
-            //playerBodyData.weapon.SetParent(playerBodyData.rightHandTarget);
-            //playerBodyData.weapon.localPosition = origWeaponPosition;
-            //playerBodyData.weapon.localRotation = origWeaponRotation;
+            playerBodyData.weapon.SetParent(playerBodyData.rightHandTarget);
+            playerBodyData.weapon.localPosition = origWeaponPosition;
+            playerBodyData.weapon.localRotation = origWeaponRotation;
         }
     }
 }

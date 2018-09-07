@@ -28,7 +28,7 @@ public class CameraController : MonoBehaviour {
         originalLocalPosition = transform.localPosition;
         originalCrouchLocalPosition = new Vector3(transform.localPosition.x, crouchCamHeight, crouchCamDepth);
         //Retrieve the player body data from our parent's parent (which is our player gameobject)
-        GameObject player = transform.parent.parent.gameObject;
+        GameObject player = transform.parent.parent.parent.gameObject;
         playerBodyData = player.GetComponent<BodyController>().PlayerBodyData;
         inputState = player.GetComponent<InputState>();
     }
@@ -36,7 +36,6 @@ public class CameraController : MonoBehaviour {
 	void Update ()
     {
         HandleAirborne();
-        HandleAiming();
         HandleWallRunning();
 	}
 
@@ -71,24 +70,6 @@ public class CameraController : MonoBehaviour {
         {
             transform.localPosition = originalLocalPosition;
             wallRan = false;
-        }
-    }
-
-    private void HandleAiming()
-    {
-        if (inputState.playerIsAiming)
-        {
-            transform.position = playerBodyData.weaponHolder.position;
-            aimed = true;
-        }
-        else if (!inputState.playerIsAiming && aimed)
-        {
-            Vector3 target = inputState.playerIsCrouching ? originalCrouchLocalPosition : originalLocalPosition;
-            transform.localPosition = Vector3.Lerp(transform.localPosition, target, Time.deltaTime * 8f);
-            if (transform.localPosition == originalLocalPosition)
-            {
-                aimed = false;
-            }
         }
     }
 }

@@ -4,9 +4,6 @@ using UnityEngine;
 [Serializable]
 public class PlayerLook
 {
-    public Transform rightShoulder;
-    public Transform shoulderAxis;
-
     private Transform neck;
     private Transform firstSpine;
     private Transform lastSpine;
@@ -19,6 +16,9 @@ public class PlayerLook
     private Quaternion neckLocalRot;
     private Quaternion shoulderRot;
 
+    private Transform rightShoulder;
+    private Transform shoulderAxis;
+
     public void Init(Transform player, Transform camera, PlayerBodyData bodyData)
 	{
         neck = bodyData.neck;
@@ -27,7 +27,9 @@ public class PlayerLook
         playerLocalRot = player.localRotation;
 		camLocalRot = camera.localRotation;
         neckLocalRot = neck.localRotation;
-        shoulderRot = rightShoulder.rotation;
+        rightShoulder = bodyData.rightShoulder;
+        shoulderRot = bodyData.rightShoulder.localRotation;
+        shoulderAxis = bodyData.rightShoulderAxis;
     }
 
     //Called from FirstPersonController to handle look rotations
@@ -66,42 +68,16 @@ public class PlayerLook
         }
     }
 
-    private float HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
-    {
-        camLocalRot = lri.camera.localRotation;
-        //Apply the rotation to camera (vertical look rotation)
-        camLocalRot *= Quaternion.Euler(-inputs.x, inputs.y, 0f);
-        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
-        //Clamp the player rotation in the y axis if we are wall-running
-        if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
-        {
-            camLocalRot = ClampWallRunRotation(camLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
-        }
-        //Clamp rotation camera and head rotations to not look too far up/down
-        camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
-        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
-        //If we are wall-running then add a rotation in the z-axis
-        camLocalRot.z = lri.wallRunZRotation;
-        if (lri.wallRunZRotation == 0)
-        {
-            camLocalRot.y = 0;
-        }
-        //Update the rotation of our player and camera
-        lri.camera.localRotation = camLocalRot;
-        //Return the angle of our head for the animator
-        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
-    }
-
     private float HandleNormalRotations(Vector2 inputs, LookRotationInput lri)
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
-        //shoulderRot = rightShoulder.rotation;
+        //shoulderRot = rightShoulder.localRotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
-        //shoulderLocalRot *= Quaternion.AngleAxis(-inputs.x, -lri.player.right);
+        //shoulderRot *= Quaternion.AngleAxis(-inputs.x, shoulderAxis.right);
         //Clamp the player rotation in the y axis if we are wall-running
         if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
         {
@@ -126,7 +102,33 @@ public class PlayerLook
         //Update the rotation of our player and camera
         lri.player.localRotation = playerLocalRot;
         lri.camera.localRotation = camLocalRot;
-        //rightShoulder.localRotation = shoulderLocalRot;
+        //rightShoulder.localRotation = shoulderRot;
+        //Return the angle of our head for the animator
+        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+    }
+
+    private float HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
+    {
+        camLocalRot = lri.camera.localRotation;
+        //Apply the rotation to camera (vertical look rotation)
+        camLocalRot *= Quaternion.Euler(-inputs.x, inputs.y, 0f);
+        neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
+        //Clamp the player rotation in the y axis if we are wall-running
+        if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
+        {
+            camLocalRot = ClampWallRunRotation(camLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
+        }
+        //Clamp rotation camera and head rotations to not look too far up/down
+        camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
+        neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
+        //If we are wall-running then add a rotation in the z-axis
+        camLocalRot.z = lri.wallRunZRotation;
+        if (lri.wallRunZRotation == 0)
+        {
+            camLocalRot.y = 0;
+        }
+        //Update the rotation of our player and camera
+        lri.camera.localRotation = camLocalRot;
         //Return the angle of our head for the animator
         return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }

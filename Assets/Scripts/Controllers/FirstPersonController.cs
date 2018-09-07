@@ -9,8 +9,7 @@ public class FirstPersonController : AbstractBehavior
 {
 	[HideInInspector] public CharacterController cc;
 	public AudioClip jumpSound;  
-
-	[SerializeField] private Camera playerCamera;   
+   
 	private Vector3 ogCamPos;
 	private AudioSource aSource;    
 	private Vector2 lookInput;
@@ -62,7 +61,10 @@ public class FirstPersonController : AbstractBehavior
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
+    private Camera playerCamera;
+
     void Start () {
+        playerCamera = GetComponent<BodyController>().PlayerBodyData.playerCamera.GetComponent<Camera>();
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
@@ -273,7 +275,7 @@ public class FirstPersonController : AbstractBehavior
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
 				//Enable head bob while sprinting
-				//headBobScript.enabled = true;
+				headBobScript.enabled = true;
 			}
 			else
 			{

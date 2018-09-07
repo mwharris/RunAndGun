@@ -14,13 +14,11 @@ public class CrouchController : AbstractBehavior {
 
 	[SerializeField] private float crouchSpeed = 8.0f;
 	[SerializeField] private float crouchCamHeight;
-    [SerializeField] private float crouchCamDepth;
-	[SerializeField] private float crouchBodyPos;
 	[SerializeField] private float crouchCCHeight;
     [SerializeField] private float crouchCCRadius;
     [SerializeField] private Vector3 crouchCCCenter;
 
-	private float crouchDeltaHeight;
+    private float crouchDeltaHeight;
     private float crouchDeltaDepth;
 	private float crouchDeltaCCHeight;
     private float crouchDeltaCCRadius;
@@ -37,8 +35,8 @@ public class CrouchController : AbstractBehavior {
 	 */
 	public void CalculateCrouchVars(GameObject player, GameObject playerCamera, float movementSpeed)
 	{
-		//Store the standard camera heights and depths
-		standardCamHeight = playerCamera.transform.localPosition.y;
+        //Store the standard camera heights and depths
+        standardCamHeight = playerCamera.transform.localPosition.y;
         standardCamDepth = playerCamera.transform.localPosition.z;
         //Store the standard body/character controller heights and depths
 		standardCCHeight = player.GetComponent<CharacterController>().height;
@@ -46,7 +44,6 @@ public class CrouchController : AbstractBehavior {
         standardCCRadius = player.GetComponent<CharacterController>().radius;
         //Calculate the change in positions based on desired crouch variables
         crouchDeltaHeight = standardCamHeight - crouchCamHeight;
-        crouchDeltaDepth = crouchCamDepth - standardCamDepth;
 		crouchDeltaCCHeight = standardCCHeight - crouchCCHeight;
         crouchDeltaCCRadius = crouchCCRadius - standardCCRadius;
         //Calculate the movement speed while crouched
@@ -71,58 +68,48 @@ public class CrouchController : AbstractBehavior {
 			float ccHeight = cc.height;
             float ccRadius = cc.radius;
 			Vector3 ccCenter = cc.center;
-			//Modify the local position over time based on if we are/aren't crouching
-			if(inputState.playerIsCrouching && inputState.playerIsGrounded)
+            //Modify the local position over time based on if we are/aren't crouching
+            if (inputState.playerIsCrouching && inputState.playerIsGrounded)
 			{
 				if(ccHeight > crouchCCHeight)
 				{
-					ccHeight = LowerHeight(ccHeight, crouchDeltaCCHeight, Time.deltaTime * 4, crouchCCHeight);
+                    ccHeight = Mathf.Lerp(ccHeight, crouchCCHeight, Time.deltaTime * 4f);
                 }
                 if (ccRadius < crouchCCRadius)
                 {
-                    ccRadius = RaiseHeight(ccRadius, crouchDeltaCCRadius, Time.deltaTime * 4, crouchCCRadius);
+                    ccRadius = Mathf.Lerp(ccRadius, crouchCCRadius, Time.deltaTime * 4f);
                 }
                 if(ccCenter != crouchCCCenter)
 				{
-                    ccCenter = crouchCCCenter;
-				}
-                if (camLocalPos.y > crouchCamHeight)
-				{
-					camLocalPos.y = LowerHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime * 4, crouchCamHeight);
-				}
-                //The camera Z position is increases when crouching, not decreased
-                if(camLocalPos.z < crouchCamDepth)
-                {
-                    camLocalPos.z = RaiseHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime * 4, crouchCamDepth);
+                    ccCenter = new Vector3(0, (ccHeight / 2) + 0.3f, 0);
                 }
+                if (camLocalPos.y > crouchCamHeight)
+                {
+                    camLocalPos.y = Mathf.Lerp(camLocalPos.y, crouchCamHeight, Time.deltaTime * 4f);
+				}
             }
 			else if(cameraResetting && inputState.playerIsGrounded)
 			{
 				if(ccHeight < standardCCHeight)
 				{
-                    ccHeight = standardCCHeight;
+                    ccHeight = Mathf.Lerp(ccHeight, standardCCHeight, Time.deltaTime * 8f);
                 }
                 if (ccRadius > standardCCRadius)
                 {
-                    ccRadius = standardCCRadius;
+                    ccRadius = Mathf.Lerp(ccRadius, standardCCRadius, Time.deltaTime * 8f);
                 }
                 if(ccCenter != standardCCCenter)
 				{
-                    ccCenter = standardCCCenter;
+                    ccCenter = new Vector3(0, (ccHeight / 2) + 0.3f, 0);
                 }
                 if (camLocalPos.y < standardCamHeight)
-				{
-					camLocalPos.y = RaiseHeight(camLocalPos.y, crouchDeltaHeight, Time.deltaTime * 4, standardCamHeight);
+                {
+                    camLocalPos.y = Mathf.Lerp(camLocalPos.y, standardCamHeight, Time.deltaTime * 8f);
                 }
 				//Special case: when we are standing, we need to mark the camera as being moved since other scripts try to adjust the camera's position while standing
 				else 
 				{
 					cameraResetting = false;
-                }
-                //The Z position of the camera is decreased when standing
-                if (camLocalPos.z > standardCamDepth)
-                {
-                    camLocalPos.z = LowerHeight(camLocalPos.z, crouchDeltaDepth, Time.deltaTime * 4, standardCamDepth);
                 }
             }
 			//Apply the local position updates
@@ -130,7 +117,7 @@ public class CrouchController : AbstractBehavior {
 			cc.height = ccHeight;
             cc.radius = ccRadius;
 			cc.center = ccCenter;
-		}    
+        }    
     }
 
     /**

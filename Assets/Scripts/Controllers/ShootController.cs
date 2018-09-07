@@ -5,7 +5,7 @@ using System.Collections;
 public class ShootController : AbstractBehavior 
 {
 	//General global variables - public
-	public Camera playerCamera;
+	private Camera playerCamera;
 	public AudioSource aSource;
 
     //General global variables - private
@@ -39,11 +39,16 @@ public class ShootController : AbstractBehavior
 	private GameManager gm;
 	private RecoilController rc;
 	private AccuracyController ac;
+    private PlayerBodyData pbd;
 
 	void Start()
 	{
-		//Initialize timers
-		cooldownTimer = 0.0f;
+        //Get components from the player body data
+        pbd = GetComponent<BodyController>().PlayerBodyData;
+        playerCamera = pbd.playerCamera.GetComponent<Camera>();
+        reloadAnimator = pbd.bodyAnimator;
+        //Initialize timers
+        cooldownTimer = 0.0f;
 		hitIndicatorTimerMax = 0.3f;
 		hitIndicatorTimer = hitIndicatorTimerMax;
 		//Initialize a reference to the FXManager
@@ -53,7 +58,6 @@ public class ShootController : AbstractBehavior
 		//Initialize a reference to the Recoil and Accuracy controllers
 		rc = GetComponent<RecoilController>();
 		ac = GetComponent<AccuracyController>();
-        reloadAnimator = GetComponentInChildren<Animator>();
         //Initialize a reference to the Hit Indicators
         hitIndicator = GameObject.FindGameObjectWithTag("HitIndicator");
 		reloadIndicator = GameObject.FindGameObjectWithTag("ReloadIndicator");
@@ -82,8 +86,8 @@ public class ShootController : AbstractBehavior
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
 		//Reset the reload animation
-		if(reloadAnimator.GetCurrentAnimatorStateInfo(3).IsName("Standing_Reload_SH")
-            || reloadAnimator.GetCurrentAnimatorStateInfo(3).IsName("Crouch_Reload_SH"))
+		if(reloadAnimator.GetCurrentAnimatorStateInfo(1).IsName("Standing_Reload_SH")
+            || reloadAnimator.GetCurrentAnimatorStateInfo(1).IsName("Crouch_Reload_SH"))
 		{
             inputState.playerIsReloading = false;
 		}
@@ -151,10 +155,7 @@ public class ShootController : AbstractBehavior
 		//Disable the crosshairs
 		foreach(Transform child in reticleParent.transform)
 		{
-            if (child.name != "Center")
-            {
-                child.GetComponent<Image>().enabled = false;
-            }
+            child.GetComponent<Image>().enabled = false;
 		}
         //Make sure we turn off sprinting
         inputState.playerIsSprinting = false;
