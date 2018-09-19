@@ -77,7 +77,6 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 
-    //Lerp the body in place to make it look like the player is aiming
     void HandleBodyPlacement(bool isAiming)
     {
         float lerpSpeed = Time.deltaTime * 20f;
@@ -95,15 +94,10 @@ public class ControlAnimations : AbstractBehavior
                 currRot = Quaternion.Lerp(currRot, Quaternion.Euler(crouchLocalRot), Time.deltaTime * 10f);
             }
         }
-        else if (isAiming)
-        {
-            currPos = Vector3.Lerp(currPos, aimingLocalPos, lerpSpeed);
-            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(aimingLocalRot), lerpSpeed);
-        }
-        else 
+        else
         {
             currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
-            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0,0,0)), lerpSpeed);
+            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0, 0, 0)), lerpSpeed);
         }
         playerBodyData.body.localPosition = currPos;
         playerBodyData.body.localRotation = currRot;

@@ -57,7 +57,7 @@ public class FirstPersonController : AbstractBehavior
 	private WallRunController wallRunController;
 	private MenuController menuController;
 	private FXManager fxManager;
-	private MyHeadBob headBobScript;
+	private BobController bobScript;
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
@@ -75,7 +75,7 @@ public class FirstPersonController : AbstractBehavior
 		origRunTimer = runTimer;
 		//Initialize a reference to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
-		headBobScript = playerCamera.GetComponent<MyHeadBob>();
+        bobScript = playerCamera.GetComponent<BobController>();
 		gm = GameObject.FindObjectOfType<GameManager>();
 		menuController = GameObject.FindObjectOfType<MenuController>();
 		//Set up the various controllers
@@ -267,22 +267,22 @@ public class FirstPersonController : AbstractBehavior
 			{
 				forwardSpeed *= crouchController.CrouchMovementSpeed;
 				sideSpeed *= crouchController.CrouchMovementSpeed;
-				//Disable head bob while crouching
-				headBobScript.enabled = false;
+                //Disable head/body bob while crouching
+                bobScript.enabled = false;
 			}
 			else if(inputState.playerIsSprinting)
 			{
 				forwardSpeed *= movementSpeed * 1.5f;
 				sideSpeed *= movementSpeed * 1.5f;
-				//Enable head bob while sprinting
-				headBobScript.enabled = true;
+                //Enable head/body bob while sprinting
+                bobScript.enabled = true;
 			}
 			else
 			{
 				forwardSpeed *= movementSpeed;
 				sideSpeed *= movementSpeed;
-				//Disable head bob while walking
-				headBobScript.enabled = false;
+                //Disable head bob while walking
+                bobScript.enabled = false;
 			}
 
 			//Play sprinting FX while sprinting
@@ -309,8 +309,8 @@ public class FirstPersonController : AbstractBehavior
 		//Air / Wall-running movement
 		else
 		{
-			//Disable head bob
-			headBobScript.enabled = false;
+            //Disable head/body bob
+            bobScript.enabled = false;
 
             //If we're wall-sticking
             if (wallRunController.wallSticking)

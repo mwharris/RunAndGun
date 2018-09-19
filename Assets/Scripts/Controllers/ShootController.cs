@@ -110,7 +110,7 @@ public class ShootController : AbstractBehavior
 			{
 				Aim();
 			}
-			else
+			else if (inputState.playerIsAiming)
 			{
 				StopAiming();
 			}

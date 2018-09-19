@@ -14,17 +14,23 @@ public class CameraController : MonoBehaviour {
 
     private Vector3 originalLocalPosition;
     private Vector3 originalCrouchLocalPosition;
+    private float originalFOV;
 
     private bool crouched = false;
     private bool aimed = false;
     private bool wallRan = false;
     private bool jumped = false;
 
+    private Camera cameraComponent;
     private PlayerBodyData playerBodyData;
     private InputState inputState;
 
     void Start ()
     {
+        //Get the camera component attached to this object
+        cameraComponent = GetComponent<Camera>();
+        //Store original positions for the camera
+        originalFOV = cameraComponent.fieldOfView;
         originalLocalPosition = transform.localPosition;
         originalCrouchLocalPosition = new Vector3(transform.localPosition.x, crouchCamHeight, crouchCamDepth);
         //Retrieve the player body data from our parent's parent (which is our player gameobject)
@@ -36,6 +42,7 @@ public class CameraController : MonoBehaviour {
 	void Update ()
     {
         HandleAirborne();
+        HandleSprinting();
         HandleWallRunning();
 	}
 
@@ -51,6 +58,18 @@ public class CameraController : MonoBehaviour {
         {
             transform.localPosition = originalLocalPosition;
             jumped = false;
+        }
+    }
+
+    private void HandleSprinting()
+    {
+        if (inputState.playerIsSprinting)
+        {
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, 55f, Time.deltaTime * 5f);
+        }
+        else if (!inputState.playerIsAiming && cameraComponent.fieldOfView != 60f)
+        {
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, 60f, Time.deltaTime * 5f); ;
         }
     }
 
