@@ -84,9 +84,12 @@ public class ControlAnimations : AbstractBehavior
         Quaternion currRot = playerBodyData.body.localRotation;
         if (inputState.playerIsCrouching)
         {
+            //If both Aiming and Crouching, return to normal position.
+            //BobController will handle the aiming.
             if (isAiming)
             {
-
+                currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
+                currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0, 0, 0)), lerpSpeed);
             }
             else
             {

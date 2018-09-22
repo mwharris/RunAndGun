@@ -30,8 +30,10 @@ public class FirstPersonController : AbstractBehavior
 	/// TIMERS /////////////////////////////////
 	public float walkTimer = 0f;
 	public float runTimer = 0f;
+    public float crouchTimer = 0f;
 	private float origWalkTimer;
 	private float origRunTimer;
+    private float origCrouchTimer;
 	////////////////////////////////////////////
 
 	/// VELOCITY VARIABLES /////////////////////
@@ -73,6 +75,7 @@ public class FirstPersonController : AbstractBehavior
 		//Keep track of how long our walk audio delay should be
 		origWalkTimer = walkTimer;
 		origRunTimer = runTimer;
+        origCrouchTimer = crouchTimer;
 		//Initialize a reference to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
         bobScript = playerCamera.GetComponent<BobController>();
@@ -256,6 +259,7 @@ public class FirstPersonController : AbstractBehavior
 		//Decrement the walk/run audio timers
 		walkTimer -= Time.deltaTime;
 		runTimer -= Time.deltaTime;
+        crouchTimer -= Time.deltaTime;
 
 		//Grounded movement
 		if(inputState.playerIsGrounded)
@@ -289,7 +293,7 @@ public class FirstPersonController : AbstractBehavior
 			if(forwardSpeed != 0 || sideSpeed != 0)
 			{
 				//Increase footstep rate
-				PlayFootStepAudio(inputState.playerIsSprinting, false);
+				PlayFootStepAudio(inputState.playerIsSprinting, false, inputState.playerIsCrouching, inputState.playerIsAiming);
 			}
 
 			//Add the x / z movement
@@ -332,7 +336,7 @@ public class FirstPersonController : AbstractBehavior
                 //Calculate our wall-running velocity
                 inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
                 //Play footstep FX while wall-running
-                PlayFootStepAudio(false, true);
+                PlayFootStepAudio(false, true, false, false);
 			}
 			//If we're airborne and not wall-running
 			else
@@ -425,18 +429,23 @@ public class FirstPersonController : AbstractBehavior
 		inputState.playerVelocity.y = jumpSpeed;
 	}
 
-	private void PlayFootStepAudio(bool isSprinting, bool isWallRunning)
+	private void PlayFootStepAudio(bool isSprinting, bool isWallRunning, bool isCrouching, bool isAiming)
 	{
+        //No sounds when we're traveling through the air
 		if (!inputState.playerIsGrounded && !isWallRunning && !aSource.isPlaying)
 		{
 			return;
 		}
-
-		if((!isSprinting && walkTimer <= 0) || ((isSprinting || isWallRunning) && runTimer <= 0) )
+        //Only play sounds after one of the timers are at 0
+        bool walkTimerUp = !isSprinting && !isCrouching && !isAiming && walkTimer <= 0;
+        bool sprintTimerUp = (isSprinting || isWallRunning) && runTimer <= 0;
+        bool crouchTimerUp = (isCrouching || isAiming) && crouchTimer <= 0;
+        if (walkTimerUp || sprintTimerUp || crouchTimerUp)
 		{
-			//Reset the audio timer
+			//Reset the audio timers
 			walkTimer = origWalkTimer;
 			runTimer = origRunTimer;
+            crouchTimer = origCrouchTimer;
 			//Play a networked walking sound
 			fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
 		}
