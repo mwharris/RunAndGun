@@ -4,7 +4,8 @@ using UnityEngine;
 
 public class WeaponSway : AbstractBehavior 
 {
-	[SerializeField] private float amount;
+    [SerializeField] private InputState inputState;
+    [SerializeField] private float amount;
 	[SerializeField] private float maxAmount;
 	[SerializeField] private float smoothAmount;
 	[SerializeField] private float jumpDivisor;

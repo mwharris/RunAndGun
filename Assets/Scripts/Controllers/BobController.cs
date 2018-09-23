@@ -67,6 +67,56 @@ public class BobController : MonoBehaviour
         }
 	}
 
+    //Determine if we need to change the resting position of our cycle
+    private void SetRestPositionAndRotation()
+    {
+        //Only change positions if we're controlling the body
+        if (!isCamera)
+        {
+            //When aiming the resting position centers on the screen
+            if (inputState.playerIsAiming)
+            {
+                restPosition = aimPosition;
+                restRotation = Quaternion.Euler(aimRotation);
+                if (!aiming)
+                {
+                    aiming = true;
+                    sprinting = false;
+                    reset = true;
+                    lerpToPos = aimPosition;
+                    lerpToRot = Quaternion.Euler(aimRotation);
+                }
+            }
+            else if (inputState.playerIsSprinting && inputState.playerIsGrounded)
+            {
+                restPosition = sprintPosition;
+                restRotation = origRestRotation;
+                if (!sprinting)
+                {
+                    sprinting = true;
+                    aiming = false;
+                    reset = true;
+                    lerpToPos = sprintPosition;
+                    lerpToRot = origRestRotation;
+                }
+            }
+            //Otherwise keep us in the hip-aimed location
+            else
+            {
+                restPosition = origRestPosition;
+                restRotation = origRestRotation;
+                if (aiming || sprinting)
+                {
+                    aiming = false;
+                    sprinting = false;
+                    reset = true;
+                    lerpToPos = origRestPosition;
+                    lerpToRot = origRestRotation;
+                }
+            }
+        }
+    }
+
     //Lerp to a new resting position reset out cycle
     private void HandleResetting()
     {
@@ -88,7 +138,8 @@ public class BobController : MonoBehaviour
     private void HandleBob()
     {
         //While we are moving apply a head/body bob
-        if (!inputState.playerIsAiming && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
+        if (!inputState.playerIsAiming && inputState.playerIsGrounded 
+            && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
         {
             //Determine bob speed + amount depending on player movement state
             float bobSpeed = walkBobSpeed;
@@ -156,63 +207,12 @@ public class BobController : MonoBehaviour
         }
     }
 
-    //Determine if we need to change the resting position of our cycle
-    private void SetRestPositionAndRotation()
-    {
-        //Only change positions if we're controlling the body
-        if (!isCamera)
-        {
-            //When aiming the resting position centers on the screen
-            if (inputState.playerIsAiming)
-            {
-                restPosition = aimPosition;
-                restRotation = Quaternion.Euler(aimRotation);
-                if (!aiming)
-                {
-                    aiming = true;
-                    sprinting = false;
-                    reset = true;
-                    lerpToPos = aimPosition;
-                    lerpToRot = Quaternion.Euler(aimRotation);
-                }
-            }
-            else if (inputState.playerIsSprinting)
-            {
-                restPosition = sprintPosition;
-                restRotation = origRestRotation;
-                if (!sprinting)
-                {
-                    sprinting = true;
-                    aiming = false;
-                    reset = true;
-                    lerpToPos = sprintPosition;
-                    lerpToRot = origRestRotation;
-                }
-            }
-            //Otherwise keep us in the hip-aimed location
-            else
-            {
-                restPosition = origRestPosition;
-                restRotation = origRestRotation;
-                if (aiming || sprinting)
-                {
-                    aiming = false;
-                    sprinting = false;
-                    reset = true;
-                    lerpToPos = origRestPosition;
-                    lerpToRot = origRestRotation;
-                }
-            }
-        }
-    }
-
     private bool LerpComplete(Vector3 startPos, Vector3 endPos)
     {
         if (Mathf.Abs(endPos.x - startPos.x) <= 0.001f
             && Mathf.Abs(endPos.y - startPos.y) <= 0.001f
             && Mathf.Abs(endPos.z - startPos.z) <= 0.001f)
         {
-            Debug.Log("SNAP!");
             return true;
         }
         return false;
