@@ -68,6 +68,7 @@ public class ControlAnimations : AbstractBehavior
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
+        bodyAnim.SetBool("JumpStart", inputState.playerIsJumping);
 
         var fwdSpeed = Vector3.Dot(inputState.playerVelocity, transform.forward);
         var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);

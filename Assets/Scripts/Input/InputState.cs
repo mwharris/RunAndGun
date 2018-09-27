@@ -13,7 +13,8 @@ public class InputState : MonoBehaviour {
 	Dictionary<Buttons, ButtonState> buttonStates = new Dictionary<Buttons, ButtonState>();
 
 	[HideInInspector] public bool playerIsGrounded = false;
-	[HideInInspector] public bool playerIsSprinting = false;
+    [HideInInspector] public bool playerIsJumping = false;
+    [HideInInspector] public bool playerIsSprinting = false;
 	[HideInInspector] public bool playerIsCrouching = false;
     [HideInInspector] public bool playerIsShooting = false;
     [HideInInspector] public bool playerIsAiming = false;

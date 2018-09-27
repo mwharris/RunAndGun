@@ -47,6 +47,7 @@ public class PlayerJump : AbstractBehavior {
 				//Decrement our jumps so we can only jump twice
 				jumps--;
                 justJumped = true;
+                inputState.playerIsJumping = true;
                 //Play a sound of use jumping
                 PlayJumpSound(!inputState.playerIsGrounded);
 				//Add an immediate velocity upwards to jump
@@ -76,6 +77,7 @@ public class PlayerJump : AbstractBehavior {
             else
             {
                 justJumped = false;
+                inputState.playerIsJumping = false;
             }
 		}
 	}
