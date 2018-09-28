@@ -64,7 +64,7 @@ public class ControlAnimations : AbstractBehavior
 
         bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
 
-        //HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
@@ -111,13 +111,13 @@ public class ControlAnimations : AbstractBehavior
     {
         //Tell the animator we are wall-running
         bodyAnim.SetBool("WallRunningLeft", wrLeft);
-        weaponIKAnim.SetBool("WallRunningLeft", wrLeft);
+        //weaponIKAnim.SetBool("WallRunningLeft", wrLeft);
         bodyAnim.SetBool("WallRunningRight", wrRight);
-        weaponIKAnim.SetBool("WallRunningRight", wrRight);
+        //weaponIKAnim.SetBool("WallRunningRight", wrRight);
         //Rotate our body to match the turned animation
-        HandleBodyRotation(wrLeft, wrRight);
+        //HandleBodyRotation(wrLeft, wrRight);
         //Fix issues with the wall-running animation weapon placement
-        HandleWeaponPlacement(wrLeft, wrRight);
+        //HandleWeaponPlacement(wrLeft, wrRight);
     }
 
     //Rotate the player's body 90-degrees depending on wall-run side.
