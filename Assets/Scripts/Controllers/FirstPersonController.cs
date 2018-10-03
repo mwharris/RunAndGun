@@ -65,6 +65,8 @@ public class FirstPersonController : AbstractBehavior
 
     private Camera playerCamera;
 
+    private bool dontMove = false;
+
     void Start () {
         playerCamera = GetComponent<BodyController>().PlayerBodyData.playerCamera.GetComponent<Camera>();
 		ogCamPos = playerCamera.transform.localPosition;
@@ -141,7 +143,19 @@ public class FirstPersonController : AbstractBehavior
 			inputState.playerVelocity.z *= 0.9f;
 		}
         //Move the char controller
-        cc.Move(inputState.playerVelocity * Time.deltaTime);
+        if (Input.GetKey(KeyCode.L))
+        {
+            dontMove = !dontMove;
+        }
+        if (dontMove)
+        {
+            Vector3 stopV = new Vector3(0, inputState.playerVelocity.y, 0);
+            cc.Move(stopV * Time.deltaTime);
+        }
+        else
+        {
+            cc.Move(inputState.playerVelocity * Time.deltaTime);
+        }
     }
 
     void GatherOptions()

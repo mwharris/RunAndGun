@@ -26,7 +26,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             //Set Capsule Collider and Character Controller variables for crouching
             cc.height = Mathf.Lerp(cc.height, ccHeight, lerpSpeed);
             cc.radius = Mathf.Lerp(cc.radius, ccRadius, lerpSpeed);
-            cc.center = Vector3.Lerp(cc.center, ccCenter, lerpSpeed);
+            cc.center = Vector3.Lerp(cc.center, new Vector3(0, (cc.height / 2) + 0.3f, 0), Time.deltaTime * 8f);
         }
 	}
 
@@ -40,14 +40,12 @@ public class NetworkCharacter : Photon.MonoBehaviour
             //Send Character Controller information
             stream.SendNext(cc.height);
             stream.SendNext(cc.radius);
-            stream.SendNext(cc.center);
 		}
 		else
 		{
             //Receive character controller information
             ccHeight = (float) stream.ReceiveNext();
             ccRadius = (float) stream.ReceiveNext();
-            ccCenter = (Vector3) stream.ReceiveNext();
 		}
 	}
 }

@@ -19,10 +19,12 @@ public class BodyController : Photon.MonoBehaviour
         if (!photonView.isMine)
         {
             playerBodyData = thirdPersonBody;
+            //playerBodyData = firstPersonArms;
         }
         else
         {
             playerBodyData = firstPersonArms;
+            //playerBodyData = thirdPersonBody;
         }
     }
 }

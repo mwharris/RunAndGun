@@ -131,11 +131,8 @@ public class NetworkManager : AbstractBehavior {
 
     private void EnableLocalPlayer(GameObject myPlayer)
     {
-        //Only show the animated arms in first-person
-        Transform fps = myPlayer.transform.GetChild(0);
-        fps.gameObject.SetActive(true);
-        Transform tps = myPlayer.transform.GetChild(1);
-        tps.gameObject.SetActive(false);
+        //
+        HandlePlayerBody(myPlayer);
         //Enable various scripts that only run on the local player
         myPlayer.GetComponent<FirstPersonController>().enabled = true;
         myPlayer.GetComponent<ShootController>().enabled = true;
@@ -152,7 +149,26 @@ public class NetworkManager : AbstractBehavior {
         myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
     }
 
-	public void Disconnect()
+    //Handle Enable/Disable of the FPS and TPS bodies
+    private void HandlePlayerBody(GameObject myPlayer)
+    {
+        //Make sure the FPS arms are activated
+        Transform fps = myPlayer.transform.GetChild(0);
+        fps.gameObject.SetActive(true);
+        //Also activate the the TPS body but...
+        Transform tps = myPlayer.transform.GetChild(1);
+        tps.gameObject.SetActive(true);
+        //Disable the TPS camera gameobject
+        tps.GetChild(1).gameObject.SetActive(false);
+        //Disable all elements underneath the body gameobject
+        Transform animatedBody = tps.GetChild(0);
+        foreach (Transform t in animatedBody.GetComponentInChildren<Transform>())
+        {
+            t.gameObject.SetActive(false);
+        }
+    }
+
+    public void Disconnect()
 	{
 		//Disconnect from the game if we are in Multiplayer mode
 		if(!PhotonNetwork.offlineMode && PhotonNetwork.connected)

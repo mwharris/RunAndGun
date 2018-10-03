@@ -28,6 +28,8 @@ public class ControlAnimations : AbstractBehavior
 
     private PlayerBodyData playerBodyData;
 
+    public Animator otherAnim;
+
     void Start()
     {
         //PlayerBodyData stores all info needed to control either our 1st or 3rd person body
@@ -50,32 +52,47 @@ public class ControlAnimations : AbstractBehavior
 
         //Set various Animator properties to control the animators properly
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
+        otherAnim.SetBool("Sprinting", inputState.playerIsSprinting);
 
-        HandleBodyPlacement(inputState.playerIsAiming);
+        //HandleBodyPlacement(inputState.playerIsAiming);
 
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
+        otherAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
 
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
+        otherAnim.SetBool("Crouching", inputState.playerIsCrouching);
 
         bodyAnim.SetBool("Shooting", inputState.playerIsShooting);
+        otherAnim.SetBool("Shooting", inputState.playerIsShooting);
         weaponAnim.SetBool("Shooting", inputState.playerIsShooting);
 
         bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
+        otherAnim.SetBool("Reloading", inputState.playerIsReloading);
 
-        HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        //HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        bodyAnim.SetBool("WallRunningLeft", inputState.playerIsWallRunningLeft);
+        bodyAnim.SetBool("WallRunningRight", inputState.playerIsWallRunningRight);
+        otherAnim.SetBool("WallRunningLeft", inputState.playerIsWallRunningLeft);
+        otherAnim.SetBool("WallRunningRight", inputState.playerIsWallRunningRight);
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
         bodyAnim.SetBool("JumpStart", inputState.playerIsJumping);
+        otherAnim.SetBool("Jumping", !inputState.playerIsGrounded);
+        otherAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
+        otherAnim.SetBool("JumpStart", inputState.playerIsJumping);
 
         var fwdSpeed = Vector3.Dot(inputState.playerVelocity, transform.forward);
         var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);
         bodyAnim.SetFloat("ForwardSpeed", fwdSpeed);
         bodyAnim.SetFloat("SideSpeed", sideSpeed);
+        otherAnim.SetFloat("ForwardSpeed", fwdSpeed);
+        otherAnim.SetFloat("SideSpeed", sideSpeed);
 
         bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
+        otherAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 
     void HandleBodyPlacement(bool isAiming)
