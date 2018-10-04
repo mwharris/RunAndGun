@@ -464,4 +464,31 @@ public class FirstPersonController : AbstractBehavior
 			fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
 		}
 	}
+
+    //Suicide button for testing respawn
+    void OnGUI()
+    {
+        if (GUI.Button(new Rect(Screen.width - 100, 0, 100, 40), "Third Person!"))
+        {
+            //Disable the First Person arms
+            Animator anim = this.transform.GetChild(0).GetComponentInChildren<Animator>();
+            foreach (Transform t in anim.transform.GetComponentInChildren<Transform>())
+            {
+                t.gameObject.SetActive(false);
+            }
+            //Enable the third person body
+            Transform body = this.transform.GetChild(1);
+            Transform animatedBody = body.GetChild(0);
+            for (int i = 0; i < animatedBody.childCount; i++)
+            {
+                Transform child = animatedBody.GetChild(i);
+                child.gameObject.SetActive(true);
+            }
+            //TPS Camera
+            Transform cam = body.GetChild(1);
+            cam.GetChild(0).GetComponent<Camera>().enabled = true;
+            cam.GetChild(0).localPosition = new Vector3(0f, 2.67f, -3.69f);
+            cam.GetChild(0).localRotation = Quaternion.Euler(7.94f, 0f, 0f);
+        }
+    }
 }

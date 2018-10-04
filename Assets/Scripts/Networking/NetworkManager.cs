@@ -159,12 +159,14 @@ public class NetworkManager : AbstractBehavior {
         Transform tps = myPlayer.transform.GetChild(1);
         tps.gameObject.SetActive(true);
         //Disable the TPS camera gameobject
-        tps.GetChild(1).gameObject.SetActive(false);
+        Transform other = tps.GetChild(1);
+        other.GetChild(0).GetComponent<Camera>().enabled = false;
         //Disable all elements underneath the body gameobject
         Transform animatedBody = tps.GetChild(0);
-        foreach (Transform t in animatedBody.GetComponentInChildren<Transform>())
+        for (int i = 0; i < animatedBody.childCount; i++)
         {
-            t.gameObject.SetActive(false);
+            Transform child = animatedBody.GetChild(i);
+            child.gameObject.SetActive(false);
         }
     }
 
