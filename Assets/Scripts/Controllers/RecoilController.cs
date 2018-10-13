@@ -9,15 +9,19 @@ public class RecoilController : MonoBehaviour
 	public float currentRecoil;
 
     private Transform recoilMod;
+    private BodyController bodyControl;
 
     private void Start()
     {
-        recoilMod = GetComponent<BodyController>().PlayerBodyData.playerCamera.parent;
+        bodyControl = GetComponent<BodyController>();
+        recoilMod = bodyControl.PlayerBodyData.playerCamera.parent;
     }
 
-    void Update () {
-		//Handle the recoiling
-		Recoiling();
+    void Update ()
+    {
+        recoilMod = bodyControl.PlayerBodyData.playerCamera.parent;
+        //Handle the recoiling
+        Recoiling();
 	}
 
 	public void StartRecoil(float recoilAmount)

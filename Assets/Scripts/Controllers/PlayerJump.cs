@@ -17,10 +17,13 @@ public class PlayerJump : AbstractBehavior {
 	private AudioSource aSource;
     private CharacterController cc;
 
-	void Start()
+    private BodyController bodyControl;
+
+    void Start()
 	{
 		jumps = maxJumps;
-        playerCamera = GetComponent<BodyController>().PlayerBodyData.playerCamera;
+        bodyControl = GetComponent<BodyController>();
+        playerCamera = bodyControl.PlayerBodyData.playerCamera;
 		wallRunController = GetComponent<WallRunController>();
         fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
@@ -30,10 +33,12 @@ public class PlayerJump : AbstractBehavior {
 
 	void Update()
 	{
-		if (gm.GetGameState() == GameManager.GameState.playing) 
-		{
-			//Gather inputs needed for jumping
-			bool canJump = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
+		if (gm.GetGameState() == GameManager.GameState.playing)
+        {
+            playerCamera = bodyControl.PlayerBodyData.playerCamera;
+
+            //Gather inputs needed for jumping
+            bool canJump = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
 
 			//Reset our jumps if we're grouded
 			if (inputState.playerIsGrounded && !justJumped) 

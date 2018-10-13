@@ -39,12 +39,14 @@ public class ShootController : AbstractBehavior
 	private GameManager gm;
 	private RecoilController rc;
 	private AccuracyController ac;
+    private BodyController bodyControl;
     private PlayerBodyData pbd;
 
 	void Start()
 	{
         //Get components from the player body data
-        pbd = GetComponent<BodyController>().PlayerBodyData;
+        bodyControl = GetComponent<BodyController>();
+        pbd = bodyControl.PlayerBodyData;
         playerCamera = pbd.playerCamera.GetComponent<Camera>();
         reloadAnimator = pbd.bodyAnimator;
         //Initialize timers
@@ -78,10 +80,12 @@ public class ShootController : AbstractBehavior
 		baseFOV = playerCamera.fieldOfView;
 	}
 
-	void Update() 
-	{
-		//Gather inputs needed below
-		bool isShootDown = inputState.GetButtonPressed(inputs[0]);
+	void Update()
+    {
+        pbd = bodyControl.PlayerBodyData;
+
+        //Gather inputs needed below
+        bool isShootDown = inputState.GetButtonPressed(inputs[0]);
 		bool isAimDown = inputState.GetButtonPressed(inputs[1]);
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
@@ -200,9 +204,10 @@ public class ShootController : AbstractBehavior
 
         //Notify other controllers that we are shooting
         inputState.playerIsShooting = true;
+        fxManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.NickName);
 
-		//Play the recoil animation AFTER determing shoot vector
-		StartCoroutine(WaitForRecoilDone(0.08f));
+        //Play the recoil animation AFTER determing shoot vector
+        StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
 		if(isAimDown)

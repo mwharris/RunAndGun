@@ -27,4 +27,9 @@ public class BodyController : Photon.MonoBehaviour
             //playerBodyData = thirdPersonBody;
         }
     }
+
+    public void ForceThird()
+    {
+        playerBodyData = thirdPersonBody;
+    }
 }

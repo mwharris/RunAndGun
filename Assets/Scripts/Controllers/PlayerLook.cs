@@ -9,10 +9,10 @@ public class PlayerLook
     private Transform lastSpine;
 
     private float minVerticalRotation = -50f;
-	private float maxVerticalRotation = 53f;
+    private float maxVerticalRotation = 53f;
 
     private Quaternion playerLocalRot;
-	private Quaternion camLocalRot;
+    private Quaternion camLocalRot;
     private Quaternion neckLocalRot;
     private Quaternion shoulderRot;
 
@@ -20,13 +20,23 @@ public class PlayerLook
     private Transform shoulderAxis;
 
     public void Init(Transform player, Transform camera, PlayerBodyData bodyData)
-	{
+    {
         neck = bodyData.neck;
         firstSpine = bodyData.firstSpine;
         lastSpine = bodyData.lastSpine;
         playerLocalRot = player.localRotation;
-		camLocalRot = camera.localRotation;
+        camLocalRot = camera.localRotation;
         neckLocalRot = neck.localRotation;
+        rightShoulder = bodyData.rightShoulder;
+        shoulderRot = bodyData.rightShoulder.localRotation;
+        shoulderAxis = bodyData.rightShoulderAxis;
+    }
+
+    public void UpdateBodyData(PlayerBodyData bodyData)
+    {
+        neck = bodyData.neck;
+        firstSpine = bodyData.firstSpine;
+        lastSpine = bodyData.lastSpine;
         rightShoulder = bodyData.rightShoulder;
         shoulderRot = bodyData.rightShoulder.localRotation;
         shoulderAxis = bodyData.rightShoulderAxis;

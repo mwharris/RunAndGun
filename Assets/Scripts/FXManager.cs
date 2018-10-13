@@ -75,6 +75,36 @@ public class FXManager : MonoBehaviour {
 		return null;
 	}
 
+    //Iterate through the players and find ours
+    private GameObject FindPlayerByName(string pName)
+    {
+        //Get all players
+        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
+        //Loop through and find the player we are controlling
+        foreach (GameObject currPlayer in players)
+        {
+            PhotonView pView = currPlayer.GetComponent<PhotonView>();
+            if (!pView.isMine && pView.owner != null && pView.owner.NickName == pName)
+            {
+                return currPlayer;
+            }
+        }
+        return null;
+    }
+
+    [PunRPC]
+    void PlayerShot(string shooterName)
+    {
+        //Find the GameObject of the player who shot
+        GameObject shooter = FindPlayerByName(shooterName);
+        if (shooter != null)
+        {
+            //Mark their animator has having shot
+            BodyController bodyControl = shooter.GetComponent<BodyController>();
+            bodyControl.PlayerBodyData.bodyAnimator.SetBool("Shooting", true);
+        }
+    }
+
 	[PunRPC]
 	void BulletFX(Vector3 startPos, Vector3 endPos, bool hitEnemy, bool hitRed)
 	{

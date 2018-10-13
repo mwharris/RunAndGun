@@ -60,6 +60,7 @@ public class FirstPersonController : AbstractBehavior
 	private MenuController menuController;
 	private FXManager fxManager;
 	private BobController bobScript;
+    private BodyController bodyControl;
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
 
@@ -68,7 +69,9 @@ public class FirstPersonController : AbstractBehavior
     private bool dontMove = false;
 
     void Start () {
-        playerCamera = GetComponent<BodyController>().PlayerBodyData.playerCamera.GetComponent<Camera>();
+        //Setup our body controller, body data, and camera
+        bodyControl = GetComponent<BodyController>();
+        playerCamera = bodyControl.PlayerBodyData.playerCamera.GetComponent<Camera>();
 		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
@@ -89,7 +92,7 @@ public class FirstPersonController : AbstractBehavior
         //Initiliaze crouch controller variables
         crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
         //Initialize player looking mechanics
-        playerLook.Init(transform, playerCamera.transform, GetComponent<BodyController>().PlayerBodyData);
+        playerLook.Init(transform, playerCamera.transform, bodyControl.PlayerBodyData);
     }
 
     private void LateUpdate()
@@ -221,9 +224,11 @@ public class FirstPersonController : AbstractBehavior
 	}
 
 	void GatherInputs()
-	{
-		//Only gather user input if we're not paused
-		if(gm.GetGameState() == GameManager.GameState.playing)
+    {
+        //Dynamically update player body data variables
+        playerCamera = bodyControl.PlayerBodyData.playerCamera.GetComponent<Camera>();
+        //Only gather user input if we're not paused
+        if (gm.GetGameState() == GameManager.GameState.playing)
 		{
 			//Input from Mouse or Right Stick
 			GetLookInput();
@@ -487,8 +492,11 @@ public class FirstPersonController : AbstractBehavior
             //TPS Camera
             Transform cam = body.GetChild(1);
             cam.GetChild(0).GetComponent<Camera>().enabled = true;
-            cam.GetChild(0).localPosition = new Vector3(0f, 2.67f, -3.69f);
-            cam.GetChild(0).localRotation = Quaternion.Euler(7.94f, 0f, 0f);
+            //cam.GetChild(0).localPosition = new Vector3(0f, 2.67f, -3.69f);
+            //cam.GetChild(0).localRotation = Quaternion.Euler(7.94f, 0f, 0f);
+            //Tell the Player Body Data to switch
+            GetComponent<BodyController>().ForceThird();
+            playerLook.UpdateBodyData(GetComponent<BodyController>().PlayerBodyData);
         }
     }
 }

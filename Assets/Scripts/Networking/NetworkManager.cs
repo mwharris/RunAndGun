@@ -142,6 +142,7 @@ public class NetworkManager : AbstractBehavior {
         myPlayer.GetComponent<RecoilController>().enabled = true;
         myPlayer.GetComponent<RecoilController>().recoil = 0;
         myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
+        myPlayer.GetComponent<FixWallRunningAnimation>().enabled = false;
         myPlayer.GetComponentInChildren<Camera>().enabled = true;
         myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
         myPlayer.GetComponentInChildren<ControlAnimations>().enabled = true;

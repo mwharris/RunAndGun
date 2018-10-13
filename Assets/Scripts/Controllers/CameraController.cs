@@ -22,8 +22,10 @@ public class CameraController : MonoBehaviour {
     private bool jumped = false;
 
     private Camera cameraComponent;
+    private BodyController bodyControl;
     private PlayerBodyData playerBodyData;
     private InputState inputState;
+    
 
     void Start ()
     {
@@ -35,7 +37,8 @@ public class CameraController : MonoBehaviour {
         originalCrouchLocalPosition = new Vector3(transform.localPosition.x, crouchCamHeight, crouchCamDepth);
         //Retrieve the player body data from our parent's parent (which is our player gameobject)
         GameObject player = transform.parent.parent.parent.gameObject;
-        playerBodyData = player.GetComponent<BodyController>().PlayerBodyData;
+        bodyControl = player.GetComponent<BodyController>();
+        playerBodyData = bodyControl.PlayerBodyData;
         inputState = player.GetComponent<InputState>();
     }
 	
@@ -45,6 +48,11 @@ public class CameraController : MonoBehaviour {
         HandleSprinting();
         HandleWallRunning();
 	}
+
+    private void UpdateBodyData()
+    {
+        playerBodyData = bodyControl.PlayerBodyData;
+    }
 
     private void HandleAirborne()
     {
