@@ -21,7 +21,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
     private bool isJumping;
     private bool isCrouching;
     private bool isShooting;
-    private bool isReloading;
     private bool wallRunningLeft;
     private bool wallRunningRight;
     private float jumpSpeed;
@@ -75,7 +74,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.bodyAnimator.SetBool("Jumping", isJumping);
             playerBodyData.bodyAnimator.SetBool("Crouching", isCrouching);
             playerBodyData.bodyAnimator.SetBool("Shooting", isShooting);
-            playerBodyData.bodyAnimator.SetBool("Reloading", isReloading);
             playerBodyData.bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
             playerBodyData.bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
             playerBodyData.bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
@@ -116,7 +114,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
             stream.SendNext(!inputState.playerIsGrounded);
             stream.SendNext(inputState.playerIsCrouching);
             stream.SendNext(inputState.playerIsShooting);
-            stream.SendNext(inputState.playerIsReloading);
             stream.SendNext(inputState.playerIsWallRunningRight);
             stream.SendNext(inputState.playerIsWallRunningLeft);
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
@@ -142,7 +139,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
             isJumping = (bool)stream.ReceiveNext();
             isCrouching = (bool)stream.ReceiveNext();
             isShooting = (bool)stream.ReceiveNext();
-            isReloading = (bool)stream.ReceiveNext();
             wallRunningRight = (bool)stream.ReceiveNext();
             wallRunningLeft = (bool)stream.ReceiveNext();
             forwardSpeed = (float)stream.ReceiveNext();

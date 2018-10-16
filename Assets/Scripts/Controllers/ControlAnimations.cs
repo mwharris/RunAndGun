@@ -26,6 +26,9 @@ public class ControlAnimations : AbstractBehavior
         //PlayerBodyData stores all info needed to control either our 1st or 3rd person body
         bodyControl = GetComponent<BodyController>();
         playerBodyData = bodyControl.PlayerBodyData;
+        //Set original player body positions and rotations
+        origLocalPos = playerBodyData.body.localPosition;
+        origLocalRot = playerBodyData.body.localRotation;
     }
 
     void Update()
@@ -41,7 +44,7 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
         otherAnim.SetBool("Sprinting", inputState.playerIsSprinting);
 
-        //HandleBodyPlacement(inputState.playerIsAiming);
+        HandleBodyPlacement(inputState.playerIsAiming);
 
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         otherAnim.SetBool("Aiming", inputState.playerIsAiming);
@@ -55,8 +58,11 @@ public class ControlAnimations : AbstractBehavior
         otherAnim.SetBool("Shooting", inputState.playerIsShooting);
         weaponAnim.SetBool("Shooting", inputState.playerIsShooting);
 
-        bodyAnim.SetBool("Reloading", inputState.playerIsReloading);
-        otherAnim.SetBool("Reloading", inputState.playerIsReloading);
+        if (inputState.playerIsReloading)
+        {
+            bodyAnim.SetTrigger("ReloadTrig");
+            otherAnim.SetTrigger("ReloadTrig");
+        }
 
         HandleWallRunningAnimations(bodyAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 

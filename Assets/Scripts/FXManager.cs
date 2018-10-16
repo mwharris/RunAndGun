@@ -59,50 +59,20 @@ public class FXManager : MonoBehaviour {
 		}
 	}
 
-	//Iterate through the players and find ours
-	private GameObject FindOurPlayer()
-	{
-		//Get all players
-		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-		//Loop through and find the player we are controlling
-		foreach(GameObject currPlayer in players)
-		{
-			if(currPlayer.GetComponent<PhotonView>().isMine) 
-			{
-				return currPlayer;
-			}
-		}
-		return null;
-	}
-
     //Iterate through the players and find ours
-    private GameObject FindPlayerByName(string pName)
+    private GameObject FindOurPlayer()
     {
         //Get all players
         GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
         //Loop through and find the player we are controlling
         foreach (GameObject currPlayer in players)
         {
-            PhotonView pView = currPlayer.GetComponent<PhotonView>();
-            if (!pView.isMine && pView.owner != null && pView.owner.NickName == pName)
+            if (currPlayer.GetComponent<PhotonView>().isMine)
             {
                 return currPlayer;
             }
         }
         return null;
-    }
-
-    [PunRPC]
-    void PlayerShot(string shooterName)
-    {
-        //Find the GameObject of the player who shot
-        GameObject shooter = FindPlayerByName(shooterName);
-        if (shooter != null)
-        {
-            //Mark their animator has having shot
-            BodyController bodyControl = shooter.GetComponent<BodyController>();
-            bodyControl.PlayerBodyData.bodyAnimator.SetBool("Shooting", true);
-        }
     }
 
 	[PunRPC]
@@ -173,40 +143,6 @@ public class FXManager : MonoBehaviour {
 		footstepSounds[n] = footstepSounds[0];
 		footstepSounds[0] = clipToPlay;
 	}
-
-	/*
-	[PunRPC]
-	void FootstepFX(Vector3 pos, bool isWallRunning)
-	{
-		AudioClip clipToPlay;
-
-		//Pick & play a random footstep sound from the array,
-		AudioClip[] soundsToUse;
-		if(isWallRunning)
-		{
-			soundsToUse = wallRunSounds;
-		}
-		else
-		{
-			soundsToUse = footstepSounds;
-		}
-		int n = Random.Range(1, soundsToUse.Length);
-		clipToPlay = soundsToUse[n];
-		AudioSource.PlayClipAtPoint(clipToPlay, pos);
-
-		//Move picked sound to index 0 so it's not picked next time
-		if(isWallRunning)
-		{
-			wallRunSounds[n] = wallRunSounds[0];
-			wallRunSounds[0] = clipToPlay;
-		}
-		else
-		{
-			footstepSounds[n] = footstepSounds[0];
-			footstepSounds[0] = clipToPlay;
-		}
-	}
-	*/
 
 	[PunRPC]
 	void LandingFX(Vector3 pos)

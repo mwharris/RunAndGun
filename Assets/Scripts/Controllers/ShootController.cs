@@ -36,6 +36,7 @@ public class ShootController : AbstractBehavior
 
 	//Imported Scripts
 	private FXManager fxManager;
+    private RPCManager rpcManager;
 	private GameManager gm;
 	private RecoilController rc;
 	private AccuracyController ac;
@@ -53,10 +54,11 @@ public class ShootController : AbstractBehavior
         cooldownTimer = 0.0f;
 		hitIndicatorTimerMax = 0.3f;
 		hitIndicatorTimer = hitIndicatorTimerMax;
-		//Initialize a reference to the FXManager
+		//Initialize a reference to the FX and RPC Managers
 		fxManager = GameObject.FindObjectOfType<FXManager>();
-		//Initialize a reference to the GameManager
-		gm = GameObject.FindObjectOfType<GameManager>();
+        rpcManager = GameObject.FindObjectOfType<RPCManager>();
+        //Initialize a reference to the GameManager
+        gm = GameObject.FindObjectOfType<GameManager>();
 		//Initialize a reference to the Recoil and Accuracy controllers
 		rc = GetComponent<RecoilController>();
 		ac = GetComponent<AccuracyController>();
@@ -202,9 +204,9 @@ public class ShootController : AbstractBehavior
 		Vector3 hitPoint = Vector3.zero;
 		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
 
-        //Notify other controllers that we are shooting
+        //Notify other controllers and players that we are shooting
         inputState.playerIsShooting = true;
-        fxManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.NickName);
+        rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.NickName);
 
         //Play the recoil animation AFTER determing shoot vector
         StartCoroutine(WaitForRecoilDone(0.08f));
@@ -308,8 +310,10 @@ public class ShootController : AbstractBehavior
 	//Helper function to reload our weapon
 	void Reload()
 	{
-		//Start the reload timer
-		reloadTimer = weaponReloadTime;
+        //Notify other players that we are reloading (for animations)
+        rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.NickName);
+        //Start the reload timer
+        reloadTimer = weaponReloadTime;
 		//Reset the bullet count
 		bulletCount = magazineCapacity;
 		//Play a sound
