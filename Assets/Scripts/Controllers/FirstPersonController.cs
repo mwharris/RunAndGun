@@ -489,6 +489,8 @@ public class FirstPersonController : AbstractBehavior
                 Transform child = animatedBody.GetChild(i);
                 child.gameObject.SetActive(true);
             }
+            //Disable Control Animations script (which will mess up body location)
+            //GetComponent<ControlAnimations>().enabled = false;
             //TPS Camera
             Transform cam = body.GetChild(1);
             cam.GetChild(0).GetComponent<Camera>().enabled = true;

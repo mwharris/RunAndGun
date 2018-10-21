@@ -7,21 +7,19 @@ public class RPCManager : MonoBehaviour {
     [PunRPC]
     void PlayerShot(string punName)
     {
-        Debug.Log("Another Player shot!");
         //Find the GameObject of the player who shot
         GameObject shooter = FindPlayerByPUNName(punName);
         if (shooter != null)
         {
             //Mark their animator has having shot
             BodyController bodyControl = shooter.GetComponent<BodyController>();
-            bodyControl.PlayerBodyData.bodyAnimator.SetBool("Shooting", true);
+            bodyControl.PlayerBodyData.bodyAnimator.SetTrigger("ShootTrig");
         }
     }
 
     [PunRPC]
     void PlayerReloaded(string punName)
     {
-        Debug.Log("Another Player reloaded!");
         //Find the GameObject of the player who reloaded
         GameObject reloader = FindPlayerByPUNName(punName);
         if (reloader != null)
@@ -43,7 +41,6 @@ public class RPCManager : MonoBehaviour {
             PhotonView pView = currPlayer.GetComponent<PhotonView>();
             if (!pView.isMine && pView.owner != null && pView.owner.NickName == pName)
             {
-                Debug.Log("Found the Player: " + pView.owner.NickName);
                 return currPlayer;
             }
         }

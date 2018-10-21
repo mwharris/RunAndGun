@@ -58,6 +58,12 @@ public class ControlAnimations : AbstractBehavior
         otherAnim.SetBool("Shooting", inputState.playerIsShooting);
         weaponAnim.SetBool("Shooting", inputState.playerIsShooting);
 
+        if (inputState.playerIsShooting)
+        {
+            bodyAnim.SetTrigger("ShootTrig");
+            otherAnim.SetTrigger("ShootTrig");
+        }
+
         if (inputState.playerIsReloading)
         {
             bodyAnim.SetTrigger("ReloadTrig");

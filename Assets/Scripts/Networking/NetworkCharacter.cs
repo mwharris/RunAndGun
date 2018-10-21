@@ -20,11 +20,9 @@ public class NetworkCharacter : Photon.MonoBehaviour
     private bool isAiming;
     private bool isJumping;
     private bool isCrouching;
-    private bool isShooting;
     private bool wallRunningLeft;
     private bool wallRunningRight;
     private float jumpSpeed;
-    //private float lookAngle;
 
     //MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
     private float forwardSpeed;
@@ -73,14 +71,11 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.bodyAnimator.SetBool("Aiming", isAiming);
             playerBodyData.bodyAnimator.SetBool("Jumping", isJumping);
             playerBodyData.bodyAnimator.SetBool("Crouching", isCrouching);
-            playerBodyData.bodyAnimator.SetBool("Shooting", isShooting);
             playerBodyData.bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
             playerBodyData.bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
             playerBodyData.bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
             playerBodyData.bodyAnimator.SetFloat("SideSpeed", sideSpeed);
             playerBodyData.bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
-            //float la = Mathf.Lerp(playerBodyData.bodyAnimator.GetFloat("LookAngle"), lookAngle, lerpSpeed);
-            //playerBodyData.bodyAnimator.SetFloat("LookAngle", la);
             
             //Set Capsule Collider and Character Controller variables for crouching
             cc.height = Mathf.Lerp(cc.height, ccHeight, lerpSpeed);
@@ -113,13 +108,11 @@ public class NetworkCharacter : Photon.MonoBehaviour
             stream.SendNext(inputState.playerIsAiming);
             stream.SendNext(!inputState.playerIsGrounded);
             stream.SendNext(inputState.playerIsCrouching);
-            stream.SendNext(inputState.playerIsShooting);
             stream.SendNext(inputState.playerIsWallRunningRight);
             stream.SendNext(inputState.playerIsWallRunningLeft);
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.right));
             stream.SendNext(inputState.playerVelocity.y);
-            //stream.SendNext(inputState.playerLookAngle);
             //Send Character Controller information
             stream.SendNext(cc.height);
             stream.SendNext(cc.radius);
@@ -138,13 +131,11 @@ public class NetworkCharacter : Photon.MonoBehaviour
             isAiming = (bool)stream.ReceiveNext();
             isJumping = (bool)stream.ReceiveNext();
             isCrouching = (bool)stream.ReceiveNext();
-            isShooting = (bool)stream.ReceiveNext();
             wallRunningRight = (bool)stream.ReceiveNext();
             wallRunningLeft = (bool)stream.ReceiveNext();
             forwardSpeed = (float)stream.ReceiveNext();
             sideSpeed = (float)stream.ReceiveNext();
             jumpSpeed = (float)stream.ReceiveNext();
-            //lookAngle = (float)stream.ReceiveNext();
             //Receive character controller information
             ccHeight = (float) stream.ReceiveNext();
             ccRadius = (float) stream.ReceiveNext();
