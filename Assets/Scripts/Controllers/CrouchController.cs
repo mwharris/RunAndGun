@@ -8,15 +8,18 @@ public class CrouchController : AbstractBehavior {
 	public float CrouchMovementSpeed {
 		get { return crouchMovementSpeed; }
 	}
-
-	//Special flag to mark the player camera as changing positions, used in FirstPersonController
-	[HideInInspector] public bool cameraResetting = false;
+    
+    //Special flag to mark the player camera as changing positions, used in FirstPersonController
+    [HideInInspector] public bool cameraResetting = false;
 
 	[SerializeField] private float crouchSpeed = 8.0f;
 	[SerializeField] private float crouchCamHeight;
 	[SerializeField] private float crouchCCHeight;
     [SerializeField] private float crouchCCRadius;
     [SerializeField] private Vector3 crouchCCCenter;
+
+    private CharacterController cc;
+    private CapsuleCollider shotCollider;
 
     private float crouchDeltaHeight;
     private float crouchDeltaDepth;
@@ -30,18 +33,21 @@ public class CrouchController : AbstractBehavior {
     private float standardCCRadius;
     private Vector3 standardCCCenter;
 
-	/**
+    /**
 	 * Calculate some variables needed for crouching logic
 	 */
-	public void CalculateCrouchVars(GameObject player, GameObject playerCamera, float movementSpeed)
+    public void CalculateCrouchVars(GameObject player, GameObject playerCamera, float movementSpeed)
 	{
+        //Cache references to our two sphere colliders
+        cc = player.GetComponent<CharacterController>();
+        shotCollider = player.GetComponent<CapsuleCollider>();
         //Store the standard camera heights and depths
         standardCamHeight = playerCamera.transform.localPosition.y;
         standardCamDepth = playerCamera.transform.localPosition.z;
         //Store the standard body/character controller heights and depths
-		standardCCHeight = player.GetComponent<CharacterController>().height;
-		standardCCCenter = player.GetComponent<CharacterController>().center;
-        standardCCRadius = player.GetComponent<CharacterController>().radius;
+		standardCCHeight = cc.height;
+		standardCCCenter = cc.center;
+        standardCCRadius = cc.radius;
         //Calculate the change in positions based on desired crouch variables
         crouchDeltaHeight = standardCamHeight - crouchCamHeight;
 		crouchDeltaCCHeight = standardCCHeight - crouchCCHeight;
@@ -53,7 +59,7 @@ public class CrouchController : AbstractBehavior {
 	/**
 	 * Handle shrinking / expanding the player and attached components when crouching or standing 
 	 */
-	public void HandleCrouching(CharacterController cc, Camera playerCamera, GameManager.GameState gs)
+	public void HandleCrouching(Camera playerCamera, GameManager.GameState gs)
 	{
 		if (gs == GameManager.GameState.playing) 
 		{
@@ -117,6 +123,8 @@ public class CrouchController : AbstractBehavior {
 			cc.height = ccHeight;
             cc.radius = ccRadius;
 			cc.center = ccCenter;
+            shotCollider.height = ccHeight;
+            shotCollider.center = ccCenter;
         }    
     }
 

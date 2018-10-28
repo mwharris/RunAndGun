@@ -20,7 +20,14 @@ public class FXManager : MonoBehaviour {
 
 	private float killOverlayTimer = 0.0f;
 
-	void Update()
+    private PlayerFinder playerFinder;
+
+    private void Awake()
+    {
+        playerFinder = new PlayerFinder();
+    }
+
+    void Update()
 	{
 		//Decrement the timer if we are showing the killer overlay
 		if(killOverlayTimer > 0)
@@ -41,7 +48,7 @@ public class FXManager : MonoBehaviour {
 	void KillNotification(string deadPlayerName, string killerName)
 	{
 		//Find our player
-		GameObject ourPlayer = FindOurPlayer();
+		GameObject ourPlayer = playerFinder.FindOurPlayer();
         PhotonView pView = ourPlayer.GetComponent<PhotonView>();
 
         //Only show notification for ourselves
@@ -59,25 +66,15 @@ public class FXManager : MonoBehaviour {
 		}
 	}
 
-    //Iterate through the players and find ours
-    private GameObject FindOurPlayer()
-    {
-        //Get all players
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        //Loop through and find the player we are controlling
-        foreach (GameObject currPlayer in players)
-        {
-            if (currPlayer.GetComponent<PhotonView>().isMine)
-            {
-                return currPlayer;
-            }
-        }
-        return null;
-    }
-
 	[PunRPC]
-	void BulletFX(Vector3 startPos, Vector3 endPos, bool hitEnemy, bool hitRed)
+	void BulletFX(int photonID, Vector3 endPos, bool hitEnemy, bool hitRed)
 	{
+        //Find the player who shot
+        GameObject player = playerFinder.FindPlayerByPUNId(photonID);
+        //Find the location of that player's weapon's fire point
+        Transform playerWeapon = player.GetComponent<BodyController>().PlayerBodyData.weapon;
+        Transform weaponFirePoint = playerWeapon.GetComponentInChildren<WeaponData>().transform;
+        Vector3 startPos = weaponFirePoint.position;
 		//Show the bullet FX
 		GameObject bulletFX = (GameObject) Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));
 		//Show our line rendered bullet trail

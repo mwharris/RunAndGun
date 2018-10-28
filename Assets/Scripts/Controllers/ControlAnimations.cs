@@ -54,14 +54,11 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
         otherAnim.SetBool("Crouching", inputState.playerIsCrouching);
 
-        bodyAnim.SetBool("Shooting", inputState.playerIsShooting);
-        otherAnim.SetBool("Shooting", inputState.playerIsShooting);
-        weaponAnim.SetBool("Shooting", inputState.playerIsShooting);
-
         if (inputState.playerIsShooting)
         {
             bodyAnim.SetTrigger("ShootTrig");
             otherAnim.SetTrigger("ShootTrig");
+            weaponAnim.SetTrigger("ShootTrig");
         }
 
         if (inputState.playerIsReloading)

@@ -93,7 +93,7 @@ public class Health : MonoBehaviour {
 	}
 
 	[PunRPC]
-	public void TakeDamage(float damage, string enemyPhotonName, Vector3 shooterPosition) 
+	public void TakeDamage(float damage, string enemyPhotonName, int enemyPhotonID, Vector3 shooterPosition) 
 	{
 		currentHitPoints -= damage;
 		//If this is our local player
@@ -107,7 +107,7 @@ public class Health : MonoBehaviour {
 		//Die if our HP is below 0
 		if(currentHitPoints <= 0)
 		{
-			Die(enemyPhotonName);
+			Die(enemyPhotonName, enemyPhotonID);
 		}
 		//If we didn't die, we're regenerating, and we were shot
 		if(currentHitPoints > 0 && regenerating == true)
@@ -167,7 +167,7 @@ public class Health : MonoBehaviour {
 		}
 	}
 
-	void Die(string enemyPhotonName)
+	void Die(string enemyPhotonName, int enemyPhotonID)
 	{
 		//If we did not instantiate this object over the network
 		if(this.transform.GetComponent<PhotonView>().instantiationId == 0){
@@ -186,7 +186,7 @@ public class Health : MonoBehaviour {
 				//Gray out the screen and display killer
 				ShowDeathOverlay(enemyPhotonName);
 				//Handle spawning a Death Camera
-				HandleKillCam(enemyPhotonName);
+				HandleKillCam(enemyPhotonName, enemyPhotonID);
 				//Make sure the hit angle is hidden
 				HideHitAngle(true);
 			}
@@ -197,7 +197,7 @@ public class Health : MonoBehaviour {
 		}
 	}
 
-	void HandleKillCam(string enemyPhotonName)
+	void HandleKillCam(string enemyPhotonName, int enemyPhotonId)
 	{
 		int currPos = 0;
 
@@ -263,7 +263,7 @@ public class Health : MonoBehaviour {
 				dCam.transform.LookAt(new Vector3(transform.position.x, transform.position.y + 1, transform.position.z));
 				//Attach a script to the camera
 				DeathCamScript deathCamScript = dCam.AddComponent<DeathCamScript>();
-				deathCamScript.targetName = enemyPhotonName;
+                deathCamScript.targetId = enemyPhotonId;
 				deathCamScript.lobbyCamera = lobbyCam;
 				//Exit loop
 				break;

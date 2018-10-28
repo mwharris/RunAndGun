@@ -117,7 +117,7 @@ public class FirstPersonController : AbstractBehavior
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
 		//Handle crouching
-		crouchController.HandleCrouching(cc, playerCamera, gm.GetGameState());
+		crouchController.HandleCrouching(playerCamera, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
         //Handle any mouse input that occurred
@@ -469,7 +469,7 @@ public class FirstPersonController : AbstractBehavior
 			fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
 		}
 	}
-
+    /*
     //Suicide button for testing respawn
     void OnGUI()
     {
@@ -501,4 +501,5 @@ public class FirstPersonController : AbstractBehavior
             playerLook.UpdateBodyData(GetComponent<BodyController>().PlayerBodyData);
         }
     }
+    */
 }

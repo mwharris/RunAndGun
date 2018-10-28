@@ -130,11 +130,16 @@ public class ShootController : AbstractBehavior
 					Shoot(isAimDown);
 				}
 				//If the clip is empty, reload instead
-				else 
-				{
-					Reload();
-				}
+				else
+                {
+                    Reload();
+                }
 			}
+            //If we're not shooting than make sure we don't flag ourselves as such
+            else
+            {
+                inputState.playerIsShooting = false;
+            }
 
 			//Reload if 'R' is pressed OR we tried to shoot while the clip is empty
 			if(isReloadDown)
@@ -206,10 +211,10 @@ public class ShootController : AbstractBehavior
 
         //Notify other controllers and players that we are shooting
         inputState.playerIsShooting = true;
-        rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.NickName);
+        rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.ID);
 
         //Play the recoil animation AFTER determing shoot vector
-        StartCoroutine(WaitForRecoilDone(0.08f));
+        //StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
 		if(isAimDown)
@@ -258,7 +263,7 @@ public class ShootController : AbstractBehavior
 				PhotonView pv = h.GetComponent<PhotonView>();
 				if(pv != null)
 				{
-					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.name, transform.position);
+					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.NickName, pView.owner.ID, transform.position);
 				}
 			} 
 
@@ -311,7 +316,7 @@ public class ShootController : AbstractBehavior
 	void Reload()
 	{
         //Notify other players that we are reloading (for animations)
-        rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.NickName);
+        rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.ID);
         //Start the reload timer
         reloadTimer = weaponReloadTime;
 		//Reset the bullet count
@@ -320,8 +325,9 @@ public class ShootController : AbstractBehavior
 		aSource.PlayOneShot(reloadClip);
 		//Play the reload animation
         inputState.playerIsReloading = true;
-		//Hide the reload indicator
-		HideReloadIndicator();
+        inputState.playerIsShooting = false;
+        //Hide the reload indicator
+        HideReloadIndicator();
 	}
 
 	//Helper function to show the gun FX
@@ -329,7 +335,7 @@ public class ShootController : AbstractBehavior
 	{
 		//Grab the location of the gun and spawn the FX there
 		WeaponData wd = this.transform.GetComponentInChildren<WeaponData>();
-		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, wd.transform.position, hitPoint, hitEnemy, hitRed);
+		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, pView.owner.ID, hitPoint, hitEnemy, hitRed);
 	}
 
 	//Raycast in a line and find the closest object hit

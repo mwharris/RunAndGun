@@ -6,13 +6,14 @@ public class DeathCamScript : MonoBehaviour {
 
 	public float lookTimer = 0.0f;
 	public float lifeTimer = 0.0f;
-	public string targetName;
+    public int targetId;
 	public GameObject target;
 	public Camera lobbyCamera;
 
 	private GameObject deathOverlay;
 	private GameObject respawnOverlay;
 	private NetworkManager nm;
+    private PlayerFinder playerFinder;
 
 	void Start() 
 	{
@@ -25,7 +26,7 @@ public class DeathCamScript : MonoBehaviour {
 		//Get a reference to the respawn overlay
 		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
 		//Find the target we are trying to look at
-		target = FindTarget(targetName);
+		target = FindTarget(targetId);
 		//Get a reference to our NetworkManager in order to manipulate variables
 		nm = GameObject.FindObjectOfType<NetworkManager>();
 	}
@@ -75,7 +76,7 @@ public class DeathCamScript : MonoBehaviour {
 		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
 	}
 
-	GameObject FindTarget(string targetName)
+	GameObject FindTarget(int targetId)
 	{
 		//Get the full list of players
 		GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
@@ -83,7 +84,7 @@ public class DeathCamScript : MonoBehaviour {
 		foreach(GameObject player in players)
 		{
 			//Return this player object if it's the player we're looking for
-			if(player.GetComponent<PhotonView>().owner.name == targetName)
+			if(player.GetComponent<PhotonView>().owner.ID == targetId)
 			{
 				return player;
 			}
