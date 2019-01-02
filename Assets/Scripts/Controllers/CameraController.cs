@@ -71,9 +71,10 @@ public class CameraController : MonoBehaviour {
 
     private void HandleSprinting()
     {
-        if (inputState.playerIsSprinting)
+        bool wallRunning = inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack;
+        if (inputState.playerIsSprinting || wallRunning)
         {
-            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, 55f, Time.deltaTime * 5f);
+            cameraComponent.fieldOfView = Mathf.Lerp(cameraComponent.fieldOfView, 65f, Time.deltaTime * 5f);
         }
         else if (!inputState.playerIsAiming && cameraComponent.fieldOfView != 60f)
         {
