@@ -8,7 +8,7 @@ public class PlayerController : AbstractBehavior {
 	private CharacterController cc;
 	private Vector3 velocity;
 	private Vector2 moveInput;
-	private Vector2 lookInput;
+	//private Vector2 lookInput;
 
 	[SerializeField] private PlayerLook playerLook;
 	[SerializeField] private Camera playerCam;
@@ -87,7 +87,7 @@ public class PlayerController : AbstractBehavior {
 		horizontalRot += inputState.GetButtonValue(inputs[6]);
 		horizontalRot += inputState.GetButtonValue(inputs[7]);
 
-		lookInput = new Vector2(verticalRot, horizontalRot);
+		//lookInput = new Vector2(verticalRot, horizontalRot);
 	}
 
 	private void RotateView()

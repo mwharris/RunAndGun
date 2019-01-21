@@ -20,15 +20,11 @@ public class CrouchController : AbstractBehavior {
 
     private CharacterController cc;
     private CapsuleCollider shotCollider;
-
-    private float crouchDeltaHeight;
+    
     private float crouchDeltaDepth;
-	private float crouchDeltaCCHeight;
-    private float crouchDeltaCCRadius;
     private Vector3 crouchDeltaCCCenter;
 
 	private float standardCamHeight;
-    private float standardCamDepth;
 	private float standardCCHeight;
     private float standardCCRadius;
     private Vector3 standardCCCenter;
@@ -43,15 +39,10 @@ public class CrouchController : AbstractBehavior {
         shotCollider = player.GetComponent<CapsuleCollider>();
         //Store the standard camera heights and depths
         standardCamHeight = playerCamera.transform.localPosition.y;
-        standardCamDepth = playerCamera.transform.localPosition.z;
         //Store the standard body/character controller heights and depths
 		standardCCHeight = cc.height;
 		standardCCCenter = cc.center;
         standardCCRadius = cc.radius;
-        //Calculate the change in positions based on desired crouch variables
-        crouchDeltaHeight = standardCamHeight - crouchCamHeight;
-		crouchDeltaCCHeight = standardCCHeight - crouchCCHeight;
-        crouchDeltaCCRadius = crouchCCRadius - standardCCRadius;
         //Calculate the movement speed while crouched
         crouchMovementSpeed = movementSpeed / 2;
 	}

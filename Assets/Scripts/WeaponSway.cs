@@ -1,15 +1,16 @@
-﻿using System.Collections;
+﻿/*
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
 public class WeaponSway : AbstractBehavior 
 {
-    [SerializeField] private InputState inputState;
-    [SerializeField] private float amount;
-	[SerializeField] private float maxAmount;
-	[SerializeField] private float smoothAmount;
-	[SerializeField] private float jumpDivisor;
-	[SerializeField] private Transform weapon;
+    private InputState inputState;
+    private float amount;
+	private float maxAmount;
+	private float smoothAmount;
+	private float jumpDivisor;
+	private Transform weapon;
 
 	private Vector3 initialPosition;
 	private GameManager gm;
@@ -65,3 +66,4 @@ public class WeaponSway : AbstractBehavior
 		return lookInput;
 	}
 }
+*/

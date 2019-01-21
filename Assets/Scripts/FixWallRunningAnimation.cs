@@ -16,8 +16,8 @@ public class FixWallRunningAnimation : AbstractBehavior
     private Vector3 origWeaponPosition;
     private Quaternion origWeaponRotation;
 
-    private Vector3 origLocalPos;
-    private Quaternion origLocalRot;
+    //private Vector3 origLocalPos;
+    //private Quaternion origLocalRot;
 
     private PhotonView pView;
     private BodyController bodyController;
@@ -33,8 +33,8 @@ public class FixWallRunningAnimation : AbstractBehavior
         currBodyRotation = origBodyRotation;
         origWeaponPosition = playerBodyData.weapon.localPosition;
         origWeaponRotation = playerBodyData.weapon.localRotation;
-        origLocalPos = playerBodyData.body.localPosition;
-        origLocalRot = playerBodyData.body.localRotation;
+        //origLocalPos = playerBodyData.body.localPosition;
+        //origLocalRot = playerBodyData.body.localRotation;
     }
 
     public void RunFix(bool wrLeft, bool wrRight, float deltaTime)

@@ -52,7 +52,7 @@ public class FXManager : MonoBehaviour {
         PhotonView pView = ourPlayer.GetComponent<PhotonView>();
 
         //Only show notification for ourselves
-        if (ourPlayer != null && pView.owner.name == killerName) 
+        if (ourPlayer != null && pView.owner.NickName == killerName) 
 		{
 			//Get a reference to the overlay
 			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
@@ -77,8 +77,13 @@ public class FXManager : MonoBehaviour {
         Vector3 startPos = weaponFirePoint.position;
 		//Show the bullet FX
 		GameObject bulletFX = (GameObject) Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));
-		//Show our line rendered bullet trail
-		LineRenderer lr = bulletFX.transform.Find("LineFX").GetComponent<LineRenderer>();
+        //Play the shooting animation
+        Animator parentAnim = weaponFirePoint.parent.GetComponent<Animator>();
+        parentAnim.SetTrigger("ShootTrig");
+        Animator grandParentAnim = weaponFirePoint.parent.parent.GetComponent<Animator>();
+        grandParentAnim.SetTrigger("ShootTrig");
+        //Show our line rendered bullet trail
+        LineRenderer lr = bulletFX.transform.Find("LineFX").GetComponent<LineRenderer>();
 		lr.SetPosition(0, startPos);
 		lr.SetPosition(1, endPos);
 		//Play our gun shot

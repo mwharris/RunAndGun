@@ -334,7 +334,7 @@ public class ShootController : AbstractBehavior
 	void GunFX(Vector3 hitPoint, bool hitEnemy, bool hitRed)
 	{
 		//Grab the location of the gun and spawn the FX there
-		WeaponData wd = this.transform.GetComponentInChildren<WeaponData>();
+		//WeaponData wd = this.transform.GetComponentInChildren<WeaponData>();
 		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, pView.owner.ID, hitPoint, hitEnemy, hitRed);
 	}
 

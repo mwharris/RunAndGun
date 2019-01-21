@@ -123,7 +123,6 @@ public class Health : MonoBehaviour {
 	{
 		//Calculate the direction between this player's position and the shooter's position
 		Vector3 direction = transform.position - shooterPosition;
-		float angle = Vector3.Angle(direction, transform.forward);
 		//Rotate the arrow to point to where we were damaged
 		Quaternion rotation = Quaternion.LookRotation(direction);
 		float rot = Quaternion.Angle(rotation, transform.localRotation);
@@ -191,7 +190,7 @@ public class Health : MonoBehaviour {
 				HideHitAngle(true);
 			}
 			//Send out a notification this player was killed
-			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.name, enemyPhotonName);
+			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.NickName, enemyPhotonName);
 			//Delete it over the network
 			PhotonNetwork.Destroy(this.gameObject);
 		}

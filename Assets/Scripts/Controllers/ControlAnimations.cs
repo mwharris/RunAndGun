@@ -12,23 +12,19 @@ public class ControlAnimations : AbstractBehavior
     public Vector3 aimingLocalPos = Vector3.zero;
     public Vector3 aimingLocalRot = Vector3.zero;
     private Vector3 origLocalPos;
-    private Quaternion origLocalRot;
 
     private BodyController bodyControl;
     private PlayerBodyData playerBodyData;
-    private PhotonView pView;
 
     public Animator otherAnim;
 
     void Start()
     {
-        pView = GetComponent<PhotonView>();
         //PlayerBodyData stores all info needed to control either our 1st or 3rd person body
         bodyControl = GetComponent<BodyController>();
         playerBodyData = bodyControl.PlayerBodyData;
         //Set original player body positions and rotations
         origLocalPos = playerBodyData.body.localPosition;
-        origLocalRot = playerBodyData.body.localRotation;
     }
 
     void Update()
@@ -49,7 +45,7 @@ public class ControlAnimations : AbstractBehavior
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         otherAnim.SetBool("Aiming", inputState.playerIsAiming);
         weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
-        weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
+        //weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
 
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
         otherAnim.SetBool("Crouching", inputState.playerIsCrouching);

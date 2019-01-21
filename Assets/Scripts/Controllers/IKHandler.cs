@@ -15,35 +15,23 @@ public class IKHandler : MonoBehaviour
     public Transform leftHandIKTarget;
     private float leftHandIKWeight = 1;
 
-    private PhotonView photonView;
-
     private Animator anim;
     private Transform aimHelper;
     private Vector3 lookAtPosition;
     private bool isAiming;
-    private bool isReloading;
     private float targetWeight = 0f;
     private float lookWeight = 0f;
-
-    private Vector3 rightHandIKPositionOverride = Vector3.zero;
-    private Vector3 leftHandIKPositionOverride = Vector3.zero;
-    private Quaternion rightHandIKRotationOverride = Quaternion.identity;
-    private Quaternion leftHandIKRotationOverride = Quaternion.identity;
-
-    private bool weaponHolderPosSet = false;
 
     void Start ()
     {
         aimHelper = new GameObject().transform;
         anim = GetComponent<Animator>();
-        photonView = GetComponent<PhotonView>();
     }
 
     //Helper function to set isAiming and isReloading variables based on player inputs
     void setInputVars()
     {
         isAiming = inputState.playerIsAiming;
-        isReloading = false;
     }
 
     void LateUpdate ()
@@ -66,7 +54,7 @@ public class IKHandler : MonoBehaviour
         lookAtPosition = playerCamera.position + (playerCamera.forward * 2);
 
         //Determine the direction between our position and where we are looking (aim helper position)
-        Vector3 dirTowardsTarget = aimHelper.position - transform.position;
+        //Vector3 dirTowardsTarget = aimHelper.position - transform.position;
 
         //The speed at which our IKs will move...do we want different speeds for aiming?
         float multiplier = 30f;

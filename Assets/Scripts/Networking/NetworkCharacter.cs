@@ -32,7 +32,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
     private CharacterController cc;
     private float ccHeight = 0f;
     private float ccRadius = 0f;
-    private Vector3 ccCenter = Vector3.zero;
 
     private FixWallRunningAnimation wrAnimFix;
 
@@ -76,7 +75,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
             playerBodyData.bodyAnimator.SetFloat("SideSpeed", sideSpeed);
             playerBodyData.bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
-            
+
             //Set Capsule Collider and Character Controller variables for crouching
             cc.height = Mathf.Lerp(cc.height, ccHeight, lerpSpeed);
             cc.radius = Mathf.Lerp(cc.radius, ccRadius, lerpSpeed);
@@ -96,7 +95,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
 
         if (stream.isWriting)
 		{
-            
 			//This is our local player, send our position to the network
 			stream.SendNext(transform.position);
 			stream.SendNext(transform.rotation);
@@ -119,7 +117,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
 		}
 		else
 		{
-            
             //This is a networked player, receive their position an update the player accordingly
             realPos = (Vector3)stream.ReceiveNext();
             realRot = (Quaternion)stream.ReceiveNext();

@@ -10,7 +10,6 @@ public class FirstPersonController : AbstractBehavior
 	[HideInInspector] public CharacterController cc;
 	public AudioClip jumpSound;  
    
-	private Vector3 ogCamPos;
 	private AudioSource aSource;    
 	private Vector2 lookInput;
 	private Vector2 moveInput;
@@ -72,7 +71,6 @@ public class FirstPersonController : AbstractBehavior
         //Setup our body controller, body data, and camera
         bodyControl = GetComponent<BodyController>();
         playerCamera = bodyControl.PlayerBodyData.playerCamera.GetComponent<Camera>();
-		ogCamPos = playerCamera.transform.localPosition;
 		//Initialize a reference to the character controller component
 		cc = GetComponent<CharacterController>();
 		//Get a reference to the audio source

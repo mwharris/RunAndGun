@@ -19,7 +19,6 @@ public class WallRunController : AbstractBehavior {
 	private float wallRunMax = 2.0f;
 	private string lastWallName = "";
 
-	private float cameraTotalRotation = 0f;
 	private float cameraRotAmount = 0.1f;
 	private float cameraRotZ = 0;
 
@@ -29,18 +28,13 @@ public class WallRunController : AbstractBehavior {
     private float wallRunAngle1 = 0f;
     private float wallRunAngle2 = 0f;
     private bool wrapAroundRotationCircle = false;
-    private bool reclampRotation = false;
-    private bool curvedWall = false;
-
-    private FirstPersonController fpsC;
+    //private bool reclampRotation = false;
 
     void Start() 
 	{
 		//Initialize references to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
 		jumpController = GetComponent<PlayerJump>();
-        fpsC = GetComponent<FirstPersonController>();
-
     }
 
 	/*
@@ -97,12 +91,12 @@ public class WallRunController : AbstractBehavior {
 		if(isGrounded)
 		{
 			wallRunningDisabled = false;
-			//wallRunningDisabledTimer = 0;
+			wallRunningDisabledTimer = 0;
 		}
-        //else 
-        //{
-        //	wallRunningDisabledTimer -= Time.deltaTime;
-        //}
+        else 
+        {
+        	wallRunningDisabledTimer -= Time.deltaTime;
+        }
     }
 
     /*
@@ -237,7 +231,7 @@ public class WallRunController : AbstractBehavior {
     public void SetWallRunLookRotation(bool initial)
     {
         /*
-         * An idea to match the animations but requires large changes
+        An idea to match the animations but requires large changes
         testForward = Vector3.RotateTowards(transform.forward, -wallRunNormal, 10f, 0f);
         transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
         */
@@ -245,19 +239,18 @@ public class WallRunController : AbstractBehavior {
 		Vector3 testForward = transform.forward;
         //Get a vector 90 degrees to the left and right of the normal
         testNormal = Quaternion.Euler(0,90,0) * testNormal;
-		//Calculate cross products between where we're looking and these two vectors
-		Vector3 cross = Vector3.Cross(testNormal, testForward);
-		//We looked too far left/right, rotate towards the cross product
-		Vector3 otherCross = new Vector3();
+        //Calculate cross products between up and our wallrun wall's normal
+        Vector3 cross = new Vector3();
 		if(inputState.playerIsWallRunningRight)
-		{ 
-			otherCross = Vector3.Cross(Vector3.up, wallRunNormal); 
+		{
+            cross = Vector3.Cross(Vector3.up, wallRunNormal); 
 		}
 		if(inputState.playerIsWallRunningLeft)
-		{ 
-			otherCross = Vector3.Cross(Vector3.up, -wallRunNormal); 
+		{
+            cross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 		}
-		testForward = Vector3.RotateTowards(testForward, otherCross, 10, 0.0f);
+        //Cross is now a vector perpendicular to the wall normal - rotate our forward towards this
+		testForward = Vector3.RotateTowards(testForward, cross, 10, 0.0f);
         if (initial)
         {
             transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
@@ -376,10 +369,10 @@ public class WallRunController : AbstractBehavior {
 					initWallRun = true;
 				}
                 //Re-clamp rotation angles if we transition from another wall-run
-                else if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningBack) 
+                /*else if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningBack) 
                 {
                     reclampRotation = true;
-                }
+                }*/
                 //Flag the side we are wall-running
                 inputState.playerIsWallRunningLeft = false;
                 inputState.playerIsWallRunningRight = true;
@@ -399,10 +392,10 @@ public class WallRunController : AbstractBehavior {
 					initWallRun = true;
                 }
                 //Re-clamp rotation angles if we transition from another wall-run
-                else if (inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
+                /*else if (inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
                 {
                     reclampRotation = true;
-                }
+                }*/
                 //Flag the side we are wall-running
                 inputState.playerIsWallRunningLeft = true;
                 inputState.playerIsWallRunningRight = false;
@@ -555,7 +548,7 @@ public class WallRunController : AbstractBehavior {
         inputState.playerIsWallRunningLeft = false;
         inputState.playerIsWallRunningRight = false;
         inputState.playerIsWallRunningBack = false;
-        reclampRotation = false;
+        //reclampRotation = false;
         wrapAroundRotationCircle = false;
         wallRunAngle1 = 0f;
         wallRunAngle2 = 0f;
