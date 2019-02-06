@@ -4,22 +4,6 @@ using UnityEngine;
 
 public class PlayerFinder {
 
-    //Iterate through players and find our own
-    public GameObject FindOurPlayer()
-    {
-        //Get all players
-        GameObject[] players = GameObject.FindGameObjectsWithTag("Player");
-        //Loop through and find the player we are controlling
-        foreach (GameObject currPlayer in players)
-        {
-            if (currPlayer.GetComponent<PhotonView>().isMine)
-            {
-                return currPlayer;
-            }
-        }
-        return null;
-    }
-
     //Iterate through players and find the one with the given ID (include our own)
     public GameObject FindPlayerByPUNId(int pId)
     {

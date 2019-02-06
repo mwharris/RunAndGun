@@ -13,7 +13,6 @@ public class DeathCamScript : MonoBehaviour {
 	private GameObject deathOverlay;
 	private GameObject respawnOverlay;
 	private NetworkManager nm;
-    private PlayerFinder playerFinder;
 
 	void Start() 
 	{

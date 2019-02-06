@@ -118,6 +118,8 @@ public class NetworkManager : AbstractBehavior {
         inputManager.inputState = myPlayer.GetComponent<InputState>();
         //Enable local player controls
         EnableLocalPlayer(myPlayer);
+        //Cache our player for easy finding later
+        gm.MyPlayer = myPlayer;
         //Enable the displayed ammo counter
         ammoUI.SetActive(true);
         //Enable the camera reticle

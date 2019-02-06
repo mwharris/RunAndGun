@@ -11,6 +11,12 @@ public class GameManager : MonoBehaviour
 	}
 	private GameState gameState = GameState.none;
 
+    private GameObject myPlayer;
+    public GameObject MyPlayer
+    {
+        get { return myPlayer; }
+        set { myPlayer = value; }
+    }
 
 	void Start() 
 	{

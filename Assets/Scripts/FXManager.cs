@@ -20,10 +20,12 @@ public class FXManager : MonoBehaviour {
 
 	private float killOverlayTimer = 0.0f;
 
+    private GameManager gameManager;
     private PlayerFinder playerFinder;
 
     private void Awake()
     {
+        gameManager = FindObjectOfType<GameManager>();
         playerFinder = new PlayerFinder();
     }
 
@@ -47,15 +49,14 @@ public class FXManager : MonoBehaviour {
 	[PunRPC]
 	void KillNotification(string deadPlayerName, string killerName)
 	{
-		//Find our player
-		GameObject ourPlayer = playerFinder.FindOurPlayer();
-        PhotonView pView = ourPlayer.GetComponent<PhotonView>();
-
+        //Find our player
+        GameObject ourPlayer = gameManager.MyPlayer;
+        PhotonView pView = ourPlayer == null ? null : ourPlayer.GetComponent<PhotonView>();
         //Only show notification for ourselves
-        if (ourPlayer != null && pView.owner.NickName == killerName) 
+        if (pView != null && pView.owner != null && pView.owner.NickName == killerName) 
 		{
-			//Get a reference to the overlay
-			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
+            //Get a reference to the overlay
+            GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
 			//Set the name of the person we killed
 			killOverlay.transform.GetChild(1).GetComponent<Text>().text = deadPlayerName;
 			//Show the contents of the overlay
@@ -71,42 +72,47 @@ public class FXManager : MonoBehaviour {
 	{
         //Find the player who shot
         GameObject player = playerFinder.FindPlayerByPUNId(photonID);
-        //Find the location of that player's weapon's fire point
-        Transform playerWeapon = player.GetComponent<BodyController>().PlayerBodyData.weapon;
-        Transform weaponFirePoint = playerWeapon.GetComponentInChildren<WeaponData>().transform;
-        Vector3 startPos = weaponFirePoint.position;
-		//Show the bullet FX
-		GameObject bulletFX = (GameObject) Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));
-        //Play the shooting animation
-        Animator parentAnim = weaponFirePoint.parent.GetComponent<Animator>();
-        parentAnim.SetTrigger("ShootTrig");
-        Animator grandParentAnim = weaponFirePoint.parent.parent.GetComponent<Animator>();
-        grandParentAnim.SetTrigger("ShootTrig");
-        //Show our line rendered bullet trail
-        LineRenderer lr = bulletFX.transform.Find("LineFX").GetComponent<LineRenderer>();
-		lr.SetPosition(0, startPos);
-		lr.SetPosition(1, endPos);
-		//Play our gun shot
-		AudioSource.PlayClipAtPoint(gunShot, startPos);
-		//Show FX
-		if(hitEnemy)
-		{
-			//Show some blood
-			Instantiate(enemyHitEffect, endPos, Quaternion.identity);
-			//Play a sound
-			aSource.PlayOneShot(hitSound);
-		}
-		else if(hitRed)
-		{
-			//Show some red debris
-			Instantiate(redHitEffect, endPos, Quaternion.identity);
-		}
-		else
-		{
-			//Show some debris
-			Instantiate(defaultHitEffect, endPos, Quaternion.identity);
-			Instantiate(bullethole, endPos, Quaternion.identity);
-		}
+        if (player != null)
+        {
+            BodyController bc = player.GetComponent<BodyController>();
+            PlayerBodyData pbd = bc.PlayerBodyData;
+            //Find the location of that player's weapon's fire point
+            Transform playerWeapon = player.GetComponent<BodyController>().PlayerBodyData.weapon;
+            Transform weaponFirePoint = playerWeapon.GetComponentInChildren<WeaponData>().transform;
+            Vector3 startPos = weaponFirePoint.position;
+            //Show the bullet FX
+            GameObject bulletFX = (GameObject)Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));
+            //Play the shooting animation
+            Animator parentAnim = weaponFirePoint.parent.GetComponent<Animator>();
+            parentAnim.SetTrigger("ShootTrig");
+            Animator grandParentAnim = weaponFirePoint.parent.parent.GetComponent<Animator>();
+            grandParentAnim.SetTrigger("ShootTrig");
+            //Show our line rendered bullet trail
+            LineRenderer lr = bulletFX.transform.Find("LineFX").GetComponent<LineRenderer>();
+            lr.SetPosition(0, startPos);
+            lr.SetPosition(1, endPos);
+            //Play our gun shot
+            AudioSource.PlayClipAtPoint(gunShot, startPos);
+            //Show FX
+            if (hitEnemy)
+            {
+                //Show some blood
+                Instantiate(enemyHitEffect, endPos, Quaternion.identity);
+                //Play a sound
+                aSource.PlayOneShot(hitSound);
+            }
+            else if (hitRed)
+            {
+                //Show some red debris
+                Instantiate(redHitEffect, endPos, Quaternion.identity);
+            }
+            else
+            {
+                //Show some debris
+                Instantiate(defaultHitEffect, endPos, Quaternion.identity);
+                Instantiate(bullethole, endPos, Quaternion.identity);
+            }
+        }
 	}
 
 	[PunRPC]
