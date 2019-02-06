@@ -28,7 +28,11 @@ public class ShootController : AbstractBehavior
 	//HUD variables
 	private Text bulletCountText;
 	private Text clipSizeText;
-	private int bulletCount;
+	private int bulletCount = 12;
+    public int BulletCount
+    {
+        get { return bulletCount; }
+    }
 	private GameObject reloadIndicator;
 	private GameObject hitIndicator;
 	private float hitIndicatorTimer;
@@ -74,8 +78,6 @@ public class ShootController : AbstractBehavior
 		clipSizeText.text = magazineCapacity.ToString();
 		//Get a reference to the Reticle object
 		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
-		//Default the bullet count to the max magazin capacity
-		bulletCount = magazineCapacity;
 		//Get the attached PhotonView
 		pView = GetComponent<PhotonView>();
 		//Get the camera's original FOV range
@@ -104,12 +106,6 @@ public class ShootController : AbstractBehavior
 		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
-
-			//Display an indicator is ammo is low
-			if(bulletCount <= 2)
-			{
-				ShowReloadIndicator();
-			} 
 
 			//Determine if we are attempting to aim our weapon
 			if(isAimDown)
@@ -326,8 +322,6 @@ public class ShootController : AbstractBehavior
 		//Play the reload animation
         inputState.playerIsReloading = true;
         inputState.playerIsShooting = false;
-        //Hide the reload indicator
-        HideReloadIndicator();
 	}
 
 	//Helper function to show the gun FX
@@ -388,24 +382,6 @@ public class ShootController : AbstractBehavior
 			{
 				child.gameObject.SetActive(false);
 			}
-		}
-	}
-
-	//Hide or show the reload indicator based on bullet count
-	void ShowReloadIndicator()
-	{
-		//Hide the text
-		foreach (Transform child in reloadIndicator.transform)
-		{
-			child.gameObject.SetActive(true);
-		}
-	}
-	void HideReloadIndicator()
-	{
-		//Show the text
-		foreach (Transform child in reloadIndicator.transform)
-		{
-			child.gameObject.SetActive(false);
 		}
 	}
 
