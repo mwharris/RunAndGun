@@ -6,8 +6,8 @@ public class PlayerLook
 {
     private Transform neck;
 
-    private float minVerticalRotation = -50f;
-    private float maxVerticalRotation = 53f;
+    private float minVerticalRotation = -90f;
+    private float maxVerticalRotation = 90f;
 
     private Quaternion playerLocalRot;
     private Quaternion camLocalRot;
