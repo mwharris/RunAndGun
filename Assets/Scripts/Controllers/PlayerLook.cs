@@ -38,9 +38,13 @@ public class PlayerLook
     //Update inputs with settings from Options menu
     private Vector2 ApplyOptionsToInput(LookRotationInput lri)
     {
-        //Add mouse sensitivity to the controller input
-        float aimReduction = lri.isAiming ? 0.70f : 1f;
-        Vector2 inputs = lri.lookInput * lri.mouseSensitivity * aimReduction;
+        //Calculate sensitivity based on settings and if aiming
+        float totalSensitivity = lri.mouseSensitivity;
+        if (lri.isAiming)
+        {
+            totalSensitivity *= 0.5f;
+        }
+        Vector2 inputs = lri.lookInput * totalSensitivity;
         //Invert the Y input if Options dictates it
         if (lri.invertY)
         {
