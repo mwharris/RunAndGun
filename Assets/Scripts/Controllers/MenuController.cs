@@ -5,7 +5,7 @@ using System.Collections;
 
 public class MenuController : AbstractBehavior 
 {
-	[HideInInspector] public float mouseSensitivity = 5.0f;
+	[HideInInspector] public float mouseSensitivity = 2.5f;
 	[HideInInspector] public bool invertY = false;
 
 	private bool paused = false;
