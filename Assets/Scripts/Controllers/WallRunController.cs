@@ -163,6 +163,7 @@ public class WallRunController : AbstractBehavior {
     //Calculate the angles to clamp the player's look rotation while wall-running
     public void FindWallRunClampAngles(Vector3 v)
     {
+        /*
         //If we're wall-running backwards we don't want to reclamp
         if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningRight || (wallSticking && initWallRun))
         {
@@ -210,6 +211,7 @@ public class WallRunController : AbstractBehavior {
             wallRunAngle1 = angle1;
             wallRunAngle2 = angle2;
         }
+        */
     }
 
     public void SetWallRunLookRotationInputs(LookRotationInput lri, Camera playerCamera, Vector3 velocity)
@@ -217,8 +219,8 @@ public class WallRunController : AbstractBehavior {
         //Calculate the correct camera tilt based on wall-run side
         lri.wallRunZRotation = CalculateCameraTilt(playerCamera);
         //Calculate the clamp angles for look rotation
-        lri.wallRunAngle1 = wallRunAngle1;
-        lri.wallRunAngle2 = wallRunAngle2;
+        //lri.wallRunAngle1 = wallRunAngle1;
+        //lri.wallRunAngle2 = wallRunAngle2;
         //Also pass whether our angle wrap around the +180/-180 threshold
         lri.wrapAround = wrapAroundRotationCircle;
     }
@@ -249,13 +251,19 @@ public class WallRunController : AbstractBehavior {
 		{
             cross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 		}
-        //Cross is now a vector perpendicular to the wall normal - rotate our forward towards this
+        //Cross is now a vector parallel to the wall - rotate our forward towards this
 		testForward = Vector3.RotateTowards(testForward, cross, 10, 0.0f);
-        if (initial)
+        //Determine if we are looking into the wall when we initiate wall-running
+        Vector3 perp = Vector3.Cross(testForward, transform.forward);
+        float dir = Vector3.Dot(perp, Vector3.up);
+        //Correct our look angle if we're looking to far right
+        if (dir > 0.0 && inputState.playerIsWallRunningRight)
         {
-            transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+            Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+            transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
         }
-        else
+        //Correct our look angle if we're looking to far left
+        else if (dir < 0.0 && inputState.playerIsWallRunningLeft)
         {
             Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
             transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
@@ -267,23 +275,28 @@ public class WallRunController : AbstractBehavior {
 	public float CalculateCameraTilt(Camera playerCamera)
     {
         float lerpedRot = 0f;
-        if (!inputState.playerIsGrounded)
+        float rotSpeed = 5 * Time.deltaTime;
+        if (isWallRunning())
         {
             //Wall-running left, tilt right
             if (inputState.playerIsWallRunningLeft)
             {
-                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, 8 * Time.deltaTime);
+                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, -cameraRotAmount, rotSpeed);
             }
             //Wall-running right, tilt left
             else if (inputState.playerIsWallRunningRight)
             {
-                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, 8 * Time.deltaTime);
+                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, cameraRotAmount, rotSpeed);
             }
             //Facing directly away from the wall, no rotation
             else
             {
-                lerpedRot = Mathf.Lerp(cameraRotZ, 0f, 8 * Time.deltaTime);
+                lerpedRot = Mathf.Lerp(cameraRotZ, 0f, rotSpeed);
             }
+        }
+        else if (!inputState.playerIsGrounded)
+        {
+            lerpedRot = Mathf.Lerp(cameraRotZ, 0f, rotSpeed);
         }
         else 
         {
