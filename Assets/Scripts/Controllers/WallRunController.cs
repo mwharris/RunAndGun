@@ -198,12 +198,15 @@ public class WallRunController : AbstractBehavior {
         //Determine if we are looking into the wall when we initiate wall-running
         Vector3 perp = Vector3.Cross(testForward, transform.forward);
         float dir = Vector3.Dot(perp, Vector3.up);
-        //Correct our look angle if we're looking to far right
+        //Lerp our body rotation parallel to the wall when running along a curved surface.
+        //This handles when we reach a new surface normal on the curved wall.
         if (initial && wallRunTag == "CurvedWall")
         {
             Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
             transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 10f);
         }
+        //Lerp our body rotation parallel to flat walls only when we're looking into the wall.
+        //Always perform this lerp on curved walls.
         else if (wallRunTag == "CurvedWall"
             || dir > 0.0 && inputState.playerIsWallRunningRight
             || dir < 0.0 && inputState.playerIsWallRunningLeft)
