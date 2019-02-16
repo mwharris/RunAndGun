@@ -13,12 +13,10 @@ public class LookRotationInput
     public float wallRunZRotation;
     public bool isAiming;
     public bool isWallRunning;
-    public float wallRunAngle1;
-    public float wallRunAngle2;
     public bool wrapAround;
 
     public LookRotationInput(Transform p, Transform c, Vector2 li, float ms, bool iy, 
-        bool aiming, bool wallRunningFlag, float wrz, float wrAngle1, float wrAngle2, bool wrap)
+        bool aiming, bool wallRunningFlag, float wrz, bool wrap)
     {
         player = p;
         camera = c;
@@ -28,8 +26,6 @@ public class LookRotationInput
         isAiming = aiming;
         isWallRunning = wallRunningFlag;
         wallRunZRotation = wrz;
-        wallRunAngle1 = wrAngle1;
-        wallRunAngle2 = wrAngle2;
         wrapAround = wrap;
     }
 

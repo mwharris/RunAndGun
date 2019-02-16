@@ -74,11 +74,6 @@ public class PlayerLook
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
-        //Clamp the player rotation in the y axis if we are wall-running
-        if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
-        {
-            playerLocalRot = ClampWallRunRotation(playerLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
-        }
         //Clamp rotation camera and head rotations to not look too far up/down
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
@@ -108,11 +103,6 @@ public class PlayerLook
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, inputs.y, 0f);
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
-        //Clamp the player rotation in the y axis if we are wall-running
-        if (lri.wallRunAngle1 != 0 || lri.wallRunAngle2 != 0)
-        {
-            camLocalRot = ClampWallRunRotation(camLocalRot, lri.wallRunAngle1, lri.wallRunAngle2, lri.wrapAround);
-        }
         //Clamp rotation camera and head rotations to not look too far up/down
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
@@ -158,113 +148,5 @@ public class PlayerLook
         }
 
         return q;
-    }
-
-    private Quaternion ClampWallRunRotation(Quaternion q, float angle1, float angle2, bool wrapAround)
-    {
-        q.x /= q.w;
-        q.y /= q.w;
-        q.z /= q.w;
-        q.w = 1.0f;
-
-        float angleY = 2.0f * Mathf.Rad2Deg * Mathf.Atan(q.y);
-
-        if (angle1 > angle2)
-        {
-            angleY = CustomClamp(angleY, angle2, angle1, wrapAround);
-        }
-        else
-        {
-            angleY = CustomClamp(angleY, angle1, angle2, wrapAround);
-        }
-
-        q.y = Mathf.Tan(0.5f * Mathf.Deg2Rad * angleY);
-
-        return q;
-    }
-
-    //Custom clamp method to handle fixing our circular rotation issue in ClampRotationAroundYAxis
-    private float CustomClamp(float value, float lowerBound, float upperBound, bool wrapAround)
-    {
-        //Only take action if the clamp value is outside the bounded area.
-        //Special case: bounded area wraps around the 360 degree circle leading to 2 bounded areas.
-        if ((!wrapAround && (value < lowerBound || value > upperBound))
-            || (wrapAround && (value > lowerBound && value < upperBound)))
-        {
-            //Determine which bound the value is "closer" to
-            float lowerBoundDelta = 0;
-            float upperBoundDelta = 0;
-            //The lower bound SHOULD always be negative
-            if (lowerBound <= 0)
-            {
-                //If the value is negative as well
-                if (value < 0)
-                {
-                    //The delta is the distance between the two negative values
-                    lowerBoundDelta = Mathf.Abs(lowerBound - value);
-                }
-                //If the value is positive
-                else
-                {
-                    //The delta is the minimum of the path lowerBound -> 0 -> value OR lowerBound -> -180/180 -> value
-                    float a = value + Mathf.Abs(lowerBound);
-                    float b = Mathf.Abs(-180 - lowerBound) + (180 - value);
-                    lowerBoundDelta = Mathf.Min(a, b);
-                }
-            }
-            else
-            {
-                Debug.LogError("LOWER BOUND IS POSITIVE!!!");
-            }
-            //The lower bound SHOULD always be positive
-            if (upperBound >= 0)
-            {
-                //If the value is negative
-                if (value < 0)
-                {
-                    //The delta is the minimum of the path upperBound -> 0 -> value OR upperBound -> -180/180 -> value
-                    float a = upperBound + Mathf.Abs(value);
-                    float b = (180 - upperBound) + Mathf.Abs(-180 - value);
-                    upperBoundDelta = Mathf.Min(a, b);
-                }
-                //If the value is positive as well
-                else
-                {
-                    //The delta is simply the distance between the two
-                    upperBoundDelta = Mathf.Abs(upperBound - value);
-                }
-            }
-            else
-            {
-                Debug.LogError("UPPER BOUND IS NEGATIVE!!!");
-            }
-            //Determine which bound is closer to the value and clamp to that
-            if (lowerBoundDelta < upperBoundDelta)
-            {
-                value = lowerBound;
-            }
-            else if (upperBoundDelta < lowerBoundDelta)
-            {
-                value = upperBound;
-            }
-            //If we are not wrapping around -180/+180 area, use a simple clamp
-            else if (!wrapAround)
-            {
-                value = Mathf.Clamp(value, lowerBound, upperBound);
-            }
-            else
-            {
-                //Clamp to whichever value is closer without the Abs()
-                if (Mathf.Abs(value - lowerBound) < Mathf.Abs(value - upperBound))
-                {
-                    value = Mathf.Clamp(value, -180, lowerBound);
-                }
-                else
-                {
-                    value = Mathf.Clamp(value, upperBound, 180);
-                }
-            }
-        }
-        return value;
     }
 }
