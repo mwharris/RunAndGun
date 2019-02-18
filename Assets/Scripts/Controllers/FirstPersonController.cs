@@ -127,7 +127,7 @@ public class FirstPersonController : AbstractBehavior
         //Tell the wall-run controller to also handle any wall-sticking tasks
         wallRunController.HandleWallSticking();
         //Tell the wall-run controller to handle any wall-running tasks
-        wallRunController.HandleWallRunning(inputState.playerVelocity, inputState.playerIsGrounded);//, ref jumps);
+        wallRunController.HandleWallRunning(inputState.playerVelocity, inputState.playerIsGrounded, bodyControl.PlayerBodyData);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -150,12 +150,16 @@ public class FirstPersonController : AbstractBehavior
         }
         if (dontMove)
         {
-            Vector3 stopV = new Vector3(0, inputState.playerVelocity.y, 0);
+            Vector3 stopV = new Vector3(0, 0, 0);
             cc.Move(stopV * Time.deltaTime);
         }
         else
         {
             cc.Move(inputState.playerVelocity * Time.deltaTime);
+        }
+        if (wallRunController.wallJumped)
+        {
+            Debug.Log("Camera Local Z: " + playerCamera.transform.localRotation.z + ", Camera Global Z: " + playerCamera.transform.rotation.z);
         }
     }
 

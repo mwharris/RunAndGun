@@ -8,7 +8,7 @@ public class WallRunController : AbstractBehavior {
     [HideInInspector] public bool wallStickVelocitySet = false;
     
 	private bool initWallRun = false;
-    private bool wallJumped = false;
+    public bool wallJumped = false;
 
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
@@ -21,13 +21,11 @@ public class WallRunController : AbstractBehavior {
 	private string lastWallName = "";
 
 	private float cameraRotAmount = 0.1f;
-	private float cameraRotZ = 0;
 
 	private FXManager fxManager;
 	private PlayerJump jumpController;
     
     private bool wrapAroundRotationCircle = false;
-    //private bool reclampRotation = false;
 
     void Start() 
 	{
@@ -40,7 +38,7 @@ public class WallRunController : AbstractBehavior {
 	 * Raycast outwards from the player (left, right, and back) to detect walls.  
 	 * If either any are hit while the player is in the air, activate wall-running.
 	 */
-	public void HandleWallRunning(Vector3 velocity, bool isGrounded) //, ref int jumps)
+	public void HandleWallRunning(Vector3 velocity, bool isGrounded, PlayerBodyData playerBodyData)
 	{
 		//Raycast in several directions to see if we are wall-running
 		RaycastHit wallRunHit = DoWallRunCheck(velocity, isGrounded);
@@ -79,8 +77,7 @@ public class WallRunController : AbstractBehavior {
 		//The rules failed but we're already wall-running
 		else if(wallRunHit.collider == null && isWallRunning())
         {
-            //Deactivate wall-running
-            ResetActiveVars();
+            DeactivateWallRunning(playerBodyData.playerCamera);
         }
 
 		//Enable wall-running if we touch the ground or the timer runs out
@@ -174,11 +171,6 @@ public class WallRunController : AbstractBehavior {
 	 */
     public void SetWallRunLookRotation(bool initial)
     {
-        /*
-        An idea to match the animations but requires large changes
-        testForward = Vector3.RotateTowards(transform.forward, -wallRunNormal, 10f, 0f);
-        transform.rotation = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
-        */
         Vector3 testNormal = wallRunNormal;
 		Vector3 testForward = transform.forward;
         //Get a vector 90 degrees to the left and right of the normal
@@ -221,7 +213,7 @@ public class WallRunController : AbstractBehavior {
 	public float CalculateCameraTilt(Camera playerCamera)
     {
         float lerpedRot = 0f;
-        float rotSpeed = 5 * Time.deltaTime;
+        float rotSpeed = 4 * Time.deltaTime;
         if (isWallRunning())
         {
             //Wall-running left, tilt right
@@ -237,19 +229,18 @@ public class WallRunController : AbstractBehavior {
             //Facing directly away from the wall, no rotation
             else
             {
-                lerpedRot = Mathf.Lerp(cameraRotZ, 0f, rotSpeed);
+                lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, 0f, rotSpeed);
             }
         }
         else if (!inputState.playerIsGrounded)
         {
-            lerpedRot = Mathf.Lerp(cameraRotZ, 0f, rotSpeed);
+            lerpedRot = Mathf.Lerp(playerCamera.transform.localRotation.z, 0f, rotSpeed);
         }
         else 
         {
-            cameraRotZ = 0;
+            lerpedRot = 0;
         }
-        cameraRotZ = lerpedRot;
-        return cameraRotZ;
+        return lerpedRot;
 	}
 		
 	//Helper function to return if we are wall-running in any direction
@@ -315,9 +306,9 @@ public class WallRunController : AbstractBehavior {
 			bool lHitValid = lHit.collider != null && lHit.collider.tag != "Player" && lHit.collider.tag != "Invisible";
 			bool bHitValid = bHit.collider != null && bHit.collider.tag != "Player" && bHit.collider.tag != "Invisible";
 			//Rule checks to prevent jumping onto the same wall
-			bool rDoubleJumpCheck = DoubleWallRunCheck(rHit); //rHit.collider != null && ((wallJumped && lastWallName != rHit.collider.name) || (!wallJumped && !wallRunningDisabled));//			
-			bool lDoubleJumpCheck = DoubleWallRunCheck(lHit); //lHit.collider != null && ((wallJumped && lastWallName != lHit.collider.name) || (!wallJumped && !wallRunningDisabled));//
-			bool bDoubleJumpCheck = DoubleWallRunCheck(bHit); //bHit.collider != null && ((wallJumped && lastWallName != bHit.collider.name) || (!wallJumped && !wallRunningDisabled));//DoubleWallRunCheck(bHit);
+			bool rDoubleJumpCheck = DoubleWallRunCheck(rHit);
+			bool lDoubleJumpCheck = DoubleWallRunCheck(lHit);
+            bool bDoubleJumpCheck = DoubleWallRunCheck(bHit);
 
 			//Check if we should activate wall-running - right raycast
 			if (lookAngleGood && rHitValid && rDoubleJumpCheck && (rightGood || isWallRunning())) 
@@ -327,11 +318,6 @@ public class WallRunController : AbstractBehavior {
                 {
 					initWallRun = true;
 				}
-                //Re-clamp rotation angles if we transition from another wall-run
-                /*else if (inputState.playerIsWallRunningLeft || inputState.playerIsWallRunningBack) 
-                {
-                    reclampRotation = true;
-                }*/
                 //Flag the side we are wall-running
                 inputState.playerIsWallRunningLeft = false;
                 inputState.playerIsWallRunningRight = true;
@@ -350,11 +336,6 @@ public class WallRunController : AbstractBehavior {
                 {
 					initWallRun = true;
                 }
-                //Re-clamp rotation angles if we transition from another wall-run
-                /*else if (inputState.playerIsWallRunningRight || inputState.playerIsWallRunningBack)
-                {
-                    reclampRotation = true;
-                }*/
                 //Flag the side we are wall-running
                 inputState.playerIsWallRunningLeft = true;
                 inputState.playerIsWallRunningRight = false;
@@ -433,19 +414,26 @@ public class WallRunController : AbstractBehavior {
 	//Depending on any keys held down, the jump will be angled away from the wall.
     public Vector3 WallJump(Vector3 velocity, float jumpSpeed, Transform playerCamera)
     {
+        Debug.Log("Wall Jumped! Camera Z:" + playerCamera.localRotation.z);
         Quaternion cameraRot = playerCamera.rotation;
-        //Disable wall-running
-        ResetActiveVars();
+        //Stop wall-running
+        DeactivateWallRunning(playerCamera);
         //Flag us as having wall jumped
         wallJumped = true;
-        //First rotate the player object towards camera forward
-        RotatePlayerBody(playerCamera);
         //Next rotate our velocity in a direction dependent on controller input
         velocity = RotatePlayerVelocity(velocity, cameraRot);
         //Jump upwards
         velocity.y = jumpSpeed;
         return velocity;
-	}
+    }
+
+    private void DeactivateWallRunning(Transform playerCamera)
+    {
+        //Disable wall-running
+        ResetActiveVars();
+        //First rotate the player object towards camera forward
+        RotatePlayerBody(playerCamera);
+    }
 
     //Rotate our player body to match the camera forward
     private void RotatePlayerBody(Transform playerCamera)
@@ -507,7 +495,6 @@ public class WallRunController : AbstractBehavior {
         inputState.playerIsWallRunningLeft = false;
         inputState.playerIsWallRunningRight = false;
         inputState.playerIsWallRunningBack = false;
-        //reclampRotation = false;
         wrapAroundRotationCircle = false;
         wallRunTimer = 0.0f;
     }

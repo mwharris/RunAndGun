@@ -2,24 +2,20 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CameraController : MonoBehaviour {
+public class CameraController : MonoBehaviour
+{
+    [SerializeField] private InputState inputState;
 
     public float crouchCamHeight;
     public float crouchCamDepth;
-
     public Vector3 cameraWRLeft;
     public Vector3 cameraWRRight;
-
     public float jumpOffset;
 
     private Vector3 originalLocalPosition;
-
     private bool wallRan = false;
     private bool jumped = false;
-
     private Camera cameraComponent;
-    private InputState inputState;
-    
 
     void Start ()
     {
@@ -27,9 +23,6 @@ public class CameraController : MonoBehaviour {
         cameraComponent = GetComponent<Camera>();
         //Store original positions for the camera
         originalLocalPosition = transform.localPosition;
-        //Retrieve the player body data from our parent's parent (which is our player gameobject)
-        GameObject player = transform.parent.parent.parent.gameObject;
-        inputState = player.GetComponent<InputState>();
     }
 	
 	void Update ()
