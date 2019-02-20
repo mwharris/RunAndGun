@@ -24,12 +24,12 @@ public class FirstPersonController : AbstractBehavior
 	public float verticalRotation = 0f;
 	public float verticalVelocity = 0f;
 	public float upDownRange = 60.0f;
-	////////////////////////////////////////////
+    ////////////////////////////////////////////
 
-	/// TIMERS /////////////////////////////////
-	public float walkTimer = 0f;
-	public float runTimer = 0f;
-    public float crouchTimer = 0f;
+    /// TIMERS /////////////////////////////////
+    private float walkTimer = 0.4f;
+    private float runTimer = 0.25f;
+    private float crouchTimer = 0.6f;
 	private float origWalkTimer;
 	private float origRunTimer;
     private float origCrouchTimer;
@@ -156,10 +156,6 @@ public class FirstPersonController : AbstractBehavior
         else
         {
             cc.Move(inputState.playerVelocity * Time.deltaTime);
-        }
-        if (wallRunController.wallJumped)
-        {
-            Debug.Log("Camera Local Z: " + playerCamera.transform.localRotation.z + ", Camera Global Z: " + playerCamera.transform.rotation.z);
         }
     }
 
@@ -327,8 +323,6 @@ public class FirstPersonController : AbstractBehavior
 			{
 				inputState.playerVelocity += forwardSpeed * transform.forward;
 				inputState.playerVelocity += sideSpeed * transform.right;
-                //inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
-                //inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
             }
 		}
 		//Air / Wall-running movement
@@ -365,18 +359,16 @@ public class FirstPersonController : AbstractBehavior
                 //Make sure we reset wall-sticking vars
                 wallRunController.wallStickVelocitySet = false;
                 //Get the movement input
-                forwardSpeed = forwardSpeed * (movementSpeed/10);
-				sideSpeed = sideSpeed * (movementSpeed/10);
+                forwardSpeed = forwardSpeed * (movementSpeed/5);
+				sideSpeed = sideSpeed * (movementSpeed/5);
 				//Add the x / z movement
 				if(forwardSpeed != 0 && inputState.allowAirMovement)
 				{
 					inputState.playerVelocity += forwardSpeed * transform.forward;
-					//inputState.playerVelocity += forwardSpeed * transform.forward * Time.deltaTime;
 				} 
 				if(sideSpeed != 0 && inputState.allowAirMovement) 
 				{
 					inputState.playerVelocity += sideSpeed * transform.right;
-					//inputState.playerVelocity += sideSpeed * transform.right * Time.deltaTime;
 				}
 			}
         }
@@ -388,12 +380,20 @@ public class FirstPersonController : AbstractBehavior
 		//Add normal gravity if we aren't wall-running
 		if(!wallRunController.isWallRunning())
 		{
-			if(!inputState.playerIsGrounded)
+            //Add gravity only when we aren't on the ground
+            if (!inputState.playerIsGrounded)
 			{
-				//Add gravity only when we aren't on the ground
-				//inputState.playerVelocity += Physics.gravity;
-				inputState.playerVelocity += Physics.gravity * Time.deltaTime;
-			} 
+                //Normal gravity going upwards
+                if (inputState.playerVelocity.y > 0)
+                {
+                    inputState.playerVelocity += Physics.gravity * Time.deltaTime;
+                }
+                //25% stronger gravity when falling to give a weightier fall
+                else
+                {
+                    inputState.playerVelocity += Physics.gravity * 1.25f * Time.deltaTime;
+                }
+            } 
 		}
 		//If we're wall-running, lower the gravity to simulate it
 		else if(!inputState.playerIsGrounded)
@@ -401,13 +401,12 @@ public class FirstPersonController : AbstractBehavior
 			//Slow our descent
 			if(inputState.playerVelocity.y <= 0)
 			{
-				//inputState.playerVelocity += (Physics.gravity/4);
-				inputState.playerVelocity += (Physics.gravity/4) * Time.deltaTime;
+				inputState.playerVelocity += (Physics.gravity/2f) * Time.deltaTime;
 			}
 			//Otherwise use normal gravity
 			else 
 			{
-				inputState.playerVelocity += (Physics.gravity/1.5f) * Time.deltaTime;
+				inputState.playerVelocity += (Physics.gravity/4f) * Time.deltaTime;
 			}
 		}
 	}
