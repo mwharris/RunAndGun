@@ -63,8 +63,8 @@ public class PlayerJump : AbstractBehavior {
 				}
 				else
 				{
-					//Determine if we jumped straight upwards
-					if(inputState.playerVelocity.x == 0 && inputState.playerVelocity.z == 0){
+                    //Determine if we jumped straight upwards
+                    if (inputState.playerVelocity.x == 0 && inputState.playerVelocity.z == 0){
 						inputState.allowAirMovement = true;
 					} else {
 						inputState.allowAirMovement = false;

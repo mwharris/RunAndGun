@@ -36,9 +36,7 @@ public class FirstPersonController : AbstractBehavior
 	////////////////////////////////////////////
 
 	/// VELOCITY VARIABLES /////////////////////
-	//private float movementSpeed = 60.0f;
 	private float movementSpeed = 0.96f;
-	//private float movementSpeed = 1.98f;
 	private float jumpSpeed = 8f;
 	[HideInInspector] public float forwardSpeed;
 	[HideInInspector] public float sideSpeed;
@@ -157,6 +155,7 @@ public class FirstPersonController : AbstractBehavior
         {
             cc.Move(inputState.playerVelocity * Time.deltaTime);
         }
+        //Debug.Log(inputState.playerVelocity);
     }
 
     void GatherOptions()
@@ -271,7 +270,7 @@ public class FirstPersonController : AbstractBehavior
     }
 
 	//Handle any WASD or arrow key movement
-	void HandleMovement()
+	private void HandleMovement()
 	{
 		//Decrement the walk/run audio timers
 		walkTimer -= Time.deltaTime;
@@ -358,18 +357,40 @@ public class FirstPersonController : AbstractBehavior
             {
                 //Make sure we reset wall-sticking vars
                 wallRunController.wallStickVelocitySet = false;
-                //Get the movement input
-                forwardSpeed = forwardSpeed * (movementSpeed/5);
-				sideSpeed = sideSpeed * (movementSpeed/5);
-				//Add the x / z movement
-				if(forwardSpeed != 0 && inputState.allowAirMovement)
-				{
-					inputState.playerVelocity += forwardSpeed * transform.forward;
-				} 
-				if(sideSpeed != 0 && inputState.allowAirMovement) 
-				{
-					inputState.playerVelocity += sideSpeed * transform.right;
-				}
+                //If we jumped straight up then allow air movement 
+                if (inputState.allowAirMovement)
+                {
+                    //Get the movement input
+                    forwardSpeed *= movementSpeed;
+                    sideSpeed *= movementSpeed;
+                    //Add the x / z movement
+                    Vector3 floatVec = Vector3.zero;
+                    if (forwardSpeed != 0)
+                    {
+                        floatVec += forwardSpeed * transform.forward;
+                    }
+                    if (sideSpeed != 0)
+                    {
+                        floatVec += sideSpeed * transform.right;
+                    }
+                    //Apply our linear drag to our float Vector but not our overall Vector
+                    if (floatVec != Vector3.zero)
+                    {
+                        inputState.playerVelocity += floatVec;
+                        inputState.playerVelocity.x *= 0.9f;
+                        inputState.playerVelocity.z *= 0.9f;
+                    }
+                }
+                //If we're trying to move while traveling through the air
+                //we want to instead rotate the direction of the player's velocity direction
+                else if (isDDown || isADown) 
+                {
+                    Vector3 targetDir = transform.forward;
+                    targetDir += isDDown ? transform.right : -transform.right;
+                    Vector3 temp = Vector3.RotateTowards(inputState.playerVelocity, targetDir, 0.017f, 0f);
+                    inputState.playerVelocity.x = temp.x;
+                    inputState.playerVelocity.z = temp.z;
+                }
 			}
         }
 	}
@@ -401,12 +422,12 @@ public class FirstPersonController : AbstractBehavior
 			//Slow our descent
 			if(inputState.playerVelocity.y <= 0)
 			{
-				inputState.playerVelocity += (Physics.gravity/2f) * Time.deltaTime;
+				inputState.playerVelocity += (Physics.gravity/4f) * Time.deltaTime;
 			}
 			//Otherwise use normal gravity
 			else 
 			{
-				inputState.playerVelocity += (Physics.gravity/4f) * Time.deltaTime;
+				inputState.playerVelocity += (Physics.gravity/1.5f) * Time.deltaTime;
 			}
 		}
 	}

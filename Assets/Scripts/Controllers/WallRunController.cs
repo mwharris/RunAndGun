@@ -414,7 +414,6 @@ public class WallRunController : AbstractBehavior {
 	//Depending on any keys held down, the jump will be angled away from the wall.
     public Vector3 WallJump(Vector3 velocity, float jumpSpeed, Transform playerCamera)
     {
-        Debug.Log("Wall Jumped! Camera Z:" + playerCamera.localRotation.z);
         Quaternion cameraRot = playerCamera.rotation;
         //Stop wall-running
         DeactivateWallRunning(playerCamera);
