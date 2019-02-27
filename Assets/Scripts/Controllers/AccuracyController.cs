@@ -16,7 +16,6 @@ public class AccuracyController : AbstractBehavior
 	private float crouchAccuracy = 0.0075F;
 	private float accuracyReduceTimer = 0F;
 	private float accuracyReduceTimerMax = 0.45F;
-
     /*
     private float maxAccuracyOffset = 0.08F;
     private float sprintAccuracy = 0.03F;
@@ -27,7 +26,7 @@ public class AccuracyController : AbstractBehavior
     */
 
     //Reticles
-    private GameObject reticleParent;
+    private Transform reticleParent;
 	private RectTransform topRet; 
 	private RectTransform botRet;
 	private RectTransform leftRet;
@@ -36,17 +35,21 @@ public class AccuracyController : AbstractBehavior
 	private float botRetY;
 	private float leftRetX;
 	private float rightRetX;
+	private bool reticlesMisplaced = false;
 
-	private bool reticlesFuckedUp = false;
+    private BodyController bodyController;
+    private PlayerBodyData playerBodyData;
 
 	void Start () {
-		//Get a reference to the Reticle object
-		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
-		//Get references to all reticles in the crosshair
-		topRet = reticleParent.transform.GetChild(0).GetComponent<RectTransform>(); 
-		botRet = reticleParent.transform.GetChild(1).GetComponent<RectTransform>();
-		leftRet = reticleParent.transform.GetChild(2).GetComponent<RectTransform>();
-		rightRet = reticleParent.transform.GetChild(3).GetComponent<RectTransform>();
+        //Get a reference to the player body data so we can get weapon information
+        bodyController = GetComponent<BodyController>();
+        //Get a reference to the weapon's Reticle object
+        SetBodyControlVars();
+        //Get references to all reticles in the crosshair
+        topRet = reticleParent.GetChild(0).GetComponent<RectTransform>(); 
+		botRet = reticleParent.GetChild(1).GetComponent<RectTransform>();
+		leftRet = reticleParent.GetChild(2).GetComponent<RectTransform>();
+		rightRet = reticleParent.GetChild(3).GetComponent<RectTransform>();
 		//Get the initial x and y values for our reticles
 		topRetY = topRet.anchoredPosition3D.y;
 		botRetY = botRet.anchoredPosition3D.y;
@@ -55,10 +58,19 @@ public class AccuracyController : AbstractBehavior
 		//Default to perfect accuracy
 		totalOffset = 0F;
 	}
-	
-	void Update () {
-		//Some short-hand variables
-		bool isMoving = inputState.playerVelocity.x != 0 || inputState.playerVelocity.z != 0;
+
+    private void SetBodyControlVars()
+    {
+        playerBodyData = bodyController.PlayerBodyData;
+        reticleParent = playerBodyData.weapon.GetComponent<WeaponData>().ReticleParent.transform;
+    }
+
+    void Update () {
+        //Make sure reticle parent stays up to date in case our weapon data changes
+        SetBodyControlVars();
+
+        //Some short-hand variables
+        bool isMoving = inputState.playerVelocity.x != 0 || inputState.playerVelocity.z != 0;
 
 		//Determine if we should apply a base accuracy offset based on movement
 		if(isMoving && inputState.playerIsGrounded)
@@ -135,7 +147,7 @@ public class AccuracyController : AbstractBehavior
 
 	private void SpreadReticles()
 	{
-		if(!reticlesFuckedUp)
+		if(!reticlesMisplaced)
 		{
             //Lerp values to pass to the new positions
             float lerpSpeed = Time.deltaTime * 2.25f;
@@ -153,7 +165,7 @@ public class AccuracyController : AbstractBehavior
 
 	private void CloseReticles()
 	{
-		if(!reticlesFuckedUp)
+		if(!reticlesMisplaced)
 		{
 			//Lerp values to pass to the new positions
 			float topRetLerp = Mathf.Lerp(topRet.anchoredPosition3D.y, topRetY, Time.deltaTime * 2);
@@ -170,16 +182,16 @@ public class AccuracyController : AbstractBehavior
 
 	public void ResetReticles()
 	{
-		reticlesFuckedUp = false;
+        reticlesMisplaced = false;
 		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, topRetY, topRet.anchoredPosition3D.z);
 		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, botRetY, botRet.anchoredPosition3D.z);
 		leftRet.anchoredPosition3D = new Vector3(leftRetX, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
 		rightRet.anchoredPosition3D = new Vector3(rightRetX, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
 	}
 
-	public void FuckUpReticles()
+	public void MoveReticles()
 	{
-		reticlesFuckedUp = true;
+        reticlesMisplaced = true;
 		topRet.anchoredPosition3D = new Vector3(topRet.anchoredPosition3D.x, 50, topRet.anchoredPosition3D.z);
 		botRet.anchoredPosition3D = new Vector3(botRet.anchoredPosition3D.x, -50, botRet.anchoredPosition3D.z);
 		leftRet.anchoredPosition3D = new Vector3(-50, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);

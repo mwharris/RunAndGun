@@ -93,9 +93,11 @@ public class Health : MonoBehaviour {
 	}
 
 	[PunRPC]
-	public void TakeDamage(float damage, string enemyPhotonName, int enemyPhotonID, Vector3 shooterPosition) 
+	public void TakeDamage(float damage, string enemyPhotonName, int enemyPhotonID, Vector3 shooterPosition, bool headshot) 
 	{
-		currentHitPoints -= damage;
+        //Take the damage we received, doubled for headshot
+        damage *= headshot ? 2 : 1;
+        currentHitPoints -= damage;
 		//If this is our local player
 		if(this.transform.GetComponent<PhotonView>().isMine)
 		{
@@ -107,7 +109,7 @@ public class Health : MonoBehaviour {
 		//Die if our HP is below 0
 		if(currentHitPoints <= 0)
 		{
-			Die(enemyPhotonName, enemyPhotonID);
+			Die(enemyPhotonName, enemyPhotonID, headshot);
 		}
 		//If we didn't die, we're regenerating, and we were shot
 		if(currentHitPoints > 0 && regenerating == true)
@@ -166,7 +168,7 @@ public class Health : MonoBehaviour {
 		}
 	}
 
-	void Die(string enemyPhotonName, int enemyPhotonID)
+	void Die(string enemyPhotonName, int enemyPhotonID, bool headshot)
 	{
 		//If we did not instantiate this object over the network
 		if(this.transform.GetComponent<PhotonView>().instantiationId == 0){
@@ -190,7 +192,7 @@ public class Health : MonoBehaviour {
 				HideHitAngle(true);
 			}
 			//Send out a notification this player was killed
-			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.NickName, enemyPhotonName);
+			fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.NickName, enemyPhotonName, headshot);
 			//Delete it over the network
 			PhotonNetwork.Destroy(this.gameObject);
 		}
@@ -244,11 +246,10 @@ public class Health : MonoBehaviour {
 
 			//Create a ray and find the closest object we hit that isn't ourselves
 			Ray ray = new Ray(transform.position, camDirection);
-			Vector3 hitPoints = Vector3.zero;
-			Transform hitTransform = FindClosestHitInfo(ray, out hitPoints);
+			HitPlayerInfo info = FindClosestHitInfo(ray);
 
 			//If we hit nothing
-			if(hitTransform == null || force)
+			if(info.hitTransform == null || force)
 			{
 				//Make a Vector3 location and rotation for the death camera
 				Vector3 dCamLoc = transform.position;
@@ -274,31 +275,27 @@ public class Health : MonoBehaviour {
 		}
 	}
 
-	Transform FindClosestHitInfo(Ray ray, out Vector3 hitPoint)
-	{
-		Transform closestHit = null;
-		float distance = 0f;
-		hitPoint = Vector3.zero;
-
+    private HitPlayerInfo FindClosestHitInfo(Ray ray)
+    {
+        HitPlayerInfo info = new HitPlayerInfo();
 		//Get all objects that our raycast hit
 		RaycastHit[] hits = Physics.RaycastAll(ray);
-
 		//Loop through all the things we hit
 		foreach(RaycastHit hit in hits)
 		{
 			//Find the closest object we hit that is not ourselves
-			if(hit.transform != this.transform && (closestHit == null || hit.distance < distance))
+			if(hit.transform != this.transform && (info.hitTransform == null || hit.distance < info.distance))
 			{
-				//Update the closest hit and distance
-				closestHit = hit.transform;
-				distance = hit.distance;
-				hitPoint = hit.point;
+                //Update the closest hit and distance
+                info.hitTransform = hit.transform;
+                info.hitPoint = hit.point;
+                info.distance = hit.distance;
+                info.headshot = hit.collider.GetType() == typeof(BoxCollider);
 			}
 		}
-
-		return closestHit;
-	}
-
+		return info;
+    }
+    
 	void PlayHurtSound()
 	{
 		AudioClip clipToPlay;

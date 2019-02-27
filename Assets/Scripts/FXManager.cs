@@ -16,10 +16,13 @@ public class FXManager : MonoBehaviour {
 	public AudioClip landingSound; 
 	public AudioClip doubleJumpSound;   
 	public AudioClip hitSound;
-	public AudioClip[] deathSounds; 
+	public AudioClip[] deathSounds;
 
-	private float killOverlayTimer = 0.0f;
-
+    [SerializeField] private GameObject killOverlay;
+    [SerializeField] private GameObject headshotOverlay;
+    private GameObject displayedOverlay;
+    private float overlayTimer = 0.0f;
+    
     private GameManager gameManager;
     private PlayerFinder playerFinder;
 
@@ -32,22 +35,20 @@ public class FXManager : MonoBehaviour {
     void Update()
 	{
 		//Decrement the timer if we are showing the killer overlay
-		if(killOverlayTimer > 0)
+		if(overlayTimer > 0)
 		{
-			killOverlayTimer -= Time.deltaTime;
+            overlayTimer -= Time.deltaTime;
 		}
-		else
+		else if (displayedOverlay != null)
 		{
-			//Get a reference to the overlay
-			GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
-			//Hide the contents of the overlay
-			killOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
-			killOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+            //Hide the contents of the overlay
+            displayedOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
+            displayedOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
 		}
 	}
 
 	[PunRPC]
-	void KillNotification(string deadPlayerName, string killerName)
+	void KillNotification(string deadPlayerName, string killerName, bool headshot)
 	{
         //Find our player
         GameObject ourPlayer = gameManager.MyPlayer;
@@ -55,15 +56,15 @@ public class FXManager : MonoBehaviour {
         //Only show notification for ourselves
         if (pView != null && pView.owner != null && pView.owner.NickName == killerName) 
 		{
-            //Get a reference to the overlay
-            GameObject killOverlay = GameObject.FindGameObjectWithTag("KillOverlay");
-			//Set the name of the person we killed
-			killOverlay.transform.GetChild(1).GetComponent<Text>().text = deadPlayerName;
-			//Show the contents of the overlay
-			killOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
-			killOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
-			//Put the overlay on a timer
-			killOverlayTimer = 3.0f;
+            //Determine which overlay to display based on headshot or not
+            displayedOverlay = headshot ? headshotOverlay : killOverlay;
+            //Set the name of the person we killed
+            displayedOverlay.transform.GetChild(1).GetComponent<Text>().text = deadPlayerName;
+            //Show the contents of the overlay
+            displayedOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
+            displayedOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+            //Put the overlay on a timer
+            overlayTimer = 3.0f;
 		}
 	}
 
@@ -78,7 +79,7 @@ public class FXManager : MonoBehaviour {
             PlayerBodyData pbd = bc.PlayerBodyData;
             //Find the location of that player's weapon's fire point
             Transform playerWeapon = player.GetComponent<BodyController>().PlayerBodyData.weapon;
-            Transform weaponFirePoint = playerWeapon.GetComponentInChildren<WeaponData>().transform;
+            Transform weaponFirePoint = playerWeapon.GetComponent<WeaponData>().FirePoint;
             Vector3 startPos = weaponFirePoint.position;
             //Show the bullet FX
             GameObject bulletFX = (GameObject)Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));

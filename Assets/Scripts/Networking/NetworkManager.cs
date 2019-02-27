@@ -19,6 +19,7 @@ public class NetworkManager : AbstractBehavior {
     private GameManager gm;
     private float baseFOV;
     private InputManager inputManager;
+    private BodyController bodyController;
 
     // Use this for initialization
     void Start()
@@ -133,7 +134,6 @@ public class NetworkManager : AbstractBehavior {
 
     private void EnableLocalPlayer(GameObject myPlayer)
     {
-        //
         HandlePlayerBody(myPlayer);
         //Enable various scripts that only run on the local player
         myPlayer.GetComponent<FirstPersonController>().enabled = true;
@@ -229,10 +229,10 @@ public class NetworkManager : AbstractBehavior {
 
 	private void EnableReticle()
 	{
-		//Get the reticle parent game object
-		GameObject reticle = GameObject.FindGameObjectWithTag("Reticle");
+        BodyController bc = gm.MyPlayer.GetComponent<BodyController>();
+        WeaponData weaponData = bc.PlayerBodyData.weapon.GetComponent<WeaponData>();
 		//Loop through each image
-		Image[] images = reticle.GetComponentsInChildren<Image>();
+		Image[] images = weaponData.ReticleParent.GetComponentsInChildren<Image>();
 		foreach(Image image in images)
 		{
 			//Show the reticle image

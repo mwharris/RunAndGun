@@ -239,7 +239,7 @@ public class FirstPersonController : AbstractBehavior
 			//Test stuff
 			if(Input.GetKeyDown(KeyCode.B))
 			{
-				this.GetComponent<AccuracyController>().FuckUpReticles();
+				this.GetComponent<AccuracyController>().MoveReticles();
 			}
 			if(Input.GetKeyDown(KeyCode.N))
 			{

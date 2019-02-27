@@ -15,15 +15,9 @@ public class ShootController : AbstractBehavior
 	private float aimRecoilAmount = 0.05f;
 	private float hipRecoilAmount = 0.1f;
 
-	//Weapon specific stuff
-	[HideInInspector] public float cooldownTimer;
-	private float cooldownTimerMax = 0.315f;
-	public AudioClip reloadClip;
-	private float weaponDamage = 25f;
-	private int magazineCapacity = 12;
-	private float weaponReloadTime = 2.5f;
+    //Weapon specific stuff
+	private float cooldownTimer;
 	private float reloadTimer = 0f;
-	private GameObject reticleParent;
 
 	//HUD variables
 	private Text bulletCountText;
@@ -46,12 +40,13 @@ public class ShootController : AbstractBehavior
 	private AccuracyController ac;
     private BodyController bodyControl;
     private PlayerBodyData pbd;
+    private WeaponData currWeaponData;
 
-	void Start()
+    void Start()
 	{
         //Get components from the player body data
         bodyControl = GetComponent<BodyController>();
-        pbd = bodyControl.PlayerBodyData;
+        SetBodyControlVars();
         playerCamera = pbd.playerCamera.GetComponent<Camera>();
         reloadAnimator = pbd.bodyAnimator;
         //Initialize timers
@@ -72,21 +67,20 @@ public class ShootController : AbstractBehavior
 		//Initialize a reference to the bullet count
 		GameObject txt = GameObject.FindGameObjectWithTag("BulletCount");
 		bulletCountText = txt.GetComponent<Text>();
-		//...and max bullet capacity
-		txt = GameObject.FindGameObjectWithTag("ClipSize");
+        //...and max bullet capacity
+        txt = GameObject.FindGameObjectWithTag("ClipSize");
 		clipSizeText = txt.GetComponent<Text>();
-		clipSizeText.text = magazineCapacity.ToString();
-		//Get a reference to the Reticle object
-		reticleParent = GameObject.FindGameObjectWithTag("Reticle");
+		clipSizeText.text = currWeaponData.MagazineCapacity.ToString();
 		//Get the attached PhotonView
 		pView = GetComponent<PhotonView>();
 		//Get the camera's original FOV range
 		baseFOV = playerCamera.fieldOfView;
 	}
 
-	void Update()
+    void Update()
     {
-        pbd = bodyControl.PlayerBodyData;
+        //Make sure we keep our variables from the body controller up to date
+        SetBodyControlVars();
 
         //Gather inputs needed below
         bool isShootDown = inputState.GetButtonPressed(inputs[0]);
@@ -154,13 +148,19 @@ public class ShootController : AbstractBehavior
 		cooldownTimer -= Time.deltaTime;
 	}
 
-	//Handle aiming our weapon
-	void Aim()
+    private void SetBodyControlVars()
+    {
+        pbd = bodyControl.PlayerBodyData;
+        currWeaponData = pbd.weapon.GetComponent<WeaponData>();
+    }
+
+    //Handle aiming our weapon
+    void Aim()
 	{
 		//Tell the animator to pull the gun to our face
 		inputState.playerIsAiming = true;
 		//Disable the crosshairs
-		foreach(Transform child in reticleParent.transform)
+		foreach(Transform child in currWeaponData.ReticleParent.transform)
 		{
             child.GetComponent<Image>().enabled = false;
 		}
@@ -176,13 +176,8 @@ public class ShootController : AbstractBehavior
 	{
 		//Tell the animator to pull the gun to the hip
         inputState.playerIsAiming = false;
-		//Make sure reticle parent is NOT null
-		if(reticleParent == null)
-		{
-			reticleParent = GameObject.FindGameObjectWithTag("Reticle");
-		}
 		//Enable the crosshairs
-		foreach(Transform child in reticleParent.transform)
+		foreach(Transform child in currWeaponData.ReticleParent.transform)
 		{
 			child.GetComponent<Image>().enabled = true;
 		}
@@ -194,7 +189,7 @@ public class ShootController : AbstractBehavior
 	void Shoot(bool isAimDown)
 	{
 		//Reset the shot timer
-		cooldownTimer = cooldownTimerMax;
+		cooldownTimer = currWeaponData.ShotDelayTime;
 
 		//Decrement the bullet counter
 		bulletCount--;
@@ -202,15 +197,11 @@ public class ShootController : AbstractBehavior
 		//Shoot a Ray and find the closest thing we hit that isn't ourselves
 		Vector3 shootVector = ApplyAccuracy(playerCamera.transform.forward);
 		Ray ray = new Ray(playerCamera.transform.position, shootVector);
-		Vector3 hitPoint = Vector3.zero;
-		Transform hitTransform = FindClosestHitInfo(ray, out hitPoint);
+		HitPlayerInfo info = FindClosestHitInfo(ray);
 
         //Notify other controllers and players that we are shooting
         inputState.playerIsShooting = true;
         rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.ID);
-
-        //Play the recoil animation AFTER determing shoot vector
-        //StartCoroutine(WaitForRecoilDone(0.08f));
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
 		if(isAimDown)
@@ -226,7 +217,7 @@ public class ShootController : AbstractBehavior
 
 		//Check if we hit a red object
 		bool hitRed = false;
-		if(hitTransform != null && hitTransform.tag == "Red")
+		if(info.hitTransform != null && info.hitTransform.tag == "Red")
 		{
 			hitRed = true;
 		}
@@ -235,18 +226,18 @@ public class ShootController : AbstractBehavior
 		bool hitEnemy = false;
 
 		//Make sure we actually hit something
-		if(hitTransform != null)
+		if(info.hitTransform != null)
 		{
 			//Determine if the object we hit has hit points
-			Health h = hitTransform.GetComponent<Health>();
+			Health h = info.hitTransform.GetComponent<Health>();
 			//If we did not find an object with health
 			if(h == null)
 			{
 				//Loop through it's parents and try to find one that has health
-				while(hitTransform.parent && h == null)
+				while(info.hitTransform.parent && h == null)
 				{
-					hitTransform = hitTransform.parent;
-					h = hitTransform.GetComponent<Health>();
+                    info.hitTransform = info.hitTransform.parent;
+					h = info.hitTransform.GetComponent<Health>();
 				}
 			}
 			//Check if we eventually found an object with health
@@ -259,22 +250,30 @@ public class ShootController : AbstractBehavior
 				PhotonView pv = h.GetComponent<PhotonView>();
 				if(pv != null)
 				{
-					pv.RPC("TakeDamage", PhotonTargets.AllBuffered, weaponDamage, pView.owner.NickName, pView.owner.ID, transform.position);
+                    pv.RPC(
+                        "TakeDamage", 
+                        PhotonTargets.AllBuffered,
+                        currWeaponData.WeaponDamage, 
+                        pView.owner.NickName, 
+                        pView.owner.ID, 
+                        transform.position,
+                        info.headshot
+                    );
 				}
 			} 
 
 			//Show some bullet FX
 			if(fxManager != null)
 			{
-				GunFX(hitPoint, hitEnemy, hitRed);
+				GunFX(info.hitPoint, hitEnemy, hitRed);
 			}
 		}
 		//Hit nothing, show bull FX anyway
 		else if(fxManager != null)
 		{
-			//Make the FX reach a certain distance from the camera
-			hitPoint = playerCamera.transform.position + (playerCamera.transform.forward * 100f);
-			GunFX(hitPoint, hitEnemy, hitRed);
+            //Make the FX reach a certain distance from the camera
+            info.hitPoint = playerCamera.transform.position + (playerCamera.transform.forward * 100f);
+			GunFX(info.hitPoint, hitEnemy, hitRed);
 		}
 	}
 
@@ -314,11 +313,11 @@ public class ShootController : AbstractBehavior
         //Notify other players that we are reloading (for animations)
         rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.ID);
         //Start the reload timer
-        reloadTimer = weaponReloadTime;
+        reloadTimer = currWeaponData.ReloadTime;
 		//Reset the bullet count
-		bulletCount = magazineCapacity;
+		bulletCount = currWeaponData.MagazineCapacity;
 		//Play a sound
-		aSource.PlayOneShot(reloadClip);
+		aSource.PlayOneShot(currWeaponData.ReloadClip);
 		//Play the reload animation
         inputState.playerIsReloading = true;
         inputState.playerIsShooting = false;
@@ -328,36 +327,31 @@ public class ShootController : AbstractBehavior
 	void GunFX(Vector3 hitPoint, bool hitEnemy, bool hitRed)
 	{
 		//Grab the location of the gun and spawn the FX there
-		//WeaponData wd = this.transform.GetComponentInChildren<WeaponData>();
 		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, pView.owner.ID, hitPoint, hitEnemy, hitRed);
 	}
 
-	//Raycast in a line and find the closest object hit
-	Transform FindClosestHitInfo(Ray ray, out Vector3 hitPoint)
-	{
-		Transform closestHit = null;
-		float distance = 0f;
-		hitPoint = Vector3.zero;
-
-		//Get all objects that our raycast hit
-		RaycastHit[] hits = Physics.RaycastAll(ray);
-
+    //Raycast in a line and find the closest object hit
+    private HitPlayerInfo FindClosestHitInfo(Ray ray)
+    {
+        HitPlayerInfo info = new HitPlayerInfo();
+        //Get all objects that our raycast hit
+        RaycastHit[] hits = Physics.RaycastAll(ray);
 		//Loop through all the things we hit
 		foreach(RaycastHit hit in hits)
 		{
 			//Find the closest object we hit that is not ourselves
 			if(hit.transform != this.transform 
 				&& !hit.transform.IsChildOf(this.transform) 
-				&& (closestHit == null || hit.distance < distance))
+				&& (info.hitTransform == null || hit.distance < info.distance))
 			{
-				//Update the closest hit and distance
-				closestHit = hit.transform;
-				distance = hit.distance;
-				hitPoint = hit.point;
-			}
+                //Update the closest hit and distance
+                info.hitTransform = hit.transform;
+                info.distance = hit.distance;
+                info.hitPoint = hit.point;
+                info.headshot = hit.collider.GetType() == typeof(BoxCollider);
+            }
 		}
-
-		return closestHit;
+		return info;
 	}
 
 	//Display the hit indicators
@@ -385,8 +379,8 @@ public class ShootController : AbstractBehavior
 		}
 	}
 
-	//Wait until the animation is done to allow shooting
-	public IEnumerator WaitForRecoilDone(float time)
+    //Wait until the animation is done to allow shooting
+    public IEnumerator WaitForRecoilDone(float time)
 	{
 		yield return new WaitForSeconds(time);
         inputState.playerIsShooting = false;
