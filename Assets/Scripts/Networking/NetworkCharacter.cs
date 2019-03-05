@@ -30,15 +30,16 @@ public class NetworkCharacter : Photon.MonoBehaviour
 
     //Character Controller properties need to be passed due to Crouch animations
     private CharacterController cc;
-    private float ccHeight = 0f;
-    private float ccRadius = 0f;
-
+    private CapsuleCollider bodyCollider;
+    private CrouchController crouchController;
     private FixWallRunningAnimation wrAnimFix;
 
     void Awake()
 	{
-		cc = GetComponent<CharacterController>();
+        cc = GetComponent<CharacterController>();
+        bodyCollider = GetComponent<CapsuleCollider>();
         bodyControl = GetComponent<BodyController>();
+        crouchController = GetComponent<CrouchController>();
         inputState = GetComponent<InputState>();
         wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
@@ -77,9 +78,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            cc.height = Mathf.Lerp(cc.height, ccHeight, lerpSpeed);
-            cc.radius = Mathf.Lerp(cc.radius, ccRadius, lerpSpeed);
-            cc.center = Vector3.Lerp(cc.center, new Vector3(0, (cc.height / 2) + 0.3f, 0), Time.deltaTime * 8f);
+            crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isJumping);
 
             //Fix for wall-running animations being rotated incorrectly
             wrAnimFix.RunFix(wallRunningLeft, wallRunningRight, Time.deltaTime);
@@ -111,9 +110,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
             stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.right));
             stream.SendNext(inputState.playerVelocity.y);
-            //Send Character Controller information
-            stream.SendNext(cc.height);
-            stream.SendNext(cc.radius);
 		}
 		else
 		{
@@ -133,9 +129,6 @@ public class NetworkCharacter : Photon.MonoBehaviour
             forwardSpeed = (float)stream.ReceiveNext();
             sideSpeed = (float)stream.ReceiveNext();
             jumpSpeed = (float)stream.ReceiveNext();
-            //Receive character controller information
-            ccHeight = (float) stream.ReceiveNext();
-            ccRadius = (float) stream.ReceiveNext();
-		}
+        }
 	}
 }

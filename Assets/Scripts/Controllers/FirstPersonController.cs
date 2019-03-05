@@ -113,7 +113,7 @@ public class FirstPersonController : AbstractBehavior
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
 		//Handle crouching
-		crouchController.HandleCrouching(playerCamera, gm.GetGameState());
+		crouchController.HandleCrouching(playerCamera.transform, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
         //Handle any mouse input that occurred
