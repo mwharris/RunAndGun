@@ -18,7 +18,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
     //Animation variables
     private bool isSprinting;
     private bool isAiming;
-    private bool isJumping;
+    private bool isAirborne;
     private bool isCrouching;
     private bool wallRunningLeft;
     private bool wallRunningRight;
@@ -27,11 +27,14 @@ public class NetworkCharacter : Photon.MonoBehaviour
     //MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
     private float forwardSpeed;
     private float sideSpeed;
+    private bool crouchReset = false;
+    private bool jumpReset = false;
 
     //Character Controller properties need to be passed due to Crouch animations
     private CharacterController cc;
-    private CapsuleCollider bodyCollider;
     private CrouchController crouchController;
+    private PlayerJump jumpController;
+    private CapsuleCollider bodyCollider;
     private FixWallRunningAnimation wrAnimFix;
 
     void Awake()
@@ -40,6 +43,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
         bodyCollider = GetComponent<CapsuleCollider>();
         bodyControl = GetComponent<BodyController>();
         crouchController = GetComponent<CrouchController>();
+        jumpController = GetComponent<PlayerJump>();
         inputState = GetComponent<InputState>();
         wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
@@ -69,7 +73,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             //Animation variables
             playerBodyData.bodyAnimator.SetBool("Sprinting", isSprinting);
             playerBodyData.bodyAnimator.SetBool("Aiming", isAiming);
-            playerBodyData.bodyAnimator.SetBool("Jumping", isJumping);
+            playerBodyData.bodyAnimator.SetBool("Jumping", isAirborne);
             playerBodyData.bodyAnimator.SetBool("Crouching", isCrouching);
             playerBodyData.bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
             playerBodyData.bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
@@ -78,7 +82,10 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isJumping);
+            crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);
+
+            //Set Capsule Collider and Character Controller variables for jumping
+            jumpController.HandleHitboxes(isAirborne, isCrouching, jumpReset);
 
             //Fix for wall-running animations being rotated incorrectly
             wrAnimFix.RunFix(wallRunningLeft, wallRunningRight, Time.deltaTime);
@@ -122,8 +129,16 @@ public class NetworkCharacter : Photon.MonoBehaviour
             //Receive animator variable information
             isSprinting = (bool)stream.ReceiveNext();
             isAiming = (bool)stream.ReceiveNext();
-            isJumping = (bool)stream.ReceiveNext();
-            isCrouching = (bool)stream.ReceiveNext();
+            //Jumping requires some extra logic for the reset flag
+            bool nowAirborne = (bool)stream.ReceiveNext();
+            if (isAirborne && !nowAirborne) {
+                jumpReset = true;
+            }
+            isAirborne = nowAirborne;
+            //Crouching requires some extra logic for the reset flag
+            bool nowCrouching = (bool)stream.ReceiveNext();
+            if (isCrouching && !nowCrouching) { crouchReset = true; }
+            isCrouching = nowCrouching;
             wallRunningRight = (bool)stream.ReceiveNext();
             wallRunningLeft = (bool)stream.ReceiveNext();
             forwardSpeed = (float)stream.ReceiveNext();

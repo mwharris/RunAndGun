@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerJump : AbstractBehavior {
-
+public class PlayerJump : AbstractBehavior
+{
 	public int maxJumps;
 	public float jumpSpeed = 8f;
 	public AudioClip jumpSound;
@@ -21,6 +21,7 @@ public class PlayerJump : AbstractBehavior {
     private Transform playerCamera;
     private int jumps;
     private bool justJumped = false;
+    private bool jumpResetting = false;
 	private WallRunController wallRunController;
 	private FXManager fxManager;
 	private GameManager gm;
@@ -63,6 +64,7 @@ public class PlayerJump : AbstractBehavior {
             if (inputState.playerIsGrounded && !justJumped)
             {
                 jumps = maxJumps;
+                jumpResetting = true;
             }
 
             //Perform a jump if we've jumped
@@ -108,16 +110,18 @@ public class PlayerJump : AbstractBehavior {
             }
 
             //Update our hitboxes
-            bool isJumping = inputState.playerIsJumping || justJumped || !inputState.playerIsGrounded;
-            HandleHitboxes(isJumping, inputState.playerIsCrouching);
+            if (!GetComponent<PhotonView>().isMine)
+            {
+                bool hitboxJumping = inputState.playerIsJumping || justJumped || !inputState.playerIsGrounded;
+                HandleHitboxes(hitboxJumping, inputState.playerIsCrouching, jumpResetting);
+            }
         }
     }
 
-    public void HandleHitboxes(bool isJumping, bool isCrouching)
+    public void HandleHitboxes(bool isJumping, bool isCrouching, bool isJumpResetting)
     {
         //Get the current versions of all our variables
         float currCCHeight = cc.height;
-        //float currCCCenter = cc.center.y;
         Vector3 currCapColCenter = capsuleCol.center;
         float currCapColHeight = capsuleCol.height;
         Vector3 currBoxColCenter = boxCol.center;
@@ -137,11 +141,20 @@ public class PlayerJump : AbstractBehavior {
                 currBoxColCenter = Vector3.Lerp(currBoxColCenter, jumpBoxColCenter, Time.deltaTime * 4f);
             }
         }
-        else if (!isCrouching)
+        else if (!isCrouching && isJumpResetting)
         {
+            bool allGood = true;
             if (currCapColCenter != standardCapsuleColCenter)
             {
                 currCapColCenter = Vector3.Lerp(currCapColCenter, standardCapsuleColCenter, Time.deltaTime * 8f);
+                if (Mathf.Abs(currCapColCenter.y - standardCapsuleColCenter.y) <= 0.1f)
+                {
+                    currCapColCenter = standardCapsuleColCenter;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (currCapColHeight != standardCapsuleColHeight)
             {
@@ -150,11 +163,22 @@ public class PlayerJump : AbstractBehavior {
             if (currBoxColCenter != standardBoxColCenter)
             {
                 currBoxColCenter = Vector3.Lerp(currBoxColCenter, standardBoxColCenter, Time.deltaTime * 8f);
+                if (Mathf.Abs(currBoxColCenter.y - standardBoxColCenter.y) <= 0.1f)
+                {
+                    currBoxColCenter = standardBoxColCenter;
+                }
+                else
+                {
+                    allGood = false;
+                }
+            }
+            if (isJumpResetting && allGood)
+            {
+                isJumpResetting = false;
             }
         }
         //Set our variables to the new lerped values
         cc.height = currCCHeight;
-        //cc.center = new Vector3(cc.center.x, currCCCenter, cc.center.z);
         capsuleCol.center = currCapColCenter;
         capsuleCol.height = currCapColHeight;
         boxCol.center = currBoxColCenter;

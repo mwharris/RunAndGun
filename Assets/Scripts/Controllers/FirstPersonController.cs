@@ -2,6 +2,7 @@
 using System.Collections;
 
 [RequireComponent(typeof (CrouchController))]
+[RequireComponent(typeof (PlayerJump))]
 [RequireComponent(typeof (WallRunController))]
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]

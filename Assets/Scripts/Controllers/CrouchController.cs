@@ -80,7 +80,7 @@ public class CrouchController : AbstractBehavior
         }    
     }
 
-    public void HandleMultiplayerCrouch(GameObject player, GameObject playerCamera, bool isCrouching, bool isGrounded)
+    public void HandleMultiplayerCrouch(GameObject player, GameObject playerCamera, bool isCrouching, bool isGrounded, bool isCamResetting)
     {
         //When coming from a multiplayer call, make sure our variables are instantiated
         if (cc == null)
@@ -88,7 +88,7 @@ public class CrouchController : AbstractBehavior
             CalculateCrouchVars(player, playerCamera, 1f);
         }
         //Make this player crouch or stand
-        DoCrouch(playerCamera.transform, isCrouching, isGrounded, true);
+        DoCrouch(playerCamera.transform, isCrouching, isGrounded, isCamResetting);
     }
 
     /**
@@ -148,14 +148,31 @@ public class CrouchController : AbstractBehavior
         //Coming back up
         else if (isCameraResetting && isGrounded)
         {
+            bool allGood = true;
             if (ccHeight < standardCCHeight)
             {
                 ccHeight = Mathf.Lerp(ccHeight, standardCCHeight, Time.deltaTime * 8f);
                 shotColHeight = ccHeight - 0.2f;
+                if (Mathf.Abs(ccHeight - standardCCHeight) <= 0.1f)
+                {
+                    ccHeight = standardCCHeight;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (ccRadius > standardCCRadius)
             {
                 ccRadius = Mathf.Lerp(ccRadius, standardCCRadius, Time.deltaTime * 8f);
+                if (Mathf.Abs(ccRadius - standardCCRadius) <= 0.1f)
+                {
+                    ccRadius = standardCCRadius;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (ccCenter != standardCCCenter)
             {
@@ -165,21 +182,53 @@ public class CrouchController : AbstractBehavior
             if (currBodyZ < standardBodyZ)
             {
                 currBodyZ = Mathf.Lerp(currBodyZ, standardBodyZ, Time.deltaTime * 8f);
+                if (Mathf.Abs(currBodyZ - standardBodyZ) <= 0.1f)
+                {
+                    currBodyZ = standardBodyZ;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (currHeadZ > standardHeadZ)
             {
                 currHeadZ = Mathf.Lerp(currHeadZ, standardHeadZ, Time.deltaTime * 8f);
+                if (Mathf.Abs(currHeadZ - standardHeadZ) <= 0.1f)
+                {
+                    currHeadZ = standardHeadZ;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (currHeadY < standardHeadY)
             {
                 currHeadY = Mathf.Lerp(currHeadY, standardHeadY, Time.deltaTime * 8f);
+                if (Mathf.Abs(currHeadY - standardHeadY) <= 0.1f)
+                {
+                    currHeadY = standardHeadY;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             if (camLocalPos.y < standardCamHeight)
             {
                 camLocalPos.y = Mathf.Lerp(camLocalPos.y, standardCamHeight, Time.deltaTime * 8f);
+                if (Mathf.Abs(camLocalPos.y - standardCamHeight) <= 0.1f)
+                {
+                    camLocalPos.y = standardCamHeight;
+                }
+                else
+                {
+                    allGood = false;
+                }
             }
             //Special case: when we are standing, we need to mark the camera as being moved since other scripts try to adjust the camera's position while standing
-            else
+            if (allGood && isCameraResetting)
             {
                 isCameraResetting = false;
             }
@@ -224,63 +273,5 @@ public class CrouchController : AbstractBehavior
 		inputState.playerIsCrouching = false;
         //Flag the camera as being moved
         cameraResetting = true;
-    }
-
-    /**
-	 * Helper function to lower the height of the player due to crouching
-	 */
-    private float LowerHeight(float posValue, float delta, float deltaTime, float newPosValue)
-    {
-        return LowerHeight(posValue, delta, deltaTime, newPosValue, crouchSpeed);
-    }
-    private float LowerHeight(float posValue, float delta, float deltaTime, float newPosValue, float speed)
-	{
-		if(posValue - (delta * deltaTime * speed) < newPosValue)
-		{
-            posValue = newPosValue;
-		}
-		else
-		{
-            posValue -= delta * Time.deltaTime * speed;
-		}
-		return posValue;
-	}
-
-    /**
-	 * Helper function to raise the height of the player due to standing
-	 */
-    private float RaiseHeight(float posValue, float delta, float deltaTime, float newPosValue)
-    {
-        return RaiseHeight(posValue, delta, deltaTime, newPosValue, crouchSpeed);
-    }
-    private float RaiseHeight(float posValue, float delta, float deltaTime, float newPosValue, float speed)
-	{
-		if(posValue + (delta * deltaTime * speed) > newPosValue)
-		{
-            posValue = newPosValue;
-		}
-		else
-		{
-            posValue += delta * Time.deltaTime * speed;
-		}
-		return posValue;
-	}
-
-    /**
-	 * Helper functions to raise the center of the character controller due to standing/crouching
-	 */
-    private Vector3 LowerCCCenter(Vector3 ccCenter, Vector3 delta, float deltaTime, Vector3 newCCCenter)
-    {
-        ccCenter.x = LowerHeight(ccCenter.x, Mathf.Abs(ccCenter.x - newCCCenter.x), deltaTime, newCCCenter.x);
-        ccCenter.y = LowerHeight(ccCenter.y, Mathf.Abs(ccCenter.y - newCCCenter.y), deltaTime, newCCCenter.y);
-        ccCenter.z = LowerHeight(ccCenter.z, Mathf.Abs(ccCenter.z - newCCCenter.z), deltaTime, newCCCenter.z);
-        return ccCenter;
-    }
-    private Vector3 RaiseCCCenter(Vector3 ccCenter, Vector3 delta, float deltaTime, Vector3 newCCCenter)
-    {
-        ccCenter.x = RaiseHeight(ccCenter.x, Mathf.Abs(newCCCenter.x - ccCenter.x), deltaTime, newCCCenter.x);
-        ccCenter.y = RaiseHeight(ccCenter.y, Mathf.Abs(newCCCenter.y - ccCenter.y), deltaTime, newCCCenter.y);
-        ccCenter.z = RaiseHeight(ccCenter.z, Mathf.Abs(newCCCenter.z - ccCenter.z), deltaTime, newCCCenter.z);
-        return ccCenter;
     }
 }
