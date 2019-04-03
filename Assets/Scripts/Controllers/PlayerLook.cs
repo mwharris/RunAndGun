@@ -13,6 +13,10 @@ public class PlayerLook
     private Quaternion camLocalRot;
     private Quaternion neckLocalRot;
 
+    private Ray sphereRay;
+    public float sphereSize = 1f;
+    private float hitDistance;
+
     public void Init(Transform player, Transform camera, PlayerBodyData bodyData)
     {
         neck = bodyData.neck;
@@ -27,12 +31,14 @@ public class PlayerLook
     }
 
     //Called from FirstPersonController to handle look rotations
-    public float LookRotation(LookRotationInput lri)
+    public void LookRotation(LookRotationInput lri)
     {
         //Update inputs according to Options menu
         Vector2 inputs = ApplyOptionsToInput(lri);
         //Update player, camera, and head rotations based on inputs
-        return ApplyLookRotations(inputs, lri);
+        ApplyLookRotations(inputs, lri);
+        //Perform aim assist functions
+        DoAimAssist(lri);
     }
 
     //Update inputs with settings from Options menu
@@ -40,7 +46,7 @@ public class PlayerLook
     {
         //Calculate sensitivity based on settings and if aiming
         float totalSensitivity = lri.mouseSensitivity;
-        if (lri.isAiming)
+        if (lri.isAiming || lri.lockedOnPlayer)
         {
             totalSensitivity *= 0.5f;
         }
@@ -54,19 +60,19 @@ public class PlayerLook
     }
 
     //Handle all updating of camera rotations and horizontal player body rotations
-    private float ApplyLookRotations(Vector2 inputs, LookRotationInput lri)
+    private void ApplyLookRotations(Vector2 inputs, LookRotationInput lri)
     {
         if (lri.isWallRunning)
         {
-            return HandleWallRunningRotations(inputs, lri);
+            HandleWallRunningRotations(inputs, lri);
         }
         else
         {
-            return HandleNormalRotations(inputs, lri);
+            HandleNormalRotations(inputs, lri);
         }
     }
 
-    private float HandleNormalRotations(Vector2 inputs, LookRotationInput lri)
+    private void HandleNormalRotations(Vector2 inputs, LookRotationInput lri)
     {
         camLocalRot = lri.camera.localRotation;
         playerLocalRot = lri.player.localRotation;
@@ -94,10 +100,10 @@ public class PlayerLook
         lri.player.localRotation = playerLocalRot;
         lri.camera.localRotation = camLocalRot;
         //Return the angle of our head for the animator
-        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+        lri.headAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }
 
-    private float HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
+    private void HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
     {
         camLocalRot = lri.camera.localRotation;
         //Apply the rotation to camera (vertical look rotation)
@@ -115,7 +121,55 @@ public class PlayerLook
         //Update the rotation of our player and camera
         lri.camera.localRotation = camLocalRot;
         //Return the angle of our head for the animator
-        return (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+        lri.headAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+    }
+
+    private void DoAimAssist(LookRotationInput lri)
+    {
+        if (lri.aimAssistEnabled)
+        {
+            //Shoot a thick raycast out from camera forward
+            Vector3 v = lri.camera.transform.forward;
+            sphereRay = new Ray(lri.camera.transform.position, v);
+            RaycastHit[] hits = Physics.SphereCastAll(sphereRay, sphereSize);
+            //Check if we hit any players
+            Transform hitTransform = FindClosestHitTransform(hits, lri.player);
+            if (hitTransform != null && hitTransform.gameObject.tag == "Player")
+            {
+                lri.lockedOnPlayer = true;
+            }
+            else
+            {
+                lri.lockedOnPlayer = false;
+            }
+        }
+    }
+
+    //Find the closest object we hit that is not ourself
+    private Transform FindClosestHitTransform(RaycastHit[] hits, Transform player)
+    {
+        Transform hitTransform = null;
+        float distance = 0f;
+        foreach (RaycastHit hit in hits)
+        {
+            if (hit.transform != player
+                && !hit.transform.IsChildOf(player)
+                && (hitTransform == null || hit.distance < distance))
+            {
+                hitTransform = hit.transform;
+                distance = hit.distance;
+            }
+        }
+        hitDistance = distance;
+        return hitTransform;
+    }
+
+    public void DrawDebugGizmos(Transform camera)
+    {
+        Gizmos.color = Color.red;
+        float distance = hitDistance == 0 ? 50f : hitDistance;
+        Debug.DrawLine(camera.position, camera.position + camera.forward * distance);
+        Gizmos.DrawWireSphere(camera.position + camera.forward * distance, sphereSize);
     }
 
     private Quaternion ClampRotationAroundAxis(Quaternion q, string axis)

@@ -26,6 +26,7 @@ public class InputState : MonoBehaviour {
     [HideInInspector] public Vector3 playerVelocity = Vector3.zero;
 	[HideInInspector] public bool allowAirMovement = false;
     [HideInInspector] public float playerLookAngle = 0f;
+    [HideInInspector] public bool playerLockedOnEnemy = false;
 
     public void SetButtonState(Buttons key, bool pressed, float value)
 	{

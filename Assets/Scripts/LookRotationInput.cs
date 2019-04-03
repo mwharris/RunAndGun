@@ -4,29 +4,20 @@ using UnityEngine;
 
 public class LookRotationInput
 {
+    //Inputs for the LookRotation() function in PlayerLook.cs
     public Transform player;
     public Transform camera;
     public Transform neck;
     public Vector2 lookInput;
     public float mouseSensitivity;
     public bool invertY;
+    public bool aimAssistEnabled;
     public float wallRunZRotation;
     public bool isAiming;
     public bool isWallRunning;
     public bool wrapAround;
 
-    public LookRotationInput(Transform p, Transform c, Vector2 li, float ms, bool iy, 
-        bool aiming, bool wallRunningFlag, float wrz, bool wrap)
-    {
-        player = p;
-        camera = c;
-        lookInput = li;
-        mouseSensitivity = ms;
-        invertY = iy;
-        isAiming = aiming;
-        isWallRunning = wallRunningFlag;
-        wallRunZRotation = wrz;
-        wrapAround = wrap;
-    }
-
+    //Outputs for the LookRotation() function in PlayerLook.cs
+    public float headAngle;
+    public bool lockedOnPlayer;
 }

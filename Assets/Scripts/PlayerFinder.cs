@@ -13,7 +13,7 @@ public class PlayerFinder {
         foreach (GameObject currPlayer in players)
         {
             PhotonView pView = currPlayer.GetComponent<PhotonView>();
-            if (pView.owner != null && pView.owner.ID == pId)
+            if (pView != null && pView.owner != null && pView.owner.ID == pId)
             {
                 return currPlayer;
             }
@@ -30,7 +30,7 @@ public class PlayerFinder {
         foreach (GameObject currPlayer in players)
         {
             PhotonView pView = currPlayer.GetComponent<PhotonView>();
-            if (!pView.isMine && pView.owner != null && pView.owner.ID == pId)
+            if (pView != null && !pView.isMine && pView.owner != null && pView.owner.ID == pId)
             {
                 return currPlayer;
             }

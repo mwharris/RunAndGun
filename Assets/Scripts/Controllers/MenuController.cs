@@ -7,8 +7,9 @@ public class MenuController : AbstractBehavior
 {
 	[HideInInspector] public float mouseSensitivity = 2.5f;
 	[HideInInspector] public bool invertY = false;
+    [HideInInspector] public bool aimAssist = true;
 
-	private bool paused = false;
+    private bool paused = false;
 	private bool options = false;
 	private GameObject eventSystem;
 	private NetworkManager nm;
@@ -159,7 +160,13 @@ public class MenuController : AbstractBehavior
 	public void changeInvertY(bool newValue)
 	{
 		invertY = newValue;
-	}
+    }
+
+    //Update whether aim assist to enabled or disabled in the First Person Controller
+    public void changeAimAssist(bool newValue)
+    {
+        aimAssist = newValue;
+    }
 
     private void LockMouseCursor()
     {

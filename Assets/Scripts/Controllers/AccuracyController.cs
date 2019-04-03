@@ -1,6 +1,7 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AccuracyController : AbstractBehavior 
 {
@@ -65,68 +66,72 @@ public class AccuracyController : AbstractBehavior
         reticleParent = playerBodyData.weapon.GetComponent<WeaponData>().ReticleParent.transform;
     }
 
-    void Update () {
+    void Update()
+    {
         //Make sure reticle parent stays up to date in case our weapon data changes
         SetBodyControlVars();
 
         //Some short-hand variables
         bool isMoving = inputState.playerVelocity.x != 0 || inputState.playerVelocity.z != 0;
 
-		//Determine if we should apply a base accuracy offset based on movement
-		if(isMoving && inputState.playerIsGrounded)
-		{
-			//Check if we're sprinting, crouching, or walking and apply corresponding accuracy
-			if(inputState.playerIsSprinting)
-			{
-				baseOffset = sprintAccuracy;
-			}
-			else if(inputState.playerIsCrouching)
-			{
-				baseOffset = crouchAccuracy;
-			}
-			else
-			{
-				baseOffset = walkAccuracy;
-			}
-		}
-		else if(inputState.playerIsGrounded)
-		{
-			baseOffset = 0F;
-		}
-		//Wall-running OR jumping
-		else
-		{
-			baseOffset = sprintAccuracy;
-		}
+        //Determine if we should apply a base accuracy offset based on movement
+        if (isMoving && inputState.playerIsGrounded)
+        {
+            //Check if we're sprinting, crouching, or walking and apply corresponding accuracy
+            if (inputState.playerIsSprinting)
+            {
+                baseOffset = sprintAccuracy;
+            }
+            else if (inputState.playerIsCrouching)
+            {
+                baseOffset = crouchAccuracy;
+            }
+            else
+            {
+                baseOffset = walkAccuracy;
+            }
+        }
+        else if (inputState.playerIsGrounded)
+        {
+            baseOffset = 0F;
+        }
+        //Wall-running OR jumping
+        else
+        {
+            baseOffset = sprintAccuracy;
+        }
 
-		//Add any mods due to rapid firing
-		if(shootingOffset > 0 && accuracyReduceTimer <= 0)
-		{
-			//Quickly decrease accuracy penalty after not shooting for X amount of time
-			shootingOffset -= Time.deltaTime;
-		}
-		else if(shootingOffset < 0)
-		{
-			shootingOffset = 0;
-		}
+        //Add any mods due to rapid firing
+        if (shootingOffset > 0 && accuracyReduceTimer <= 0)
+        {
+            //Quickly decrease accuracy penalty after not shooting for X amount of time
+            shootingOffset -= Time.deltaTime;
+        }
+        else if (shootingOffset < 0)
+        {
+            shootingOffset = 0;
+        }
 
-		//Calculate the total offset due to moving + shooting
-		totalOffset = baseOffset + shootingOffset;
-		totalOffset = Mathf.Clamp(totalOffset, 0, maxAccuracyOffset);
+        //Calculate the total offset due to moving + shooting
+        totalOffset = baseOffset + shootingOffset;
+        totalOffset = Mathf.Clamp(totalOffset, 0, maxAccuracyOffset);
 
-		//Handle spread of the reticles based on accuracy offset
-		if(totalOffset > 0)
-		{
-			SpreadReticles();
-		}
-		else
-		{
-			CloseReticles();
-		}
+        //Handle spread of the reticles based on accuracy offset
+        if (totalOffset > 0)
+        {
+            SpreadReticles();
+        }
+        else
+        {
+            CloseReticles();
+        }
 
-		//Reduce the timer if running
-		accuracyReduceTimer -= Time.deltaTime;
-	}
+        //Change the color of the reticles if we're aiming at another player
+        ColorReticles(inputState.playerLockedOnEnemy);
+
+        //Reduce the timer if running
+        accuracyReduceTimer -= Time.deltaTime;
+    }
 
 	//Hlper function called by ShootController to decrease accuracy after every shot
 	public void AddShootingOffset(bool aimFire)
@@ -197,4 +202,12 @@ public class AccuracyController : AbstractBehavior
 		leftRet.anchoredPosition3D = new Vector3(-50, leftRet.anchoredPosition3D.y, leftRet.anchoredPosition3D.z);
 		rightRet.anchoredPosition3D = new Vector3(50, rightRet.anchoredPosition3D.y, rightRet.anchoredPosition3D.z);
 	}
+
+    private void ColorReticles(bool lockedOn)
+    {
+        topRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
+        botRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
+        leftRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
+        rightRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
+    }
 }
