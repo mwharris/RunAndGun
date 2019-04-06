@@ -27,6 +27,7 @@ public class InputState : MonoBehaviour {
 	[HideInInspector] public bool allowAirMovement = false;
     [HideInInspector] public float playerLookAngle = 0f;
     [HideInInspector] public bool playerLockedOnEnemy = false;
+    [HideInInspector] public WeaponStyles playerWeaponStyle;
 
     public void SetButtonState(Buttons key, bool pressed, float value)
 	{

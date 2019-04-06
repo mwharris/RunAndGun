@@ -42,9 +42,21 @@ public class ControlAnimations : AbstractBehavior
 
         HandleBodyPlacement(inputState.playerIsAiming);
 
+        if (inputState.playerWeaponStyle == WeaponStyles.SingleHanded)
+        {
+            Debug.Log("Single Handed!");
+        }
+        else if (inputState.playerWeaponStyle == WeaponStyles.DoubleHanded) 
+        {
+            Debug.Log("Double Handed!");
+        }
+
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         otherAnim.SetBool("Aiming", inputState.playerIsAiming);
-        weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
+        if (weaponIKAnim.gameObject.activeSelf)
+        {
+            weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
+        }
         //weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
 
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);

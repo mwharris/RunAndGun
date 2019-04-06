@@ -11,6 +11,14 @@ public class AbstractBehavior : MonoBehaviour {
 	protected virtual void Awake()
 	{
 		inputState = GetComponent<InputState>();
+        if (inputState == null)
+        {
+            BodyController bc = FindObjectOfType<BodyController>();
+            if (bc != null)
+            {
+                inputState = bc.gameObject.GetComponent<InputState>();
+            }
+        }
 	}
 
 }

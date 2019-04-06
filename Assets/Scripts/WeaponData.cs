@@ -25,6 +25,9 @@ public class WeaponData : MonoBehaviour
     [SerializeField] private GameObject reticleParent;
     public GameObject ReticleParent { get { return reticleParent; } }
 
+    [SerializeField] private WeaponStyles weaponStyle;
+    public WeaponStyles WeaponStyle { get { return weaponStyle; } }
+
     private void Awake()
     {
         if (reticleParent == null)
