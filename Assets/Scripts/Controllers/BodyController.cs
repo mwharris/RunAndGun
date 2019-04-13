@@ -12,26 +12,19 @@ public class BodyController : Photon.MonoBehaviour
     }
 
     [SerializeField] private PlayerBodyData firstPersonArms;
-    public PlayerBodyData FirstPersonArms
-    {
-        get { return firstPersonArms; }
-    }
-
     [SerializeField] private PlayerBodyData thirdPersonBody;
-    public PlayerBodyData ThirdPersonBody
-    {
-        get { return thirdPersonBody; }
-    }
 
     void Awake()
     {
         if (!photonView.isMine)
         {
             playerBodyData = thirdPersonBody;
+            //playerBodyData = firstPersonArms;
         }
         else
         {
             playerBodyData = firstPersonArms;
+            //playerBodyData = thirdPersonBody;
         }
     }
 
