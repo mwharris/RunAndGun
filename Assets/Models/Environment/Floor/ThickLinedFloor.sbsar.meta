@@ -2,19 +2,19 @@ fileFormatVersion: 2
 guid: 407d6fedd8a1dfd438b6e82e235f88d0
 ScriptedImporter:
   fileIDToRecycleName:
-    100000: Floor_NEW/Floor_NEW
-    400000: Floor_NEW/Floor_NEW/Transform
+    100000: ThickLinedFloor/ThickLinedFloor
+    400000: ThickLinedFloor/ThickLinedFloor/Transform
     2100000: Floor
-    2300000: Floor_NEW/Floor_NEW/MeshRenderer
+    2300000: ThickLinedFloor/ThickLinedFloor/MeshRenderer
     2800000: Floor - baseColor
     2800002: Floor - normal
     2800004: Floor - height
     2800006: Floor - emissive
-    3300000: Floor_NEW/Floor_NEW/MeshFilter
+    3300000: ThickLinedFloor/ThickLinedFloor/MeshFilter
     11400000: sbsar
     11400002: graph0
-    13500000: Floor_NEW/Floor_NEW/SphereCollider
-    100100000: Floor_NEW
+    13500000: ThickLinedFloor/ThickLinedFloor/SphereCollider
+    100100000: ThickLinedFloor
   externalObjects: {}
   userData: 
   assetBundleName: 

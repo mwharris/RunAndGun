@@ -1,0 +1,61 @@
+newmtl cube_mat
+Kd 1 1 1
+map_Kd null
+map_Bump null
+illum 2
+
+newmtl 7x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 3x1
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 1x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl My_Prototype
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl Single
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 12x5
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 14x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x2
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x5
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 14x12
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 5x12
+Kd 1 1 1
+map_Kd null
+illum 2
+

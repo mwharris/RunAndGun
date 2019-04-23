@@ -1,21 +1,20 @@
 fileFormatVersion: 2
-guid: 79990341d26611641b043b63670847d8
+guid: f4c7fb2c3947ef94582e1b48e03162c9
 ScriptedImporter:
   fileIDToRecycleName:
-    100000: Floor/Floor
-    400000: Floor/Floor/Transform
+    100002: ThinLinedFloor/ThinLinedFloor
+    400002: ThinLinedFloor/ThinLinedFloor/Transform
     2100000: Floor
-    2300000: Floor/Floor/MeshRenderer
+    2300002: ThinLinedFloor/ThinLinedFloor/MeshRenderer
     2800000: Floor - baseColor
     2800002: Floor - normal
     2800004: Floor - height
     2800006: Floor - emissive
-    3300000: Floor/Floor/MeshFilter
+    3300002: ThinLinedFloor/ThinLinedFloor/MeshFilter
     11400000: sbsar
     11400002: graph0
-    13500000: Floor/Floor/SphereCollider
-    100100000: Floor
-    2186277476908879412: ImportLogs
+    13500002: ThinLinedFloor/ThinLinedFloor/SphereCollider
+    100100002: ThinLinedFloor
   externalObjects: {}
   userData: 
   assetBundleName: 
@@ -82,5 +81,5 @@ ScriptedImporter:
       textureHeight: 256
       textureFormat: 0
       bGenerateOnLoad: 1
-    material: {fileID: 2100000, guid: 79990341d26611641b043b63670847d8, type: 3}
+    material: {fileID: 2100000, guid: f4c7fb2c3947ef94582e1b48e03162c9, type: 3}
     generatedTextures: []
