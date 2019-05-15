@@ -85,7 +85,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);
 
             //Set Capsule Collider and Character Controller variables for jumping
-            jumpController.HandleHitboxes(isAirborne, isCrouching, jumpReset);
+            jumpController.HandleHitboxes(gameObject, isAirborne, isCrouching, jumpReset);
 
             //Fix for wall-running animations being rotated incorrectly
             wrAnimFix.RunFix(wallRunningLeft, wallRunningRight, Time.deltaTime);

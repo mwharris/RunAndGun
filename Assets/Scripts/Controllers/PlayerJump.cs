@@ -42,6 +42,11 @@ public class PlayerJump : AbstractBehavior
 		aSource = GetComponent<AudioSource>();
 		gm = GameObject.FindObjectOfType<GameManager>();
         //Get components and variables needed for hitbox manipulation
+        SetHitboxControlVars(gameObject);
+    }
+
+    private void SetHitboxControlVars(GameObject player)
+    {
         cc = GetComponent<CharacterController>();
         capsuleCol = GetComponent<CapsuleCollider>();
         boxCol = GetComponent<BoxCollider>();
@@ -113,13 +118,18 @@ public class PlayerJump : AbstractBehavior
             if (!GetComponent<PhotonView>().isMine)
             {
                 bool hitboxJumping = inputState.playerIsJumping || justJumped || !inputState.playerIsGrounded;
-                HandleHitboxes(hitboxJumping, inputState.playerIsCrouching, jumpResetting);
+                HandleHitboxes(gameObject, hitboxJumping, inputState.playerIsCrouching, jumpResetting);
             }
         }
     }
 
-    public void HandleHitboxes(bool isJumping, bool isCrouching, bool isJumpResetting)
+    public void HandleHitboxes(GameObject player, bool isJumping, bool isCrouching, bool isJumpResetting)
     {
+        //Make sure our character controller is not null
+        if (cc == null && player != null)
+        {
+            SetHitboxControlVars(player);
+        }
         //Get the current versions of all our variables
         float currCCHeight = cc.height;
         Vector3 currCapColCenter = capsuleCol.center;
