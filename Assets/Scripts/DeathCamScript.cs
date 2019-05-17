@@ -82,8 +82,9 @@ public class DeathCamScript : MonoBehaviour {
 		//Loop through each
 		foreach(GameObject player in players)
 		{
-			//Return this player object if it's the player we're looking for
-			if(player.GetComponent<PhotonView>().owner.ID == targetId)
+            PhotonView pView = player.GetComponent<PhotonView>();
+            //Return this player object if it's the player we're looking for
+            if (pView != null && pView.owner.ID == targetId)
 			{
 				return player;
 			}
