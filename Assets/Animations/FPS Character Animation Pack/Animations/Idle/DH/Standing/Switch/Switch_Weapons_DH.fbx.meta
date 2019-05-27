@@ -187,7 +187,15 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.9169084
+        functionName: SwitchWeaponEvent
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 8997e4dc60f034c429a7fa41af1db88b,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}
@@ -215,7 +223,15 @@ ModelImporter:
       mirror: 0
       bodyMask: 01000000010000000100000001000000010000000100000001000000010000000100000001000000010000000100000001000000
       curves: []
-      events: []
+      events:
+      - time: 0.9206349
+        functionName: WeaponSwitchDoneEvent
+        data: 
+        objectReferenceParameter: {fileID: 11500000, guid: 8997e4dc60f034c429a7fa41af1db88b,
+          type: 3}
+        floatParameter: 0
+        intParameter: 0
+        messageOptions: 0
       transformMask: []
       maskType: 3
       maskSource: {instanceID: 0}

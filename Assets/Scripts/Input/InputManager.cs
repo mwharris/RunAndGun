@@ -21,7 +21,9 @@ public enum Buttons {
 	Y,
 	Pause,
 	Lock,
-	Back
+	Back,
+    WeaponSwitchUp,
+    WeaponSwitchDown
 }
 
 public enum Condition {

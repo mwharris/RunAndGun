@@ -104,6 +104,11 @@ public class ControlAnimations : AbstractBehavior
                 currRot = Quaternion.Lerp(currRot, Quaternion.Euler(crouchPosition.localRot), Time.deltaTime * 10f);
             }
         }
+        else if (inputState.playerWeaponStyle == WeaponStyles.DoubleHanded)
+        {
+            currPos = Vector3.Lerp(currPos, dhPosition.localPos, lerpSpeed);
+            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(dhPosition.localRot), lerpSpeed);
+        }
         else
         {
             currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
