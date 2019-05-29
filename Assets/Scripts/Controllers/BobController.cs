@@ -1,30 +1,22 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-public class BobController : MonoBehaviour
+public class BobController : AbstractBehavior
 {
-    private Vector3 origRestPosition;
-    private Quaternion origRestRotation;
-
-    public Vector3 restPosition;
-    private Quaternion restRotation;
-
-    public Vector3 sprintPosition;
-
-    public Vector3 aimPosition;
-    public Vector3 aimRotation;
-
-    public Vector3 crouchPosition;
-    public Vector3 crouchRotation;
-
-    public float transitionSpeed = 20f;
-    public float walkBobSpeed = 4.8f;
-    public float walkBobAmount = 0.1f;
-    public float sprintBobSpeed = 12f;
-    public float sprintBobAmount = 0.2f;
-
     public bool isCamera = false;
-    public InputState inputState;
+
+    private AnimationPosInfo origRestPosInfo;
+    [SerializeField] private AnimationPosInfo restPosInfo;
+    [SerializeField] private AnimationPosInfo sprintPosInfo;
+    [SerializeField] private AnimationPosInfo shAimPosInfo;
+    [SerializeField] private AnimationPosInfo dhAimPosInfo;
+    [SerializeField] private AnimationPosInfo crouchPosInfo;
+
+    [HideInInspector] public float transitionSpeed = 20f;
+    [HideInInspector] public float walkBobSpeed = 7.8f;
+    [HideInInspector] public float walkBobAmount = 0.01f;
+    [HideInInspector] public float sprintBobSpeed = 12f;
+    [HideInInspector] public float sprintBobAmount = 0.03f;
 
     //Initialized as this value because this is where sin = 1. 
     //So, this will make the camera always start at the crest of the sin wave, simulating someone picking up their foot and starting to walk.
@@ -38,10 +30,11 @@ public class BobController : MonoBehaviour
 
     void Start()
     {
-        restPosition = transform.localPosition;
-        restRotation = transform.localRotation;
-        origRestPosition = restPosition;
-        origRestRotation = restRotation;
+        restPosInfo.localPos = transform.localPosition;
+        restPosInfo.rotation = transform.localRotation;
+        origRestPosInfo = new AnimationPosInfo();
+        origRestPosInfo.localPos = restPosInfo.localPos;
+        origRestPosInfo.rotation = restPosInfo.rotation;
     }
 
     private bool reset = false;
@@ -76,42 +69,42 @@ public class BobController : MonoBehaviour
             //When aiming the resting position centers on the screen
             if (inputState.playerIsAiming)
             {
-                restPosition = aimPosition;
-                restRotation = Quaternion.Euler(aimRotation);
+                restPosInfo.localPos = shAimPosInfo.localPos;
+                restPosInfo.rotation = Quaternion.Euler(shAimPosInfo.localRot);
                 if (!aiming)
                 {
                     aiming = true;
                     sprinting = false;
                     reset = true;
-                    lerpToPos = aimPosition;
-                    lerpToRot = Quaternion.Euler(aimRotation);
+                    lerpToPos = shAimPosInfo.localPos;
+                    lerpToRot = Quaternion.Euler(shAimPosInfo.localRot);
                 }
             }
             else if (inputState.playerIsSprinting && inputState.playerIsGrounded)
             {
-                restPosition = sprintPosition;
-                restRotation = origRestRotation;
+                restPosInfo.localPos = sprintPosInfo.localPos;
+                restPosInfo.rotation = origRestPosInfo.rotation;
                 if (!sprinting)
                 {
                     sprinting = true;
                     aiming = false;
                     reset = true;
-                    lerpToPos = sprintPosition;
-                    lerpToRot = origRestRotation;
+                    lerpToPos = sprintPosInfo.localPos;
+                    lerpToRot = origRestPosInfo.rotation;
                 }
             }
             //Otherwise keep us in the hip-aimed location
             else
             {
-                restPosition = origRestPosition;
-                restRotation = origRestRotation;
+                restPosInfo.localPos = origRestPosInfo.localPos;
+                restPosInfo.rotation = origRestPosInfo.rotation;
                 if (aiming || sprinting)
                 {
                     aiming = false;
                     sprinting = false;
                     reset = true;
-                    lerpToPos = origRestPosition;
-                    lerpToRot = origRestRotation;
+                    lerpToPos = origRestPosInfo.localPos;
+                    lerpToRot = origRestPosInfo.rotation;
                 }
             }
         }
@@ -159,18 +152,18 @@ public class BobController : MonoBehaviour
             float inputSpeedClamped = Mathf.Clamp(inputSpeed, -1f, 1f);
             timer += bobSpeed * Time.deltaTime * inputSpeedClamped;
             //Bounce the position left/right in a cycle according to the timer
-            transform.localPosition = new Vector3(restPosition.x + Mathf.Cos(timer) * bobAmount, restPosition.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosition.z);
+            transform.localPosition = new Vector3(restPosInfo.localPos.x + Mathf.Cos(timer) * bobAmount, restPosInfo.localPos.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosInfo.localPos.z);
         }
         else
         {
             //Reset the bob cycle
             timer = Mathf.PI / 2;
-            if (restPosition != transform.localPosition && crouchPosition != transform.localPosition)
+            if (restPosInfo.localPos != transform.localPosition && crouchPosInfo.localPos != transform.localPosition)
             {
                 Vector3 newPosition = new Vector3(
-                    Mathf.Lerp(transform.localPosition.x, restPosition.x, transitionSpeed * Time.deltaTime),
-                    Mathf.Lerp(transform.localPosition.y, restPosition.y, transitionSpeed * Time.deltaTime),
-                    Mathf.Lerp(transform.localPosition.z, restPosition.z, transitionSpeed * Time.deltaTime)
+                    Mathf.Lerp(transform.localPosition.x, restPosInfo.localPos.x, transitionSpeed * Time.deltaTime),
+                    Mathf.Lerp(transform.localPosition.y, restPosInfo.localPos.y, transitionSpeed * Time.deltaTime),
+                    Mathf.Lerp(transform.localPosition.z, restPosInfo.localPos.z, transitionSpeed * Time.deltaTime)
                 );
                 transform.localPosition = newPosition;
             }
@@ -195,14 +188,14 @@ public class BobController : MonoBehaviour
                 transform.localRotation = Quaternion.Lerp(transform.localRotation, q, 4f * Time.deltaTime);
             }
             //Otherwise keep us in the resting position
-            else if (restRotation != transform.localRotation)
+            else if (restPosInfo.rotation != transform.localRotation)
             {
                 float rotLerpSpeed = 4f * Time.deltaTime;
                 if (inputState.playerIsAiming)
                 {
                     rotLerpSpeed = 20f * Time.deltaTime;
                 }
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, restRotation, rotLerpSpeed);
+                transform.localRotation = Quaternion.Lerp(transform.localRotation, restPosInfo.rotation, rotLerpSpeed);
             }
         }
     }

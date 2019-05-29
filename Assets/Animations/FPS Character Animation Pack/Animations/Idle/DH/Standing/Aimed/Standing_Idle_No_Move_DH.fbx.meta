@@ -1,5 +1,5 @@
 fileFormatVersion: 2
-guid: a6b32df160a66c14bbaf308a4851a5bf
+guid: 31e3030a093cafe4bbc976da9ab35e06
 ModelImporter:
   serializedVersion: 23
   fileIDToRecycleName:
@@ -131,7 +131,7 @@ ModelImporter:
     2100002: Avatar_SKIN
     2100004: Avater_PANTS
     4300000: HumanoidAvatar2_0
-    7400000: No_Move_Idle_HipAimed_SH
+    7400000: Standing_Idle_No_Move_DH
     9500000: //RootNode
     13700000: HumanoidAvatar2_0
   externalObjects: {}
@@ -163,7 +163,7 @@ ModelImporter:
     extraUserProperties: []
     clipAnimations:
     - serializedVersion: 16
-      name: No_Move_Idle_HipAimed_SH
+      name: Standing_Idle_No_Move_DH
       takeName: Take 001
       firstFrame: 0
       lastFrame: 190
