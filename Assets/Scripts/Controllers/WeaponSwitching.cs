@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class WeaponSwitching : AbstractBehavior
 {
-    private int selectedWeapon = 1;
+    private int selectedWeapon = 0;
     private bool switchInProgress = false;
     
     [SerializeField] private Transform weaponHolder;

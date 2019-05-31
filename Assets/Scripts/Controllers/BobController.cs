@@ -63,23 +63,35 @@ public class BobController : AbstractBehavior
     //Determine if we need to change the resting position of our cycle
     private void SetRestPositionAndRotation()
     {
+        bool singleHanded = inputState.playerWeaponStyle == WeaponStyles.SingleHanded;
+        bool doubleHanded = inputState.playerWeaponStyle == WeaponStyles.DoubleHanded;
         //Only change positions if we're controlling the body
         if (!isCamera)
         {
-            //When aiming the resting position centers on the screen
+            //When aiming change the resting position according to our current weapon
             if (inputState.playerIsAiming)
             {
-                restPosInfo.localPos = shAimPosInfo.localPos;
-                restPosInfo.rotation = Quaternion.Euler(shAimPosInfo.localRot);
+                AnimationPosInfo posInfo = null;
+                if (singleHanded)
+                {
+                    posInfo = shAimPosInfo;
+                }
+                else if (doubleHanded) 
+                {
+                    posInfo = dhAimPosInfo;
+                }
+                restPosInfo.localPos = posInfo.localPos;
+                restPosInfo.rotation = Quaternion.Euler(posInfo.localRot);
                 if (!aiming)
                 {
                     aiming = true;
                     sprinting = false;
                     reset = true;
-                    lerpToPos = shAimPosInfo.localPos;
-                    lerpToRot = Quaternion.Euler(shAimPosInfo.localRot);
+                    lerpToPos = posInfo.localPos;
+                    lerpToRot = Quaternion.Euler(posInfo.localRot);
                 }
             }
+            //Sprinting bob camera resting position
             else if (inputState.playerIsSprinting && inputState.playerIsGrounded)
             {
                 restPosInfo.localPos = sprintPosInfo.localPos;
@@ -93,7 +105,7 @@ public class BobController : AbstractBehavior
                     lerpToRot = origRestPosInfo.rotation;
                 }
             }
-            //Otherwise keep us in the hip-aimed location
+            //Hip-aimed bob camera resting position
             else
             {
                 restPosInfo.localPos = origRestPosInfo.localPos;
