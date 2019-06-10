@@ -11,6 +11,7 @@ public class MenuController : AbstractBehavior
 
     private bool paused = false;
 	private bool options = false;
+    private bool pickupAvailable = false;
 	private GameObject eventSystem;
 	private NetworkManager nm;
 	private GameManager gm;
@@ -20,6 +21,8 @@ public class MenuController : AbstractBehavior
 	private Transform pausePanel;
 	private Transform optionsPanel;
 
+    [SerializeField] private GameObject pickupOverlay;
+
 	void Start()
 	{
 		//Find the pause and options menu GameObjects and Panels
@@ -27,13 +30,13 @@ public class MenuController : AbstractBehavior
 		pausePanel = pauseMenu.transform.GetChild(0);
 		optionsMenu = GameObject.FindGameObjectWithTag("OptionsMenu");
 		optionsPanel = optionsMenu.transform.GetChild(0);
-		//Initialize a reference to the NetworkManager
-		nm = GameObject.FindObjectOfType<NetworkManager>();
+        //Initialize a reference to the NetworkManager
+        nm = GameObject.FindObjectOfType<NetworkManager>();
 		//Initialize a reference to the GameManager
 		gm = GameObject.FindObjectOfType<GameManager>();
 		//Find the event system
 		eventSystem = GameObject.Find("EventSystem");
-	}
+    }
 
 	void Update () 
 	{
@@ -62,6 +65,10 @@ public class MenuController : AbstractBehavior
 				TogglePauseMenu(false);
 			}
 		}
+        else if (pickupAvailable)
+        {
+
+        }
 	}
 
 	public void TogglePauseMenu(bool mainMenu)
@@ -166,6 +173,12 @@ public class MenuController : AbstractBehavior
     public void changeAimAssist(bool newValue)
     {
         aimAssist = newValue;
+    }
+
+    //Setter for showing the pickup message overlay
+    public void SetPickupAvailable(bool val)
+    {
+        pickupOverlay.SetActive(val);
     }
 
     private void LockMouseCursor()

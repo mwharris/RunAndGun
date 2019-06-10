@@ -2,10 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-[System.Serializable]
-public class Item
+public class Item : MonoBehaviour
 {
-    public int itemId;
-    public GameObject pickupPrefab;
-    public GameObject handheldPrefab;
+    [SerializeField] public ItemInfo info;
 }
