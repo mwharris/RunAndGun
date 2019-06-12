@@ -28,6 +28,7 @@ public class WeaponPickup : AbstractBehavior
     void Update ()
     {
         bool showPickupMessage = false;
+        string pickupName = "";
         int layerMask = 1 << 9;  //We only want to raycast on the Pickups layer (layer 9)
 
         //Raycast out from our look position
@@ -47,6 +48,7 @@ public class WeaponPickup : AbstractBehavior
                 if (!inventory.PlayerHasItem(pickupItem.itemId))
                 {
                     showPickupMessage = true;
+                    pickupName = pickupItem.itemName;
                 }
             }
         }
@@ -54,11 +56,11 @@ public class WeaponPickup : AbstractBehavior
         //Control the pickup message through the MenuController
         if (showPickupMessage)
         {
-            menuController.SetPickupAvailable(true);
+            menuController.SetPickupAvailable(true, pickupName);
         }
         else
         {
-            menuController.SetPickupAvailable(false);
+            menuController.SetPickupAvailable(false, null);
         }
 
         Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);

@@ -6,6 +6,7 @@ using UnityEngine;
 public class ItemInfo
 {
     public int itemId;
+    public string itemName;
     public GameObject pickupPrefab;
     public GameObject handheldPrefab;
 }

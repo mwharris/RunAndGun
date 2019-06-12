@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
 using System.Collections;
+using TMPro;
 
 public class FXManager : MonoBehaviour {
 
@@ -40,10 +41,12 @@ public class FXManager : MonoBehaviour {
             overlayTimer -= Time.deltaTime;
 		}
 		else if (displayedOverlay != null)
-		{
-            //Hide the contents of the overlay
-            displayedOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
-            displayedOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+        {
+            //Hide the contents of the overlay components
+            Transform label = displayedOverlay.transform.GetChild(0);
+            label.gameObject.SetActive(false);
+            Transform playerName = displayedOverlay.transform.GetChild(1);
+            playerName.gameObject.SetActive(false);
 		}
 	}
 
@@ -58,11 +61,20 @@ public class FXManager : MonoBehaviour {
 		{
             //Determine which overlay to display based on headshot or not
             displayedOverlay = headshot ? headshotOverlay : killOverlay;
-            //Set the name of the person we killed
-            displayedOverlay.transform.GetChild(1).GetComponent<Text>().text = deadPlayerName;
-            //Show the contents of the overlay
-            displayedOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
-            displayedOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+            //Show the label of the desired overlay
+            Transform labelTransform = displayedOverlay.transform.GetChild(0);
+            if (labelTransform != null)
+            {
+                labelTransform.gameObject.SetActive(true);
+            }
+            //Set the name of the person we killed and show the text
+            Transform playerNameTransform = displayedOverlay.transform.GetChild(1);
+            if (playerNameTransform != null)
+            {
+                playerNameTransform.gameObject.SetActive(true);
+                TextMeshProUGUI tmp = playerNameTransform.GetComponent<TextMeshProUGUI>();
+                tmp.text = deadPlayerName;
+            }
             //Put the overlay on a timer
             overlayTimer = 3.0f;
 		}

@@ -2,6 +2,7 @@
 using UnityEngine.UI;
 using UnityEngine.SceneManagement;
 using System.Collections;
+using TMPro;
 
 public class MenuController : AbstractBehavior 
 {
@@ -176,9 +177,13 @@ public class MenuController : AbstractBehavior
     }
 
     //Setter for showing the pickup message overlay
-    public void SetPickupAvailable(bool val)
+    public void SetPickupAvailable(bool val, string name)
     {
         pickupOverlay.SetActive(val);
+        if (name != null)
+        {
+            pickupOverlay.GetComponent<TextMeshProUGUI>().text = "Hold F to pickup " + name;
+        }
     }
 
     private void LockMouseCursor()
