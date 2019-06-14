@@ -23,7 +23,8 @@ public enum Buttons {
 	Lock,
 	Back,
     WeaponSwitchUp,
-    WeaponSwitchDown
+    WeaponSwitchDown,
+    Pickup
 }
 
 public enum Condition {
