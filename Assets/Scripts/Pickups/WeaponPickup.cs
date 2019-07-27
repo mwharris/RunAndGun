@@ -39,7 +39,7 @@ public class WeaponPickup : AbstractBehavior
 
         //Raycast and determine if we're looking at a weapon we can pick up
         PickupRaycastInfo pri = new PickupRaycastInfo();
-        DoPickupRaycast(pri);
+        //DoPickupRaycast(pri);
 
         //If we held the button for a little while looking at a weapon, pick up the weapon
         if (pri.showPickupMessage)
@@ -47,8 +47,8 @@ public class WeaponPickup : AbstractBehavior
             if (pickupBtn >= 1f && !pickedUpWeapon)
             {
                 pickedUpWeapon = true;
-                Debug.ClearDeveloperConsole();
-                Debug.Log("PICKUP WEAPON!");
+                //Debug.ClearDeveloperConsole();
+                //Debug.Log("PICKUP WEAPON!");
             }
         }
 
@@ -56,11 +56,11 @@ public class WeaponPickup : AbstractBehavior
         if (pickupBtn <= 0f)
         {
             pickedUpWeapon = false;
-            Debug.ClearDeveloperConsole();
-            Debug.Log("CAN PICKUP AGAIN!");
+            //Debug.ClearDeveloperConsole();
+            //Debug.Log("CAN PICKUP AGAIN!");
         }
 
-        Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);
+        //Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);
     }
 
     private void DoPickupRaycast(PickupRaycastInfo pri)
