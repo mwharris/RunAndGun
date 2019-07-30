@@ -48,9 +48,9 @@ public class InputAxisState {
 			//Check if our axis value passes our threshold value via the condition (Greater or Less)
 			switch (condition) {
 			case Condition.GreaterThan:
-				return val > offValue;
+                return val > offValue;
 			case Condition.LessThan:
-				return val < offValue;
+                return val < offValue;
 			}
 
 			//Default return false

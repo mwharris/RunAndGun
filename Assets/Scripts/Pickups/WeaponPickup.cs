@@ -56,8 +56,8 @@ public class WeaponPickup : AbstractBehavior
         if (pickupBtn <= 0f)
         {
             pickedUpWeapon = false;
-            Debug.ClearDeveloperConsole();
-            Debug.Log("CAN PICKUP AGAIN!");
+            //Debug.ClearDeveloperConsole();
+            //Debug.Log("CAN PICKUP AGAIN!");
         }
 
         Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);
@@ -81,7 +81,7 @@ public class WeaponPickup : AbstractBehavior
             {
                 //Look this item up in the database
                 ItemInfo pickupItem = itemDatabase.getItem(pickupInfo.itemId);
-                //Check if this item is already in our inventory
+                //Make sure this item isn't already in our inventory
                 if (!inventory.PlayerHasItem(pickupItem.itemId))
                 {
                     pri.showPickupMessage = true;

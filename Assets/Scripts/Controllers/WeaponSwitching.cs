@@ -17,8 +17,8 @@ public class WeaponSwitching : AbstractBehavior
 
     void Update ()
     {
-        bool weaponScrollUp = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
-        bool weaponScrollDown = inputState.GetButtonPressed(inputs[1]) && inputState.GetButtonHoldTime(inputs[1]) == 0;
+        bool weaponScrollUp = inputState.GetButtonPressed(inputs[0]);
+        bool weaponScrollDown = inputState.GetButtonPressed(inputs[1]);
         //Don't allow switching weapons if we're already switching
         if (!switchInProgress)
         {
