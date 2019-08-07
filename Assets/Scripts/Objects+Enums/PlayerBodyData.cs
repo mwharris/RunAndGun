@@ -4,22 +4,37 @@ using UnityEngine;
 [Serializable]
 public class PlayerBodyData
 {
-    public Transform parentGameObject;
     public Transform playerCamera;
     public Transform body;
     public Transform neck;
-    public Transform firstSpine;
-    public Transform lastSpine;
     public Transform weapon;
-    public Transform weaponHolder;
-    public Transform leftHandIKTarget;
     public Transform leftHandTarget;
-    public Transform rightHandIKTarget;
     public Transform rightHandTarget;
-    public Transform rightShoulder;
-    public Transform rightShoulderAxis;
 
-    public Animator bodyAnimator;
-    public Animator weaponAnim;
-    public Animator weaponIKAnim;
+    public Animator GetWeaponAnimator()
+    {
+        if (weapon != null)
+        {
+            return weapon.GetComponent<Animator>();
+        }
+        return null;
+    }
+
+    public WeaponData GetWeaponData()
+    {
+        if (weapon != null)
+        {
+            return weapon.GetComponent<WeaponData>();
+        }
+        return null;
+    }
+
+    public Animator GetBodyAnimator()
+    {
+        if (body != null)
+        {
+            return body.GetComponent<Animator>();
+        }
+        return null;
+    }
 }

@@ -24,28 +24,27 @@ public class ControlAnimations : AbstractBehavior
     void Update()
     {
         playerBodyData = bodyControl.PlayerBodyData;
+        WeaponData currWeaponData = playerBodyData.GetWeaponData();
 
         //Alias player body data information for later
-        Animator bodyAnim = playerBodyData.bodyAnimator;
-        Animator weaponIKAnim = playerBodyData.weaponIKAnim;
-        Animator weaponAnim = playerBodyData.weaponAnim;
-        Animator thirdPersonAnim = bodyControl.ThirdPersonBody.bodyAnimator;
+        Animator bodyAnim = playerBodyData.GetBodyAnimator();
+        //Animator weaponIKAnim = currWeaponData.WeaponIKAnimator;
+        Animator weaponAnim = playerBodyData.weapon.GetComponent<Animator>();
+        Animator thirdPersonAnim = bodyControl.ThirdPersonBody.GetBodyAnimator();
 
         //Set various Animator properties to control the animators properly
         bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
         thirdPersonAnim.SetBool("Sprinting", inputState.playerIsSprinting);
-
-        HandleBodyPlacement(inputState.playerIsAiming);
 
         bodyAnim.SetBool("SingleHanded", inputState.playerWeaponStyle == WeaponStyles.SingleHanded);
         bodyAnim.SetBool("DoubleHanded", inputState.playerWeaponStyle == WeaponStyles.DoubleHanded);
 
         bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
         thirdPersonAnim.SetBool("Aiming", inputState.playerIsAiming);
-        if (weaponIKAnim.gameObject.activeSelf)
+        /*if (weaponIKAnim.gameObject.activeSelf)
         {
             weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
-        }
+        }*/
         //weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
 
         bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
@@ -64,7 +63,7 @@ public class ControlAnimations : AbstractBehavior
             thirdPersonAnim.SetTrigger("ReloadTrig");
         }
 
-        HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, weaponIKAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
+        HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 
         bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
         bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
@@ -84,41 +83,7 @@ public class ControlAnimations : AbstractBehavior
         thirdPersonAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 
-    void HandleBodyPlacement(bool isAiming)
-    {
-        float lerpSpeed = Time.deltaTime * 20f;
-        Vector3 currPos = playerBodyData.body.localPosition;
-        Quaternion currRot = playerBodyData.body.localRotation;
-        if (inputState.playerIsCrouching)
-        {
-            //If both Aiming and Crouching, return to normal position.
-            //BobController will handle the aiming.
-            if (isAiming)
-            {
-                currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
-                currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0, 0, 0)), lerpSpeed);
-            }
-            else
-            {
-                currPos = Vector3.Lerp(currPos, crouchPosition.localPos, Time.deltaTime * 10f);
-                currRot = Quaternion.Lerp(currRot, Quaternion.Euler(crouchPosition.localRot), Time.deltaTime * 10f);
-            }
-        }
-        else if (inputState.playerWeaponStyle == WeaponStyles.DoubleHanded)
-        {
-            currPos = Vector3.Lerp(currPos, dhPosition.localPos, lerpSpeed);
-            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(dhPosition.localRot), lerpSpeed);
-        }
-        else
-        {
-            currPos = Vector3.Lerp(currPos, origLocalPos, lerpSpeed);
-            currRot = Quaternion.Lerp(currRot, Quaternion.Euler(new Vector3(0, 0, 0)), lerpSpeed);
-        }
-        playerBodyData.body.localPosition = currPos;
-        playerBodyData.body.localRotation = currRot;
-    }
-
-    void HandleWallRunningAnimations(Animator bodyAnim, Animator thirdPersonAnim, Animator weaponIKAnim, bool wrLeft, bool wrRight)
+    void HandleWallRunningAnimations(Animator bodyAnim, Animator thirdPersonAnim, bool wrLeft, bool wrRight)
     {
         //Tell both animators that we are wall-running
         bodyAnim.SetBool("WallRunningLeft", inputState.playerIsWallRunningLeft);

@@ -54,7 +54,8 @@ public class NetworkCharacter : Photon.MonoBehaviour
     void Update()
     {
         //Get the body components we need to update based on if we're Third or First person
-        var playerBodyData = bodyControl.PlayerBodyData;
+        PlayerBodyData playerBodyData = bodyControl.PlayerBodyData;
+        Animator bodyAnimator = playerBodyData.GetBodyAnimator();
 
         //Only update a non-local player. Local players are updated by First Person Controller
         if (!photonView.isMine)
@@ -71,15 +72,15 @@ public class NetworkCharacter : Photon.MonoBehaviour
             playerBodyData.playerCamera.localRotation = Quaternion.Lerp(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
 
             //Animation variables
-            playerBodyData.bodyAnimator.SetBool("Sprinting", isSprinting);
-            playerBodyData.bodyAnimator.SetBool("Aiming", isAiming);
-            playerBodyData.bodyAnimator.SetBool("Jumping", isAirborne);
-            playerBodyData.bodyAnimator.SetBool("Crouching", isCrouching);
-            playerBodyData.bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
-            playerBodyData.bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
-            playerBodyData.bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
-            playerBodyData.bodyAnimator.SetFloat("SideSpeed", sideSpeed);
-            playerBodyData.bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
+            bodyAnimator.SetBool("Sprinting", isSprinting);
+            bodyAnimator.SetBool("Aiming", isAiming);
+            bodyAnimator.SetBool("Jumping", isAirborne);
+            bodyAnimator.SetBool("Crouching", isCrouching);
+            bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
+            bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
+            bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
+            bodyAnimator.SetFloat("SideSpeed", sideSpeed);
+            bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
             crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);

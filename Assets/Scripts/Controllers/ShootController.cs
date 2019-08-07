@@ -4,11 +4,12 @@ using System.Collections;
 
 public class ShootController : AbstractBehavior 
 {
-	//General global variables - public
-	private Camera playerCamera;
-	public AudioSource aSource;
+    //General global variables - Set by Unity
+    [SerializeField] private float kickDampening = 0.25f;
+    [SerializeField] private AudioSource aSource;
 
     //General global variables - private
+    private Camera playerCamera;
     private Animator reloadAnimator;
 	private float baseFOV;
 	private PhotonView pView;
@@ -48,7 +49,7 @@ public class ShootController : AbstractBehavior
         bodyControl = GetComponent<BodyController>();
         SetBodyControlVars();
         playerCamera = pbd.playerCamera.GetComponent<Camera>();
-        reloadAnimator = pbd.bodyAnimator;
+        reloadAnimator = pbd.GetBodyAnimator();
         //Initialize timers
         cooldownTimer = 0.0f;
 		hitIndicatorTimerMax = 0.3f;
@@ -67,6 +68,8 @@ public class ShootController : AbstractBehavior
 		//Initialize a reference to the bullet count
 		GameObject txt = GameObject.FindGameObjectWithTag("BulletCount");
 		bulletCountText = txt.GetComponent<Text>();
+        bulletCountText.text = currWeaponData.MagazineCapacity.ToString();
+        bulletCount = currWeaponData.MagazineCapacity;
         //...and max bullet capacity
         txt = GameObject.FindGameObjectWithTag("ClipSize");
 		clipSizeText = txt.GetComponent<Text>();
@@ -100,6 +103,7 @@ public class ShootController : AbstractBehavior
 		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
 			bulletCountText.text = bulletCount.ToString();
+            clipSizeText.text = currWeaponData.MagazineCapacity.ToString();
 
 			//Determine if we are attempting to aim our weapon
 			if(isAimDown)
@@ -137,7 +141,7 @@ public class ShootController : AbstractBehavior
 				Reload();
 			}
 		}
-		else {
+		else if (gm.GetGameState() == GameManager.GameState.playing) {
 			//Update the displayed bullet count
 			bulletCountText.text = "--";
 			//Decrement the reload timer if we are reloading
@@ -160,10 +164,13 @@ public class ShootController : AbstractBehavior
 		//Tell the animator to pull the gun to our face
 		inputState.playerIsAiming = true;
 		//Disable the crosshairs
-		foreach(Transform child in currWeaponData.ReticleParent.transform)
-		{
-            child.GetComponent<Image>().enabled = false;
-		}
+        if (currWeaponData.HideReticleOnAim)
+        {
+            foreach (Transform child in currWeaponData.ReticleParent.transform)
+            {
+                child.GetComponent<Image>().enabled = false;
+            }
+        }
         //Make sure we turn off sprinting
         inputState.playerIsSprinting = false;
 		//Zoom the camera in
@@ -208,12 +215,16 @@ public class ShootController : AbstractBehavior
 		{
 			rc.StartRecoil(aimRecoilAmount);
 			ac.AddShootingOffset(inputState.playerIsAiming);
-		}
+            pbd.body.transform.localPosition += kickDampening * currWeaponData.KickAmount;
+            pbd.body.transform.localEulerAngles += kickDampening * currWeaponData.RotKickAmount;
+        }
 		else
 		{
 			rc.StartRecoil(hipRecoilAmount);
 			ac.AddShootingOffset(inputState.playerIsAiming);
-		}
+            pbd.body.transform.localPosition += currWeaponData.KickAmount;
+            pbd.body.transform.localEulerAngles += currWeaponData.RotKickAmount;
+        }
 
 		//Check if we hit a red object
 		bool hitRed = false;
@@ -268,7 +279,7 @@ public class ShootController : AbstractBehavior
 				GunFX(info.hitPoint, hitEnemy, hitRed);
 			}
 		}
-		//Hit nothing, show bull FX anyway
+		//Hit nothing, show bullet FX anyway
 		else if(fxManager != null)
 		{
             //Make the FX reach a certain distance from the camera

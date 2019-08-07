@@ -22,8 +22,6 @@ public class MenuController : AbstractBehavior
 	private Transform pausePanel;
 	private Transform optionsPanel;
 
-    [SerializeField] private GameObject pickupOverlay;
-
 	void Start()
 	{
 		//Find the pause and options menu GameObjects and Panels
@@ -174,16 +172,6 @@ public class MenuController : AbstractBehavior
     public void changeAimAssist(bool newValue)
     {
         aimAssist = newValue;
-    }
-
-    //Setter for showing the pickup message overlay
-    public void SetPickupAvailable(bool val, string name)
-    {
-        pickupOverlay.SetActive(val);
-        if (name != null)
-        {
-            pickupOverlay.GetComponent<TextMeshProUGUI>().text = "Hold F to pickup " + name;
-        }
     }
 
     private void LockMouseCursor()

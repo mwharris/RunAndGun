@@ -4,33 +4,44 @@ using System.Collections;
 public class RecoilController : MonoBehaviour 
 {	
 	public float maxRecoil_x;
-	public float recoilSpeed;
 	public float recoil;
 	public float currentRecoil;
 
+    private float recoilSpeed = 4f;
+
     private Transform recoilMod;
     private BodyController bodyControl;
+    private PlayerBodyData playerBodyData;
+    private WeaponData currWeaponData;
 
     private void Start()
     {
         bodyControl = GetComponent<BodyController>();
-        recoilMod = bodyControl.PlayerBodyData.playerCamera.parent;
+        SetVars();
+    }
+
+    private void SetVars()
+    {
+        playerBodyData = bodyControl.PlayerBodyData;
+        recoilMod = playerBodyData.playerCamera.parent;
+        currWeaponData = playerBodyData.GetWeaponData();
+        recoilSpeed = currWeaponData.RecoilSpeed;
     }
 
     void Update ()
     {
-        recoilMod = bodyControl.PlayerBodyData.playerCamera.parent;
-        //Handle the recoiling
-        Recoiling();
+        SetVars();
+        HandleRecoil();
 	}
 
-	public void StartRecoil(float recoilAmount)
+    //Add a value to the recoil amount
+    public void StartRecoil(float recoilAmount)
 	{
-		//Add to the recoil amount
 		recoil += recoilAmount;
 	}
 
-	private void Recoiling()
+    //Slerp the Recoil Transform depending on the recoil amount
+	private void HandleRecoil()
 	{
 		if(recoil > 0)
 		{

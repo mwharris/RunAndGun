@@ -13,7 +13,6 @@ public class FXManager : MonoBehaviour {
 	public GameObject bullethole;
 	public AudioSource aSource;
 	public AudioClip[] footstepSounds;   
-	public AudioClip gunShot;
 	public AudioClip landingSound; 
 	public AudioClip doubleJumpSound;   
 	public AudioClip hitSound;
@@ -89,23 +88,22 @@ public class FXManager : MonoBehaviour {
         {
             BodyController bc = player.GetComponent<BodyController>();
             PlayerBodyData pbd = bc.PlayerBodyData;
-            //Find the location of that player's weapon's fire point
-            Transform playerWeapon = player.GetComponent<BodyController>().PlayerBodyData.weapon;
-            Transform weaponFirePoint = playerWeapon.GetComponent<WeaponData>().FirePoint;
+            Transform playerWeapon = pbd.weapon;
+            WeaponData weaponData = pbd.GetWeaponData();
+            Animator weaponAnimator = pbd.GetWeaponAnimator();
+            //Find the location of that player's weapon fire point
+            Transform weaponFirePoint = weaponData.FirePoint;
             Vector3 startPos = weaponFirePoint.position;
-            //Show the bullet FX
+            //Show the bullet FX from the fire point to our destination
             GameObject bulletFX = (GameObject)Instantiate(bulletFxPrefab, startPos, Quaternion.LookRotation(endPos - startPos));
             //Play the shooting animation
-            Animator parentAnim = weaponFirePoint.parent.GetComponent<Animator>();
-            parentAnim.SetTrigger("ShootTrig");
-            Animator grandParentAnim = weaponFirePoint.parent.parent.GetComponent<Animator>();
-            grandParentAnim.SetTrigger("ShootTrig");
+            weaponAnimator.SetTrigger("ShootTrig");
             //Show our line rendered bullet trail
             LineRenderer lr = bulletFX.transform.Find("LineFX").GetComponent<LineRenderer>();
             lr.SetPosition(0, startPos);
             lr.SetPosition(1, endPos);
             //Play our gun shot
-            AudioSource.PlayClipAtPoint(gunShot, startPos);
+            AudioSource.PlayClipAtPoint(weaponData.ShotClip, startPos);
             //Show FX
             if (hitEnemy)
             {

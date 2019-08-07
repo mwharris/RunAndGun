@@ -4,32 +4,38 @@ using UnityEngine;
 
 public class WeaponPickup : AbstractBehavior
 {
+    public bool ShowPickupMessage = false;
+    public string PickupWeaponName = null;
+
     private GameManager gm;
     private ItemDatabase itemDatabase;
     private PlayerInventory inventory;
     private BodyController bodyController;
-    private MenuController menuController;
     private Transform playerCamera;
-
+    
     private float pickupRayLength = 5f;
     private bool pickedUpWeapon = false;
+    private PickupRaycastInfo pickupRayInfo;
 
+    [SerializeField] private Transform weaponPoint;
+    [SerializeField] private WeaponSwitcher weaponSwitcher;
+    
     //Inner class to help with function return
     class PickupRaycastInfo
     {
         public bool showPickupMessage = false;
         public string pickupWeaponName = "";
-        public ItemInfo pickupWeaponInfo;
+        public ItemInfo pickupWeaponInfo = null;
     }
 
     private void Start()
     {
         inventory = GetComponent<PlayerInventory>();
         gm = FindObjectOfType<GameManager>();
-        menuController = FindObjectOfType<MenuController>();
         itemDatabase = gm.GetComponent<ItemDatabase>();
         bodyController = GetComponent<BodyController>();
         playerCamera = bodyController.PlayerBodyData.playerCamera;
+        pickupRayInfo = new PickupRaycastInfo();
     }
 
     void Update ()
@@ -38,29 +44,37 @@ public class WeaponPickup : AbstractBehavior
         float pickupBtn = inputState.GetButtonHoldTime(inputs[0]);
 
         //Raycast and determine if we're looking at a weapon we can pick up
-        PickupRaycastInfo pri = new PickupRaycastInfo();
-        DoPickupRaycast(pri);
-
-        //If we held the button for a little while looking at a weapon, pick up the weapon
-        if (pri.showPickupMessage)
+        pickupRayInfo.showPickupMessage = false;
+        pickupRayInfo.pickupWeaponName = null;
+        pickupRayInfo.pickupWeaponInfo = null;
+        DoPickupRaycast(pickupRayInfo);
+        
+        if (pickupRayInfo.showPickupMessage)
         {
-            if (pickupBtn >= 1f && !pickedUpWeapon)
+            //Prompt the user to pickup the weapon
+            ShowPickupMessage = true;
+            PickupWeaponName = pickupRayInfo.pickupWeaponName;
+            //Actually pickup the weapon if we are holding the button
+            Debug.Log("Pickup Button Hold Time: " + pickupBtn);
+            if (pickupBtn >= 0f && !pickedUpWeapon)
             {
+                DoWeaponPickup(pickupRayInfo);
                 pickedUpWeapon = true;
-                Debug.ClearDeveloperConsole();
-                Debug.Log("PICKUP WEAPON!");
             }
+        }
+        else
+        {
+            ShowPickupMessage = false;
+            PickupWeaponName = null;
         }
 
         //Reset our pickedUpWeapon flag whenever we release the held button
         if (pickupBtn <= 0f)
         {
             pickedUpWeapon = false;
-            //Debug.ClearDeveloperConsole();
-            //Debug.Log("CAN PICKUP AGAIN!");
         }
 
-        Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);
+        //Debug.DrawRay(playerCamera.position, playerCamera.forward * pickupRayLength, Color.red);
     }
 
     private void DoPickupRaycast(PickupRaycastInfo pri)
@@ -80,24 +94,49 @@ public class WeaponPickup : AbstractBehavior
             if (pickupInfo != null)
             {
                 //Look this item up in the database
-                ItemInfo pickupItem = itemDatabase.getItem(pickupInfo.itemId);
+                ItemInfo pickupItem = itemDatabase.GetItem(pickupInfo.itemId);
                 //Make sure this item isn't already in our inventory
                 if (!inventory.PlayerHasItem(pickupItem.itemId))
                 {
                     pri.showPickupMessage = true;
                     pri.pickupWeaponName = pickupItem.itemName;
+                    pri.pickupWeaponInfo = pickupItem;
                 }
             }
         }
+    }
 
-        //Control the pickup message through the MenuController
-        if (pri.showPickupMessage)
+    private void DoWeaponPickup(PickupRaycastInfo pri)
+    {
+        //Get a reference to our currently held weapon
+        Transform currWeaponTransform = bodyController.PlayerBodyData.weapon;
+        Item currWeaponItem = currWeaponTransform.GetComponent<Item>();
+
+        GameObject newWeaponGo = null;
+        if (weaponPoint != null)
         {
-            menuController.SetPickupAvailable(true, pri.pickupWeaponName);
+            //Instantiate our new weapon prefab
+            newWeaponGo = Instantiate(pri.pickupWeaponInfo.handheldPrefab, weaponPoint, false);
+            newWeaponGo.SetActive(false);
+
+            //Update our PlayerBodyData with the new weapon transform
+            bodyController.PlayerBodyData.weapon = newWeaponGo.transform;
+
+            //Tell the inventory to add/replace this weapon
+            Item newWeaponItem = newWeaponGo.GetComponent<Item>();
+            int index = inventory.PlaceWeapon(newWeaponItem, currWeaponItem);
+
+            //Make sure our new weapon gameObject is in the correct sibling location
+            newWeaponGo.transform.SetSiblingIndex(index);
+
+            //Switch to this new weapon
+            weaponSwitcher.SwitchWeaponTo(index);
+            
+            //TODO: removed any replaced weapons
         }
         else
         {
-            menuController.SetPickupAvailable(false, null);
+            Debug.LogError("Weapon Point Not Set!!!");
         }
     }
 }
