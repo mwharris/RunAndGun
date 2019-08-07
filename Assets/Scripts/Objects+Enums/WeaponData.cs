@@ -27,6 +27,12 @@ public class WeaponData : MonoBehaviour
     [SerializeField] private Vector3 rotKickAmount = Vector3.zero;
     public Vector3 RotKickAmount { get { return rotKickAmount; } }
 
+    [SerializeField] private float kickReturnSpeed = 0f;
+    public float KickReturnSpeed { get { return kickReturnSpeed; } }
+
+    [SerializeField] private float kickReturnAimMultiplier = 0f;
+    public float KickReturnAimMultiplier { get { return kickReturnAimMultiplier; } }
+
     [SerializeField] private Transform firePoint;
     public Transform FirePoint { get { return firePoint; } }
 

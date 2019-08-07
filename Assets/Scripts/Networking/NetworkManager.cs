@@ -149,6 +149,7 @@ public class NetworkManager : AbstractBehavior {
         myPlayer.GetComponentInChildren<Camera>().enabled = true;
         myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
         myPlayer.GetComponentInChildren<ControlAnimations>().enabled = true;
+        myPlayer.GetComponentInChildren<WeaponPickup>().enabled = true;
         //myPlayer.GetComponentInChildren<IKHandler>().enabled = true;
         myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
     }
@@ -184,7 +185,7 @@ public class NetworkManager : AbstractBehavior {
 		else if(PhotonNetwork.offlineMode)
 		{
 			PhotonNetwork.LeaveRoom();
-			Destroy(GameObject.FindGameObjectWithTag("Player"));
+            Destroy(gm.MyPlayer);
 		}
 		//Enable the lobby camera
 		lobbyCamera.gameObject.SetActive(true);

@@ -21,11 +21,18 @@ public class IKHandler : MonoBehaviour
     private bool isAiming;
     private float targetWeight = 0f;
     private float lookWeight = 0f;
+    private GameObject aimHelperGo;
 
     void Start ()
     {
-        aimHelper = new GameObject().transform;
+        aimHelperGo = new GameObject();
+        aimHelper = aimHelperGo.transform;
         anim = GetComponent<Animator>();
+    }
+
+    void OnDestroy()
+    {
+        Destroy(aimHelperGo);
     }
 
     //Helper function to set isAiming and isReloading variables based on player inputs
