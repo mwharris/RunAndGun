@@ -154,8 +154,11 @@ public class ShootController : AbstractBehavior
 
     private void SetBodyControlVars()
     {
-        pbd = bodyControl.PlayerBodyData;
-        currWeaponData = pbd.weapon.GetComponent<WeaponData>();
+        if (bodyControl != null)
+        {
+            pbd = bodyControl.PlayerBodyData;
+            currWeaponData = pbd.weapon.GetComponent<WeaponData>();
+        }
     }
 
     //Handle aiming our weapon
@@ -396,4 +399,14 @@ public class ShootController : AbstractBehavior
 		yield return new WaitForSeconds(time);
         inputState.playerIsShooting = false;
 	}
+
+    //Called from WeaponSwitcher to set our magazine size / capacity when weapon is switched
+    public void SetMagazineSize()
+    {
+        SetBodyControlVars();
+        if (currWeaponData != null)
+        {
+            bulletCount = currWeaponData.MagazineCapacity;
+        }
+    }
 }

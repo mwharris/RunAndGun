@@ -5,8 +5,8 @@ using UnityEngine;
 public class SmoothReturn : AbstractBehavior
 {
     [SerializeField] private BodyController bodyController;
-    [SerializeField] private float dhLerpReturnSpeed = 0f;
-    [SerializeField] private float dhAimLerpMultiplier = 2f;
+    //[SerializeField] private float dhLerpReturnSpeed = 0f;
+    //[SerializeField] private float dhAimLerpMultiplier = 2f;
 
     private Vector3 currWeaponDefaultPos;
     private Vector3 currWeaponDefaultRot;

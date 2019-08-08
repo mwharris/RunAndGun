@@ -56,7 +56,7 @@ public class WeaponPickup : AbstractBehavior
             PickupWeaponName = pickupRayInfo.pickupWeaponName;
             //Actually pickup the weapon if we are holding the button
             Debug.Log("Pickup Button Hold Time: " + pickupBtn);
-            if (pickupBtn >= 0f && !pickedUpWeapon)
+            if (pickupBtn >= 0.8f && !pickedUpWeapon)
             {
                 DoWeaponPickup(pickupRayInfo);
                 pickedUpWeapon = true;
