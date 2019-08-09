@@ -40,9 +40,11 @@ public class BobController : AbstractBehavior
     private bool reset = false;
 
     void Update()
-	{
+    {
+        bool singleHanded = inputState.playerWeaponStyle == WeaponStyles.SingleHanded;
+        bool doubleHanded = inputState.playerWeaponStyle == WeaponStyles.DoubleHanded;
         //Determine if we need to reset our Rest Positions based on player state.
-        SetRestPositionAndRotation();
+        SetRestPositionAndRotation(singleHanded, doubleHanded);
         //Call functions appropriate to the above function call
         if (reset)
         {
@@ -51,7 +53,7 @@ public class BobController : AbstractBehavior
         else
         {
             HandleBob();
-            HandleTilt();
+            HandleTilt(doubleHanded);
         }
         //Completed a full cycle. Reset to 0 to avoid bloated values.
         if (timer > Mathf.PI * 2)
@@ -61,10 +63,8 @@ public class BobController : AbstractBehavior
 	}
 
     //Determine if we need to change the resting position of our cycle
-    private void SetRestPositionAndRotation()
+    private void SetRestPositionAndRotation(bool singleHanded, bool doubleHanded)
     {
-        bool singleHanded = inputState.playerWeaponStyle == WeaponStyles.SingleHanded;
-        bool doubleHanded = inputState.playerWeaponStyle == WeaponStyles.DoubleHanded;
         //Only change positions if we're controlling the body
         if (!isCamera)
         {
@@ -183,7 +183,7 @@ public class BobController : AbstractBehavior
     }
 
     //Handle tilting the body when moving horizontally
-    private void HandleTilt()
+    private void HandleTilt(bool doubleHanded)
     {
         if (!isCamera)
         {
@@ -194,7 +194,14 @@ public class BobController : AbstractBehavior
                 float tiltAngle = Input.GetAxisRaw("Horizontal") * -5f;
                 if (inputState.playerIsAiming)
                 {
-                    tiltAngle = Input.GetAxisRaw("Horizontal") * -6f;
+                    if (doubleHanded)
+                    {
+                        tiltAngle = Input.GetAxisRaw("Horizontal") * -1.5f;
+                    }
+                    else
+                    {
+                        tiltAngle = Input.GetAxisRaw("Horizontal") * -6f;
+                    }
                 }
                 Quaternion q = Quaternion.Euler(bueler.x, bueler.y, tiltAngle);
                 transform.localRotation = Quaternion.Lerp(transform.localRotation, q, 4f * Time.deltaTime);
