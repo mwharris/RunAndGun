@@ -32,7 +32,8 @@ public class AccuracyController : AbstractBehavior
 	private RectTransform botRet;
 	private RectTransform leftRet;
 	private RectTransform rightRet;
-	private float topRetY;
+    private RectTransform centerRet;
+    private float topRetY;
 	private float botRetY;
 	private float leftRetX;
 	private float rightRetX;
@@ -51,8 +52,9 @@ public class AccuracyController : AbstractBehavior
 		botRet = reticleParent.GetChild(1).GetComponent<RectTransform>();
 		leftRet = reticleParent.GetChild(2).GetComponent<RectTransform>();
 		rightRet = reticleParent.GetChild(3).GetComponent<RectTransform>();
-		//Get the initial x and y values for our reticles
-		topRetY = topRet.anchoredPosition3D.y;
+        centerRet = reticleParent.GetChild(4).GetComponent<RectTransform>();
+        //Get the initial x and y values for our reticles
+        topRetY = topRet.anchoredPosition3D.y;
 		botRetY = botRet.anchoredPosition3D.y;
 		leftRetX = leftRet.anchoredPosition3D.x;
 		rightRetX = rightRet.anchoredPosition3D.x;
@@ -209,5 +211,6 @@ public class AccuracyController : AbstractBehavior
         botRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
         leftRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
         rightRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
+        centerRet.GetComponent<Image>().color = lockedOn ? Color.red : Color.white;
     }
 }

@@ -171,11 +171,8 @@ public class WallRunController : AbstractBehavior {
 	 */
     public void SetWallRunLookRotation(bool initial)
     {
-        Vector3 testNormal = wallRunNormal;
-		Vector3 testForward = transform.forward;
-        //Get a vector 90 degrees to the left and right of the normal
-        testNormal = Quaternion.Euler(0,90,0) * testNormal;
-        //Calculate cross products between up and our wallrun wall's normal
+        //Calculate cross product between up and our wallrun wall's normal.
+        //This will yield a vector parallel to the wall we are currently running on.
         Vector3 cross = new Vector3();
 		if(inputState.playerIsWallRunningRight)
 		{
@@ -185,16 +182,14 @@ public class WallRunController : AbstractBehavior {
 		{
             cross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 		}
-        //Cross is now a vector parallel to the wall - rotate our forward towards this
-		testForward = Vector3.RotateTowards(testForward, cross, 10, 0.0f);
         //Determine if we are looking into the wall when we initiate wall-running
-        Vector3 perp = Vector3.Cross(testForward, transform.forward);
+        Vector3 perp = Vector3.Cross(cross, transform.forward);
         float dir = Vector3.Dot(perp, Vector3.up);
         //Lerp our body rotation parallel to the wall when running along a curved surface.
         //This handles when we reach a new surface normal on the curved wall.
         if (initial && wallRunTag == "CurvedWall")
         {
-            Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+            Quaternion newQuat = Quaternion.LookRotation(new Vector3(cross.x, 0, cross.z));
             transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 10f);
         }
         //Lerp our body rotation parallel to flat walls only when we're looking into the wall.
@@ -203,7 +198,7 @@ public class WallRunController : AbstractBehavior {
             || dir > 0.0 && inputState.playerIsWallRunningRight
             || dir < 0.0 && inputState.playerIsWallRunningLeft)
         {
-            Quaternion newQuat = Quaternion.LookRotation(new Vector3(testForward.x, 0, testForward.z));
+            Quaternion newQuat = Quaternion.LookRotation(new Vector3(cross.x, 0, cross.z));
             transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
         }
 	}

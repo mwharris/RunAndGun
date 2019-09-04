@@ -6,7 +6,7 @@ using TMPro;
 
 public class MenuController : AbstractBehavior 
 {
-	[HideInInspector] public float mouseSensitivity = 2.5f;
+	[HideInInspector] public float mouseSensitivity = 2f;
 	[HideInInspector] public bool invertY = false;
     [HideInInspector] public bool aimAssist = true;
 
@@ -35,6 +35,7 @@ public class MenuController : AbstractBehavior
 		gm = GameObject.FindObjectOfType<GameManager>();
 		//Find the event system
 		eventSystem = GameObject.Find("EventSystem");
+        aimAssist = true;
     }
 
 	void Update () 

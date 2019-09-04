@@ -48,7 +48,7 @@ public class PlayerLook
         float totalSensitivity = lri.mouseSensitivity;
         if (lri.isAiming || lri.lockedOnPlayer)
         {
-            totalSensitivity *= 0.5f;
+            totalSensitivity *= 0.4f;
         }
         Vector2 inputs = lri.lookInput * totalSensitivity;
         //Invert the Y input if Options dictates it
