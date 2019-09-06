@@ -6,7 +6,7 @@ using TMPro;
 
 public class MenuController : AbstractBehavior 
 {
-	[HideInInspector] public float mouseSensitivity = 2f;
+	[HideInInspector] public float mouseSensitivity = 1f;
 	[HideInInspector] public bool invertY = false;
     [HideInInspector] public bool aimAssist = true;
 

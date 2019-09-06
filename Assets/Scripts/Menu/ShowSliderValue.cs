@@ -21,6 +21,6 @@ public class ShowSliderValue : MonoBehaviour
 
     private void SetSliderText(float value)
     {
-        percentageText.text = Mathf.RoundToInt((value / 5) * 100) + "%";
+		percentageText.text = Mathf.RoundToInt((value / slider.maxValue) * 100) + "%";
     }
 }
