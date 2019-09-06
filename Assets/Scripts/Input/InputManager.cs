@@ -60,8 +60,8 @@ public class InputAxisState {
 
 	public float value {
 		get {
-			//Get the value of the acis using axisName
-			float val = Input.GetAxis(axisName);
+			//Get the value of the axis using axisName
+			float val = Input.GetAxisRaw(axisName);
 
 			//Check if our axis value passes our threshold value via the condition (Greater or Less)
 			switch (condition) {
