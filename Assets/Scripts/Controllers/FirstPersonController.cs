@@ -16,9 +16,9 @@ public class FirstPersonController : AbstractBehavior
 	private Vector2 moveInput;
 
 	/// OPTIONS VARIABLES //////////////////////
-	private float mouseSensitivity = 5.0f;
+	private float mouseSensitivity = 0f;
 	private bool invertY = false;
-    private bool aimAssist = true;
+    private bool aimAssist = false;
 	////////////////////////////////////////////
 
 	/// MOUSE CONTROL VARIABLES ////////////////
@@ -171,9 +171,9 @@ public class FirstPersonController : AbstractBehavior
     void GatherOptions()
 	{
 		if (menuController != null) {
-			mouseSensitivity = menuController.mouseSensitivity;
-			invertY = menuController.invertY;
-            aimAssist = menuController.aimAssist;
+			mouseSensitivity = menuController.MouseSensitivity;
+			invertY = menuController.InvertY;
+            aimAssist = menuController.AimAssist;
 		}
 	}
 

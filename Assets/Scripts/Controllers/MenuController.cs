@@ -6,9 +6,9 @@ using TMPro;
 
 public class MenuController : AbstractBehavior 
 {
-	[HideInInspector] public float mouseSensitivity = 1f;
-	[HideInInspector] public bool invertY = false;
-    [HideInInspector] public bool aimAssist = true;
+	public float MouseSensitivity { get; set; } = 1f;
+	public bool InvertY { get; set; } = false;
+	public bool AimAssist { get; set; } = true;
 
     private bool paused = false;
 	private bool options = false;
@@ -35,7 +35,6 @@ public class MenuController : AbstractBehavior
 		gm = GameObject.FindObjectOfType<GameManager>();
 		//Find the event system
 		eventSystem = GameObject.Find("EventSystem");
-        aimAssist = true;
     }
 
 	void Update () 
@@ -160,19 +159,19 @@ public class MenuController : AbstractBehavior
 	//Update the mouse sensitivity in the First Person Controller
 	public void changeMouseSensitivity(float newValue)
 	{
-		mouseSensitivity = newValue;
+		MouseSensitivity = newValue;
 	}
 
 	//Update the invert y setting in the First Person Controller
 	public void changeInvertY(bool newValue)
 	{
-		invertY = newValue;
+		InvertY = newValue;
     }
 
     //Update whether aim assist to enabled or disabled in the First Person Controller
     public void changeAimAssist(bool newValue)
     {
-        aimAssist = newValue;
+        AimAssist = newValue;
     }
 
     private void LockMouseCursor()
