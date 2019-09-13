@@ -62,6 +62,10 @@ public class ControlAnimations : AbstractBehavior
             bodyAnim.SetTrigger("ReloadTrig");
             thirdPersonAnim.SetTrigger("ReloadTrig");
         }
+        else {
+            bodyAnim.ResetTrigger("ReloadTrig");
+            thirdPersonAnim.ResetTrigger("ReloadTrig");
+        }
 
         HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
 

@@ -44,7 +44,7 @@ public class WeaponSwitcher : AbstractBehavior
             rpcPView = rpcManager.GetComponent<PhotonView>();
         }
     }
-
+    
     void Update()
     {
         int origSelectedWeapon = selectedWeapon;
@@ -53,7 +53,7 @@ public class WeaponSwitcher : AbstractBehavior
         bool weaponScrollDown = inputState.GetButtonPressed(inputs[1]);
 
         //Don't allow switching weapons if we're already switching
-        if (weaponCount > 1 && !switchInProgress)
+        if (weaponCount > 1 && !switchInProgress && !inputState.playerIsReloading)
         {
             if (weaponScrollUp)
             {

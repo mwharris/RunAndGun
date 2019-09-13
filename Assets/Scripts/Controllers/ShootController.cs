@@ -90,12 +90,6 @@ public class ShootController : AbstractBehavior
 		bool isAimDown = inputState.GetButtonPressed(inputs[1]);
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
-		//Reset the reload animation
-		if(reloadAnimator.GetCurrentAnimatorStateInfo(1).IsName("Standing_Reload_SH")
-            || reloadAnimator.GetCurrentAnimatorStateInfo(1).IsName("Crouch_Reload_SH"))
-		{
-            inputState.playerIsReloading = false;
-		}
 		//Hide the hit indicators from last frame
 		HideHitIndicator();			
 
