@@ -46,7 +46,7 @@ public class MenuController : AbstractBehavior
 		bool isGamePlaying = gm.GetGameState() == GameManager.GameState.playing;
 		bool isGamePaused = gm.GetGameState() == GameManager.GameState.paused;
 		//Toggle the pause menu when pause button is pressed while playing
-		if((isGamePlaying || isGamePaused) && isPauseDown && !options)
+		if((isGamePlaying || isGamePaused) && (isPauseDown || isCancelDown) && !options)
 		{
 			TogglePauseMenu(false);
 		}
