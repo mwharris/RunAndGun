@@ -1,0 +1,76 @@
+newmtl cube_mat
+Kd 1 1 1
+map_Kd null
+map_Bump null
+illum 2
+
+newmtl 1x5
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x5
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 3x4
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 5x2
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 12x2
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 4x2
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl Single
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 6x6
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 8x9
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 1x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 4x3
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x1
+Kd 1 1 1
+map_Kd null
+illum 2
+
+newmtl 2x10
+Kd 1 1 1
+map_Kd null
+illum 2
+

@@ -1,0 +1,3 @@
+There should be a back wall on this building where ramps are.
+Like a bunch of other buildings on the map, I just pushed them all up against the large walls on the outside.
+So we'll need to put a wall in there.
