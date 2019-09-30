@@ -4,8 +4,8 @@ using UnityEngine;
 
 public class WeaponPickup : AbstractBehavior
 {
-    public bool ShowPickupMessage = false;
-    public string PickupWeaponName = null;
+    [HideInInspector] public bool ShowPickupMessage = false;
+    [HideInInspector] public string PickupWeaponName = null;
 
     private GameManager gm;
     private ItemDatabase itemDatabase;

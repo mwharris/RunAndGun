@@ -6,9 +6,9 @@ public class WallRunController : AbstractBehavior {
 
 	[HideInInspector] public bool wallSticking = false;
     [HideInInspector] public bool wallStickVelocitySet = false;
+    [HideInInspector] public bool wallJumped = false;
     
 	private bool initWallRun = false;
-    public bool wallJumped = false;
 
 	private Vector3 wallRunDirection;
 	private Vector3 wallRunNormal;
