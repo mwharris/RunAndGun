@@ -6,8 +6,10 @@ public class ReloadIndicator : MonoBehaviour
 {
     private GameManager gameManager;
     private GameObject player;
-    private ShootController shootController;
     private GameObject reloadTxt;
+    private BodyController bodyController;
+    private PlayerBodyData playerBodyData;
+    private WeaponData currWeaponData;
 
     void Start()
     {
@@ -17,21 +19,30 @@ public class ReloadIndicator : MonoBehaviour
 
     void Update()
     {
-        if (player == null)
-        {
-            player = gameManager.MyPlayer;
-        }
-        if (player != null && shootController == null)
-        {
-            shootController = player.GetComponent<ShootController>();
-        }
-        if (player != null && shootController != null && shootController.BulletCount <= 2)
+        SetVars();
+        if (player != null && currWeaponData != null && currWeaponData.BulletCount <= 2)
         {
             reloadTxt.SetActive(true);
         }
         else
         {
             reloadTxt.SetActive(false);
+        }
+    }
+
+    private void SetVars()
+    {
+        if (player == null)
+        {
+            player = gameManager.MyPlayer;
+        }
+        if (player != null)
+        {
+            if (bodyController == null) {
+                bodyController = player.GetComponent<BodyController>();
+            }
+            playerBodyData = bodyController.PlayerBodyData;
+            currWeaponData = playerBodyData.weapon.GetComponent<WeaponData>();
         }
     }
 }

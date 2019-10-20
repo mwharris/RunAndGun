@@ -23,11 +23,6 @@ public class ShootController : AbstractBehavior
 	//HUD variables
 	private Text bulletCountText;
 	private Text clipSizeText;
-	private int bulletCount = 12;
-    public int BulletCount
-    {
-        get { return bulletCount; }
-    }
 	private GameObject reloadIndicator;
 	private GameObject hitIndicator;
 	private float hitIndicatorTimer;
@@ -69,7 +64,6 @@ public class ShootController : AbstractBehavior
 		GameObject txt = GameObject.FindGameObjectWithTag("BulletCount");
 		bulletCountText = txt.GetComponent<Text>();
         bulletCountText.text = currWeaponData.MagazineCapacity.ToString();
-        bulletCount = currWeaponData.MagazineCapacity;
         //...and max bullet capacity
         txt = GameObject.FindGameObjectWithTag("ClipSize");
 		clipSizeText = txt.GetComponent<Text>();
@@ -96,7 +90,7 @@ public class ShootController : AbstractBehavior
 		//Make sure we aren't reloading
 		if(gm.GetGameState() == GameManager.GameState.playing && reloadTimer <= 0) {
 			//Update the displayed bullet count
-			bulletCountText.text = bulletCount.ToString();
+			bulletCountText.text = currWeaponData.BulletCount.ToString();
             clipSizeText.text = currWeaponData.MagazineCapacity.ToString();
 
 			//Determine if we are attempting to aim our weapon
@@ -113,7 +107,7 @@ public class ShootController : AbstractBehavior
 			if(isShootDown && cooldownTimer <= 0)
 			{
 				//Only fire if there are bullets in the clip
-				if(bulletCount > 0)
+				if(currWeaponData.BulletCount > 0)
 				{
 					Shoot(isAimDown);
 				}
@@ -196,7 +190,7 @@ public class ShootController : AbstractBehavior
 		cooldownTimer = currWeaponData.ShotDelayTime;
 
 		//Decrement the bullet counter
-		bulletCount--;
+		currWeaponData.BulletCount--;
 
 		//Shoot a Ray and find the closest thing we hit that isn't ourselves
 		Vector3 shootVector = ApplyAccuracy(playerCamera.transform.forward);
@@ -323,7 +317,7 @@ public class ShootController : AbstractBehavior
         //Start the reload timer
         reloadTimer = currWeaponData.ReloadTime;
 		//Reset the bullet count
-		bulletCount = currWeaponData.MagazineCapacity;
+		currWeaponData.BulletCount = currWeaponData.MagazineCapacity;
 		//Play a sound
 		aSource.PlayOneShot(currWeaponData.ReloadClip);
 		//Play the reload animation
@@ -393,14 +387,4 @@ public class ShootController : AbstractBehavior
 		yield return new WaitForSeconds(time);
         inputState.playerIsShooting = false;
 	}
-
-    //Called from WeaponSwitcher to set our magazine size / capacity when weapon is switched
-    public void SetMagazineSize()
-    {
-        SetBodyControlVars();
-        if (currWeaponData != null)
-        {
-            bulletCount = currWeaponData.MagazineCapacity;
-        }
-    }
 }

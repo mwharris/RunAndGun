@@ -8,7 +8,6 @@ public class WeaponSwitcher : AbstractBehavior
     private bool switchInProgress = false;
 
     [SerializeField] private BodyController bodyController;
-    [SerializeField] private ShootController shootController;
     [SerializeField] private Transform weaponHolder;
 
     private RPCManager rpcManager;
@@ -99,7 +98,6 @@ public class WeaponSwitcher : AbstractBehavior
                 {
                     weapon.gameObject.SetActive(true);
                     bodyController.PlayerBodyData.weapon = weapon;
-                    shootController.SetMagazineSize();
                 }
                 else
                 {

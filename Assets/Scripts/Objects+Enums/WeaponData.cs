@@ -9,6 +9,12 @@ public class WeaponData : MonoBehaviour
     [SerializeField] private float weaponDamage = 25f;
     public float WeaponDamage { get { return weaponDamage; } }
 
+    [SerializeField] private int bulletCount = 12;
+    public int BulletCount { 
+        get { return bulletCount;  } 
+        set { bulletCount = value; } 
+    }
+
     [SerializeField] private int magazineCapacity = 12;
     public int MagazineCapacity { get { return magazineCapacity; } }
 
