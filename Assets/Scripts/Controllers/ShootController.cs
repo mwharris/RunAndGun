@@ -81,6 +81,7 @@ public class ShootController : AbstractBehavior
 
         //Gather inputs needed below
         bool isShootDown = inputState.GetButtonPressed(inputs[0]);
+		float shootHoldTime = inputState.GetButtonHoldTime(inputs[0]);
 		bool isAimDown = inputState.GetButtonPressed(inputs[1]);
 		bool isReloadDown = inputState.GetButtonPressed(inputs[2]);
 
@@ -98,7 +99,7 @@ public class ShootController : AbstractBehavior
 			{
 				Aim();
 			}
-			else if (inputState.playerIsAiming)
+			else if (inputState.playerIsAiming || inputState.playerIsReloading)
 			{
 				StopAiming();
 			}
@@ -112,7 +113,7 @@ public class ShootController : AbstractBehavior
 					Shoot(isAimDown);
 				}
 				//If the clip is empty, reload instead
-				else
+				else if (shootHoldTime == 0)
                 {
                     Reload();
                 }
@@ -312,6 +313,10 @@ public class ShootController : AbstractBehavior
 	//Helper function to reload our weapon
 	void Reload()
 	{
+		//Free us from aiming if we are
+		if (inputState.playerIsAiming) {
+			StopAiming();
+		}
         //Notify other players that we are reloading (for animations)
         rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.ID);
         //Start the reload timer

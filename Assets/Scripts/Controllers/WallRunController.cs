@@ -393,7 +393,6 @@ public class WallRunController : AbstractBehavior {
                     Vector3 testNewNormal = new Vector3(hit.normal.x, 0f, hit.normal.z);
                     if (Vector3.Angle(testOldNormal, testNewNormal) >= 90 && lastWallName == hit.transform.name)
                     {
-                        Debug.Log("Caught!");
                         return false;
                     }
                     //Otherwise we're good to go
