@@ -105,12 +105,14 @@ public class DragToMove : MonoBehaviour
                 v3 = Input.GetTouch(0).position;
             }
 
-
-            Ray inputRay = Camera.main.ScreenPointToRay(v3);
-            RaycastHit hit;
-            if (Physics.Raycast(inputRay, out hit))
-            {
-                PositionsQueue.Add(hit.point);
+            // MH_FIX: Updated this avoid an error I saw in the logs 
+            if (v3.x >= 0 && v3.x < Screen.width && v3.y >= 0 && v3.y < Screen.height) {
+                Ray inputRay = Camera.main.ScreenPointToRay(v3);
+                RaycastHit hit;
+                if (Physics.Raycast(inputRay, out hit))
+                {
+                    PositionsQueue.Add(hit.point);
+                }
             }
         }
         

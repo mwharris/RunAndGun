@@ -107,6 +107,10 @@ public class InputToEvent : MonoBehaviour
     private GameObject RaycastObject(Vector2 screenPos)
     {
         RaycastHit info;
+        // MH_FIX: Updated this avoid an error I saw in the logs
+        if (screenPos.x < 0 || screenPos.x >= Screen.width || screenPos.y < 0 || screenPos.y >= Screen.height) {
+            return null;
+        }
         if (Physics.Raycast(this.m_Camera.ScreenPointToRay(screenPos), out info, 200))
         {
             inputHitPos = info.point;

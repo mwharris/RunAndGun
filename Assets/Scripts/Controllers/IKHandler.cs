@@ -111,12 +111,17 @@ public class IKHandler : MonoBehaviour
     //Helper function to perform lookAt except lerped
     void LerpLookAt(Transform a, Transform b)
     {
-        //Determine our lerp speed depending on if we're aiming or not
-        float lerpSpeed = 30f;
-        //Get a quaternion from the vector between the two transforms
-        Quaternion targetRotation = Quaternion.LookRotation(b.position - a.position);
-        //Lerp the current rotation to the rotation determined above
-        a.rotation = Quaternion.Lerp(a.rotation, targetRotation, Time.deltaTime * lerpSpeed);
+        //Calculate the vector between the two transforms
+        Vector3 aToB = b.position - a.position;
+        //Only perform this when aToB is > 0 to avoid an error
+        if (aToB.sqrMagnitude > Mathf.Epsilon) {
+            //Determine our lerp speed depending on if we're aiming or not
+            float lerpSpeed = 30f;
+            //Get a quaternion from the vector between the two transforms
+            Quaternion targetRotation = Quaternion.LookRotation(aToB);
+            //Lerp the current rotation to the rotation determined above
+            a.rotation = Quaternion.Lerp(a.rotation, targetRotation, Time.deltaTime * lerpSpeed);
+        }
     }
 
     //Set the both hand's IK position and rotations based on calculations above
