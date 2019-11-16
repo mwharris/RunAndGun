@@ -52,7 +52,7 @@ public class BobController : AbstractBehavior
         }
         else
         {
-            HandleBob();
+            HandleBob(doubleHanded);
             HandleTilt(doubleHanded);
         }
         //Completed a full cycle. Reset to 0 to avoid bloated values.
@@ -140,10 +140,10 @@ public class BobController : AbstractBehavior
     }
 
     //Handle bobbing the camera or body left/right while moving
-    private void HandleBob()
+    private void HandleBob(bool doubleHanded)
     {
         //While we are moving apply a head/body bob
-        if (!inputState.playerIsAiming && inputState.playerIsGrounded 
+        if (inputState.playerIsGrounded 
             && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
         {
             //Determine bob speed + amount depending on player movement state
@@ -154,10 +154,15 @@ public class BobController : AbstractBehavior
                 bobSpeed = sprintBobSpeed;
                 bobAmount = sprintBobAmount;
             }
-            else if (inputState.playerIsCrouching || inputState.playerIsAiming)
+            else if (inputState.playerIsCrouching)
             {
                 bobSpeed = walkBobSpeed / 1.5f;
                 bobAmount = walkBobAmount / 1.5f;
+            }
+            else if (inputState.playerIsAiming)
+            {
+                bobSpeed = walkBobSpeed / 1.5f;
+                bobAmount = doubleHanded ? (walkBobAmount / 8f) : (walkBobAmount / 1.5f);
             }
             //Increase / decrease bobSpeed based on our controller input
             float inputSpeed = Mathf.Abs(Input.GetAxisRaw("Horizontal")) + Mathf.Abs(Input.GetAxisRaw("Vertical"));
@@ -188,22 +193,24 @@ public class BobController : AbstractBehavior
         if (!isCamera)
         {
             //If we're moving Horizontally at all, apply a tilt to the hands
-            if (Input.GetAxisRaw("Horizontal") != 0)
+            if (Input.GetAxisRaw("Horizontal") != 0f)
             {
-                Vector3 bueler = transform.localRotation.eulerAngles;
-                float tiltAngle = Input.GetAxisRaw("Horizontal") * -5f;
+                Quaternion q = Quaternion.identity;
                 if (inputState.playerIsAiming)
                 {
                     if (doubleHanded)
                     {
-                        tiltAngle = Input.GetAxisRaw("Horizontal") * -1.5f;
+                        Vector3 bueler = dhAimPosInfo.localRot;
+                        float tiltAngle = Input.GetAxisRaw("Horizontal") * 1f;
+                        q = Quaternion.Euler(bueler.x, bueler.y + tiltAngle, bueler.z);
                     }
                     else
                     {
-                        tiltAngle = Input.GetAxisRaw("Horizontal") * -6f;
+                        Vector3 bueler = shAimPosInfo.localRot;
+                        float tiltAngle = Input.GetAxisRaw("Horizontal") * -6f;
+                        q = Quaternion.Euler(bueler.x, bueler.y, bueler.z + tiltAngle);
                     }
                 }
-                Quaternion q = Quaternion.Euler(bueler.x, bueler.y, tiltAngle);
                 transform.localRotation = Quaternion.Lerp(transform.localRotation, q, 4f * Time.deltaTime);
             }
             //Otherwise keep us in the resting position

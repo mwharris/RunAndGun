@@ -208,7 +208,10 @@ public class ShootController : AbstractBehavior
 			rc.StartRecoil(aimRecoilAmount);
 			ac.AddShootingOffset(inputState.playerIsAiming);
             pbd.body.transform.localPosition += kickDampening * currWeaponData.KickAmount;
-            pbd.body.transform.localEulerAngles += kickDampening * currWeaponData.RotKickAmount;
+            if (currWeaponData.WeaponStyle == WeaponStyles.SingleHanded)
+            {
+	            pbd.body.transform.localEulerAngles += kickDampening * currWeaponData.RotKickAmount;
+            }
         }
 		else
 		{
@@ -219,11 +222,7 @@ public class ShootController : AbstractBehavior
         }
 
 		//Check if we hit a red object
-		bool hitRed = false;
-		if(info.hitTransform != null && info.hitTransform.tag == "Red")
-		{
-			hitRed = true;
-		}
+		bool hitRed = info.hitTransform != null && info.hitTransform.CompareTag("Red");
 
 		//Flag to show if we hit an enemy or not
 		bool hitEnemy = false;
