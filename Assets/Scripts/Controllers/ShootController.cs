@@ -124,8 +124,8 @@ public class ShootController : AbstractBehavior
                 inputState.playerIsShooting = false;
             }
 
-			//Reload if 'R' is pressed OR we tried to shoot while the clip is empty
-			if(isReloadDown)
+			//Reload if 'R' is pressed and the clip is not full
+			if(isReloadDown && currWeaponData.BulletCount < currWeaponData.MagazineCapacity)
 			{
 				Reload();
 			}

@@ -20,9 +20,10 @@ public class ReloadIndicator : MonoBehaviour
     void Update()
     {
         SetVars();
-        if (player != null && currWeaponData != null && currWeaponData.BulletCount <= 2)
+        if (player != null && currWeaponData != null)
         {
-            reloadTxt.SetActive(true);
+            float clipRemainingPercentage = 100 * ((float) currWeaponData.BulletCount / (float) currWeaponData.MagazineCapacity);
+            reloadTxt.SetActive(clipRemainingPercentage <= 25f);
         }
         else
         {

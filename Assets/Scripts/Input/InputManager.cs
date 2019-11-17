@@ -24,7 +24,9 @@ public enum Buttons {
 	Back,
     WeaponSwitchUp,
     WeaponSwitchDown,
-    Pickup
+    Pickup,
+    Weapon1Select,
+    Weapon2Select
 }
 
 public enum Condition {

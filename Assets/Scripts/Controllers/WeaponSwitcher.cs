@@ -50,6 +50,8 @@ public class WeaponSwitcher : AbstractBehavior
         int weaponCount = weaponHolder.childCount;
         bool weaponScrollUp = inputState.GetButtonPressed(inputs[0]);
         bool weaponScrollDown = inputState.GetButtonPressed(inputs[1]);
+        bool weapon1Select = inputState.GetButtonPressed(inputs[2]);
+        bool weapon2Select = inputState.GetButtonPressed(inputs[3]);
 
         //Don't allow switching weapons if we're already switching
         if (weaponCount > 1 && !switchInProgress && !inputState.playerIsReloading)
@@ -67,7 +69,7 @@ public class WeaponSwitcher : AbstractBehavior
                 }
                 switchInProgress = true;
             }
-            if (weaponScrollDown)
+            else if (weaponScrollDown)
             {
                 //Decrease the index of the selected weapon, wrapping around 0 back to maximum
                 if (selectedWeapon <= 0)
@@ -78,6 +80,16 @@ public class WeaponSwitcher : AbstractBehavior
                 {
                     selectedWeapon--;
                 }
+                switchInProgress = true;
+            }
+            else if (weapon1Select && selectedWeapon != 0)
+            {
+                selectedWeapon = 0;
+                switchInProgress = true;
+            }
+            else if (weapon2Select && selectedWeapon != 1)
+            {
+                selectedWeapon = 1;
                 switchInProgress = true;
             }
             //Store the weapon we switch to if we are switching

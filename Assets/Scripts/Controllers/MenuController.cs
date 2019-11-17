@@ -157,19 +157,19 @@ public class MenuController : AbstractBehavior
 	}
 
 	//Update the mouse sensitivity in the First Person Controller
-	public void changeMouseSensitivity(float newValue)
+	public void ChangeMouseSensitivity(float newValue)
 	{
 		MouseSensitivity = newValue;
 	}
 
 	//Update the invert y setting in the First Person Controller
-	public void changeInvertY(bool newValue)
+	public void ChangeInvertY(bool newValue)
 	{
 		InvertY = newValue;
     }
 
     //Update whether aim assist to enabled or disabled in the First Person Controller
-    public void changeAimAssist(bool newValue)
+    public void ChangeAimAssist(bool newValue)
     {
         AimAssist = newValue;
     }
