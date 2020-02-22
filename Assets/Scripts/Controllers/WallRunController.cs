@@ -160,9 +160,9 @@ public class WallRunController : AbstractBehavior {
     public void SetWallRunLookRotationInputs(LookRotationInput lri, Camera playerCamera, Vector3 velocity)
     {
         //Calculate the correct camera tilt based on wall-run side
-        lri.wallRunZRotation = CalculateCameraTilt(playerCamera);
+        lri.WallRunZRotation = CalculateCameraTilt(playerCamera);
         //Also pass whether our angle wrap around the +180/-180 threshold
-        lri.wrapAround = wrapAroundRotationCircle;
+        lri.WrapAround = wrapAroundRotationCircle;
     }
 
     /**

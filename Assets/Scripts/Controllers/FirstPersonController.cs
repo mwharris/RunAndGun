@@ -62,11 +62,13 @@ public class FirstPersonController : AbstractBehavior
     private BodyController bodyControl;
     [SerializeField] private PlayerLook playerLook;
     ////////////////////////////////////////////
-
+    
     private Camera playerCamera;
-
     private bool dontMove = false;
 
+    // Used to clean up passing of variables to the wall-run controller
+    private LookRotationInput _lookRotationInput;
+    
     void OnDrawGizmos()
     {
         if (playerCamera != null)
@@ -76,6 +78,7 @@ public class FirstPersonController : AbstractBehavior
     }
 
     void Start () {
+	    _lookRotationInput = new LookRotationInput();
         //Setup our body controller, body data, and camera
         bodyControl = GetComponent<BodyController>();
         playerCamera = bodyControl.PlayerBodyData.playerCamera.GetComponent<Camera>();
@@ -272,25 +275,26 @@ public class FirstPersonController : AbstractBehavior
 	void HandleControllerInput()
 	{
         //Build a LookRotationInput object for better passing of arguments in the following function calls
-        LookRotationInput lri = new LookRotationInput();
-        lri.player = transform;
-        lri.camera = playerCamera.transform;
-        lri.lookInput = lookInput;
-        lri.mouseSensitivity = mouseSensitivity;
-        lri.invertY = invertY;
-        lri.aimAssistEnabled = aimAssist;
-        lri.isAiming = inputState.playerIsAiming;
-        lri.isWallRunning = wallRunController.isWallRunning();
-        lri.wallRunZRotation = 0f;
-        lri.wrapAround = false;
-        lri.lockedOnPlayer = inputState.playerLockedOnEnemy;
+        _lookRotationInput.SetValues(
+	        transform, 
+	        playerCamera.transform, 
+	        lookInput, 
+	        mouseSensitivity,
+			invertY, 
+	        aimAssist, 
+	        inputState.playerIsAiming, 
+	        wallRunController.isWallRunning(), 
+	        0f, 
+	        false, 
+	        inputState.playerLockedOnEnemy
+	    );
         //Handle any look rotation updates due to wall-running
-        wallRunController.SetWallRunLookRotationInputs(lri, playerCamera, inputState.playerVelocity);
+        wallRunController.SetWallRunLookRotationInputs(_lookRotationInput, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotations and calculate head angle
-        playerLook.LookRotation(lri);
+        playerLook.LookRotation(_lookRotationInput);
         //Set calculated values in our global InputState object
-        inputState.playerLookAngle = lri.headAngle;
-        inputState.playerLockedOnEnemy = lri.lockedOnPlayer;
+        inputState.playerLookAngle = _lookRotationInput.HeadAngle;
+        inputState.playerLockedOnEnemy = _lookRotationInput.LockedOnPlayer;
     }
 
 	//Handle any WASD or arrow key movement

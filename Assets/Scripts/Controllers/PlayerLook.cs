@@ -45,14 +45,14 @@ public class PlayerLook
     private Vector2 ApplyOptionsToInput(LookRotationInput lri)
     {
         //Calculate sensitivity based on settings and if aiming
-        float totalSensitivity = lri.mouseSensitivity;
-        if (lri.isAiming || lri.lockedOnPlayer)
+        float totalSensitivity = lri.MouseSensitivity;
+        if (lri.IsAiming || lri.LockedOnPlayer)
         {
             totalSensitivity *= 0.4f;
         }
-        Vector2 inputs = lri.lookInput * totalSensitivity;
+        Vector2 inputs = lri.LookInput * totalSensitivity;
         //Invert the Y input if Options dictates it
-        if (lri.invertY)
+        if (lri.InvertY)
         {
             inputs = new Vector2(-inputs.x, inputs.y);
         }
@@ -62,7 +62,7 @@ public class PlayerLook
     //Handle all updating of camera rotations and horizontal player body rotations
     private void ApplyLookRotations(Vector2 inputs, LookRotationInput lri)
     {
-        if (lri.isWallRunning)
+        if (lri.IsWallRunning)
         {
             HandleWallRunningRotations(inputs, lri);
         }
@@ -74,8 +74,8 @@ public class PlayerLook
 
     private void HandleNormalRotations(Vector2 inputs, LookRotationInput lri)
     {
-        camLocalRot = lri.camera.localRotation;
-        playerLocalRot = lri.player.localRotation;
+        camLocalRot = lri.Camera.localRotation;
+        playerLocalRot = lri.Player.localRotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, 0f, 0f);
         playerLocalRot *= Quaternion.Euler(0f, inputs.y, 0f);
@@ -84,8 +84,8 @@ public class PlayerLook
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //If we are wall-running then add a rotation in the z-axis
-        camLocalRot.z = lri.wallRunZRotation;
-        if (lri.wallRunZRotation == 0)
+        camLocalRot.z = lri.WallRunZRotation;
+        if (lri.WallRunZRotation == 0)
         {
             camLocalRot.y = 0;
         }
@@ -97,15 +97,15 @@ public class PlayerLook
             if (float.IsNaN(playerLocalRot.z)) { playerLocalRot.z = 0f; }
         }
         //Update the rotation of our player and camera
-        lri.player.localRotation = playerLocalRot;
-        lri.camera.localRotation = camLocalRot;
+        lri.Player.localRotation = playerLocalRot;
+        lri.Camera.localRotation = camLocalRot;
         //Return the angle of our head for the animator
-        lri.headAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+        lri.HeadAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }
 
     private void HandleWallRunningRotations(Vector2 inputs, LookRotationInput lri)
     {
-        camLocalRot = lri.camera.localRotation;
+        camLocalRot = lri.Camera.localRotation;
         //Apply the rotation to camera (vertical look rotation)
         camLocalRot *= Quaternion.Euler(-inputs.x, inputs.y, 0f);
         neckLocalRot *= Quaternion.Euler(0f, -inputs.x, 0f);
@@ -113,34 +113,34 @@ public class PlayerLook
         camLocalRot = ClampRotationAroundAxis(camLocalRot, "x");
         neckLocalRot = ClampRotationAroundAxis(neckLocalRot, "y");
         //If we are wall-running then add a rotation in the z-axis
-        camLocalRot.z = lri.wallRunZRotation;
-        if (lri.wallRunZRotation == 0)
+        camLocalRot.z = lri.WallRunZRotation;
+        if (lri.WallRunZRotation == 0)
         {
             camLocalRot.y = 0;
         }
         //Update the rotation of our player and camera
-        lri.camera.localRotation = camLocalRot;
+        lri.Camera.localRotation = camLocalRot;
         //Return the angle of our head for the animator
-        lri.headAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
+        lri.HeadAngle = (2.0f * Mathf.Rad2Deg * Mathf.Atan(neckLocalRot.y / neckLocalRot.w));
     }
 
     private void DoAimAssist(LookRotationInput lri)
     {
-        if (lri.aimAssistEnabled)
+        if (lri.AimAssistEnabled)
         {
             //Shoot a thick raycast out from camera forward
-            Vector3 v = lri.camera.transform.forward;
-            sphereRay = new Ray(lri.camera.transform.position, v);
+            Vector3 v = lri.Camera.transform.forward;
+            sphereRay = new Ray(lri.Camera.transform.position, v);
             RaycastHit[] hits = Physics.SphereCastAll(sphereRay, sphereSize);
             //Check if we hit any players
-            Transform hitTransform = FindClosestHitTransform(hits, lri.player);
+            Transform hitTransform = FindClosestHitTransform(hits, lri.Player);
             if (hitTransform != null && hitTransform.gameObject.tag == "Player")
             {
-                lri.lockedOnPlayer = true;
+                lri.LockedOnPlayer = true;
             }
             else
             {
-                lri.lockedOnPlayer = false;
+                lri.LockedOnPlayer = false;
             }
         }
     }
