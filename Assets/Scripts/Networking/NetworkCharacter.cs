@@ -64,12 +64,12 @@ public class NetworkCharacter : Photon.MonoBehaviour
 
             //Smooth our movement from the current position to the received position
             //TODO: PREDICTION
-			LerpVector3(transform.position, realPos, lerpSpeed);
-            LerpQuaternion(transform.rotation, realRot, lerpSpeed);
+            transform.position = SafeLerp(transform.position, realPos, lerpSpeed);
+            transform.rotation = SafeLerp(transform.rotation, realRot, lerpSpeed);
 
             //Smooth our camera movement from the current position to the received position
-            LerpVector3(playerBodyData.playerCamera.localPosition, camRealPos, lerpSpeed);
-            LerpQuaternion(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
+            playerBodyData.playerCamera.localPosition = SafeLerp(playerBodyData.playerCamera.localPosition, camRealPos, lerpSpeed);
+            playerBodyData.playerCamera.localRotation = SafeLerp(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
 
             //Animation variables
             bodyAnimator.SetBool("Sprinting", isSprinting);
@@ -147,20 +147,26 @@ public class NetworkCharacter : Photon.MonoBehaviour
             jumpSpeed = (float)stream.ReceiveNext();
         }
 	}
-
-	private void LerpQuaternion(Quaternion dest, Quaternion source, float speed)
+	
+	private Vector3 SafeLerp(Vector3 dest, Vector3 source, float speed)
 	{
-		if (!float.IsNaN(source.x) && !float.IsNaN(source.y) && !float.IsNaN(source.z))
+		Vector3 v = Vector3.Lerp(dest, source, speed);
+		if (!float.IsNaN(v.x) && !float.IsNaN(v.y) && !float.IsNaN(v.z))
 		{
-			dest = Quaternion.Lerp(dest, source, speed);
+			return v;
 		}
+		Debug.LogError("NetworkCharacter.Vector3SafeLerp: Input position was NaN!");
+		return dest;
 	}
 	
-	private void LerpVector3(Vector3 dest, Vector3 source, float speed)
+	private Quaternion SafeLerp(Quaternion dest, Quaternion source, float speed)
 	{
-		if (!float.IsNaN(source.x) && !float.IsNaN(source.y) && !float.IsNaN(source.z))
+		Quaternion q = Quaternion.Lerp(dest, source, speed);
+		if (!float.IsNaN(q.x) && !float.IsNaN(q.y) && !float.IsNaN(q.z))
 		{
-			dest = Vector3.Lerp(dest, source, speed);
+			return q;
 		}
+		Debug.LogError("NetworkCharacter.QuaternionSafeLerp: Input position was NaN!");
+		return dest;
 	}
 }

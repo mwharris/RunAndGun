@@ -129,20 +129,26 @@ public class FXManager : MonoBehaviour {
 	[PunRPC]
 	void DeathFX(Vector3 pos)
 	{
-		//Show some death effects
-		Instantiate(deathEffect, pos, Quaternion.identity);
-		//Play a sound
-		PlayDeathSound(pos);
+		if (!float.IsNaN(pos.x) && !float.IsNaN(pos.y) && !float.IsNaN(pos.z))
+		{
+			//Show some death effects
+			Instantiate(deathEffect, pos, Quaternion.identity);
+			//Play a sound
+			PlayDeathSound(pos);
+		}
 	}
 
 	void PlayDeathSound(Vector3 pos)
 	{
 		AudioClip clipToPlay;
+			
 		//Pick & play a random footstep sound from the array,
 		int n = Random.Range(1, deathSounds.Length);
 		clipToPlay = deathSounds[n];
+		
 		//Play our gun shot
 		AudioSource.PlayClipAtPoint(clipToPlay, pos);
+		
 		//Move picked sound to index 0 so it's not picked next time
 		deathSounds[n] = deathSounds[0];
 		deathSounds[0] = clipToPlay;
@@ -151,27 +157,36 @@ public class FXManager : MonoBehaviour {
 	[PunRPC]
 	void FootstepFX(Vector3 pos)
 	{
-		AudioClip clipToPlay;
+		if (!float.IsNaN(pos.x) && !float.IsNaN(pos.y) && !float.IsNaN(pos.z))
+		{
+			AudioClip clipToPlay;
 
-		//Pick & play a random footstep sound from the array,
-		int n = Random.Range(1, footstepSounds.Length);
-		clipToPlay = footstepSounds[n];
-		AudioSource.PlayClipAtPoint(clipToPlay, pos);
+			//Pick & play a random footstep sound from the array,
+			int n = Random.Range(1, footstepSounds.Length);
+			clipToPlay = footstepSounds[n];
+			AudioSource.PlayClipAtPoint(clipToPlay, pos);
 
-		//Move picked sound to index 0 so it's not picked next time
-		footstepSounds[n] = footstepSounds[0];
-		footstepSounds[0] = clipToPlay;
+			//Move picked sound to index 0 so it's not picked next time
+			footstepSounds[n] = footstepSounds[0];
+			footstepSounds[0] = clipToPlay;
+		}
 	}
 
 	[PunRPC]
 	void LandingFX(Vector3 pos)
 	{
-		AudioSource.PlayClipAtPoint(landingSound, pos);
+		if (!float.IsNaN(pos.x) && !float.IsNaN(pos.y) && !float.IsNaN(pos.z))
+		{
+			AudioSource.PlayClipAtPoint(landingSound, pos);
+		}
 	}
 
 	[PunRPC]
 	void DoubleJumpFX(Vector3 pos)
 	{
-		AudioSource.PlayClipAtPoint(doubleJumpSound, pos);
+		if (!float.IsNaN(pos.x) && !float.IsNaN(pos.y) && !float.IsNaN(pos.z))
+		{
+			AudioSource.PlayClipAtPoint(doubleJumpSound, pos);
+		}
 	}
 }
