@@ -38,6 +38,7 @@ public class WeaponPickup : AbstractBehavior
         pickupRayInfo = new PickupRaycastInfo();
     }
 
+    //TODO: There were some performance spikes because of this function, investigate
     void Update ()
     {
         //Get the amount of time we've held the Pick Up button
