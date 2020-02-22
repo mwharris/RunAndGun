@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -165,9 +166,8 @@ public class WallRunController : AbstractBehavior {
     }
 
     /**
-	 * This function was created to handle a special case.
-	 * When we are wall-running, we don't want to be able to look into the wall.
-	 * This function will clamp our look rotation so that we cannot look too far towards the wall.
+	 * Handle lerping our look rotation away from the wall when we initiate wall-running.
+	 * Also handles lerping our look rotation when wall-running on Curved Walls.
 	 */
     public void SetWallRunLookRotation(bool initial)
     {
@@ -182,24 +182,34 @@ public class WallRunController : AbstractBehavior {
 		{
             cross = Vector3.Cross(Vector3.up, -wallRunNormal); 
 		}
+        Vector3 crossNoUp = new Vector3(cross.x, 0, cross.z);
+        
         //Determine if we are looking into the wall when we initiate wall-running
         Vector3 perp = Vector3.Cross(cross, transform.forward);
         float dir = Vector3.Dot(perp, Vector3.up);
-        //Lerp our body rotation parallel to the wall when running along a curved surface.
-        //This handles when we reach a new surface normal on the curved wall.
-        if (initial && wallRunTag == "CurvedWall")
+        
+        //Make sure we're not look rotating to a zero vector
+        if (crossNoUp != Vector3.zero && crossNoUp.magnitude > Single.Epsilon)        
         {
-            Quaternion newQuat = Quaternion.LookRotation(new Vector3(cross.x, 0, cross.z));
-            transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 10f);
+	        Quaternion newQuat = Quaternion.LookRotation(crossNoUp);
+	        //Lerp our body rotation parallel to the wall when running along a curved surface.
+	        //This handles when we reach a new surface normal on the curved wall.
+	        if (initial && wallRunTag == "CurvedWall")
+	        {
+		        transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 10f);
+	        }
+	        //Lerp our body rotation parallel to flat walls only when we're looking into the wall.
+	        //Always perform this lerp on curved walls.
+	        else if (wallRunTag == "CurvedWall"
+	                 || dir > 0.0 && inputState.playerIsWallRunningRight
+	                 || dir < 0.0 && inputState.playerIsWallRunningLeft)
+	        {
+		        transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
+	        }
         }
-        //Lerp our body rotation parallel to flat walls only when we're looking into the wall.
-        //Always perform this lerp on curved walls.
-        else if (wallRunTag == "CurvedWall"
-            || dir > 0.0 && inputState.playerIsWallRunningRight
-            || dir < 0.0 && inputState.playerIsWallRunningLeft)
+        else
         {
-            Quaternion newQuat = Quaternion.LookRotation(new Vector3(cross.x, 0, cross.z));
-            transform.rotation = Quaternion.Lerp(transform.rotation, newQuat, Time.deltaTime * 8f);
+	        Debug.LogWarning("WallRunController.SetWallRunLookRotation() : Attempted to LookRotation a zero vector!");
         }
 	}
 

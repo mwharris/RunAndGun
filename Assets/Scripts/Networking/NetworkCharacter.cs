@@ -64,12 +64,12 @@ public class NetworkCharacter : Photon.MonoBehaviour
 
             //Smooth our movement from the current position to the received position
             //TODO: PREDICTION
-            transform.position = Vector3.Lerp(transform.position, realPos, lerpSpeed);
-            transform.rotation = Quaternion.Lerp(transform.rotation, realRot, lerpSpeed);
+			LerpVector3(transform.position, realPos, lerpSpeed);
+            LerpQuaternion(transform.rotation, realRot, lerpSpeed);
 
             //Smooth our camera movement from the current position to the received position
-            playerBodyData.playerCamera.localPosition = Vector3.Lerp(playerBodyData.playerCamera.localPosition, camRealPos, lerpSpeed);
-            playerBodyData.playerCamera.localRotation = Quaternion.Lerp(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
+            LerpVector3(playerBodyData.playerCamera.localPosition, camRealPos, lerpSpeed);
+            LerpQuaternion(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
 
             //Animation variables
             bodyAnimator.SetBool("Sprinting", isSprinting);
@@ -146,5 +146,21 @@ public class NetworkCharacter : Photon.MonoBehaviour
             sideSpeed = (float)stream.ReceiveNext();
             jumpSpeed = (float)stream.ReceiveNext();
         }
+	}
+
+	private void LerpQuaternion(Quaternion dest, Quaternion source, float speed)
+	{
+		if (!float.IsNaN(source.x) && !float.IsNaN(source.y) && !float.IsNaN(source.z))
+		{
+			dest = Quaternion.Lerp(dest, source, speed);
+		}
+	}
+	
+	private void LerpVector3(Vector3 dest, Vector3 source, float speed)
+	{
+		if (!float.IsNaN(source.x) && !float.IsNaN(source.y) && !float.IsNaN(source.z))
+		{
+			dest = Vector3.Lerp(dest, source, speed);
+		}
 	}
 }
