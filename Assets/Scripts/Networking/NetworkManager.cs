@@ -79,8 +79,11 @@ public class NetworkManager : AbstractBehavior {
 
     void OnGUI()
     {
-        //DEBUG - Display the status of our connection on the screen
-        GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
+	    if (gm.GetGameState() != GameManager.GameState.playing)
+	    {
+	        //DEBUG - Display the status of our connection on the screen
+	        GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
+	    }
     }
 
     //Callback for Lobby join success
