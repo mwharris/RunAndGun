@@ -1,5 +1,6 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEditorInternal;
 
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (PlayerJump))]
@@ -110,15 +111,17 @@ public class FirstPersonController : AbstractBehavior
     }
 
     void Update () {
-        //Test stuff
-        Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+	    //For visualizing raycasts
+        /*
+	    Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
         Debug.DrawRay(rayPos, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Debug.DrawRay(rayPos, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Debug.DrawRay(rayPos, transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Debug.DrawRay(rayPos, -transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
-		Debug.DrawRay(rayPos, testV);
-
+        Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
+        Debug.DrawRay(rayPos, testV);
+		*/
+        
 		//Keep track ourselves if we are grounded or not
 		inputState.playerIsGrounded = cc.isGrounded;
 		//Update variables based on options menu selections
@@ -411,11 +414,20 @@ public class FirstPersonController : AbstractBehavior
                 }
                 //If we're trying to move while traveling through the air
                 //we want to instead rotate the direction of the player's velocity direction
-                else if (isDDown || isADown) 
+                else if (isDDown || isADown)
                 {
+	                // Store the player velocity without the y-vector
+	                Vector3 testVelocity = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
+	                // We want to store it's magnitude as well as RotateTowards tends to change it
+	                float currMagnitude = testVelocity.magnitude;
+	                // Normalize this so RotateTowards will not effect magnitude
+	                Vector3 normalizedVelocity = Vector3.Normalize(testVelocity);
+	                // Determine the direction we want to rotate our velocity
                     Vector3 targetDir = transform.forward;
                     targetDir += isDDown ? transform.right : -transform.right;
-                    Vector3 temp = Vector3.RotateTowards(inputState.playerVelocity, targetDir, 0.017f, 0f);
+                    // Perform the actual rotation and apply our updates
+                    Vector3 temp = Vector3.RotateTowards(normalizedVelocity, targetDir, 0.017f, 0f);
+                    temp *= currMagnitude;
                     inputState.playerVelocity.x = temp.x;
                     inputState.playerVelocity.z = temp.z;
                 }
