@@ -28,6 +28,9 @@ public class WallRunController : AbstractBehavior {
     
     private bool wrapAroundRotationCircle = false;
 
+    private float _wallRunSpeed = 16f;
+    private float _wallJumpSpeed = 17.6f;
+
     void Start() 
 	{
 		//Initialize references to various scripts we need
@@ -37,7 +40,7 @@ public class WallRunController : AbstractBehavior {
 
 	/*
 	 * Raycast outwards from the player (left, right, and back) to detect walls.  
-	 * If either any are hit while the player is in the air, activate wall-running.
+	 * If any are hit while the player is in the air, activate wall-running.
 	 */
 	public void HandleWallRunning(Vector3 velocity, bool isGrounded, PlayerBodyData playerBodyData)
 	{
@@ -121,7 +124,7 @@ public class WallRunController : AbstractBehavior {
             }
             initWallRun = false;
         }
-        //Scale the Vector up to 14 units if we're holding forward
+        //Scale the Vector up to 21 units if we're holding forward
         if (isWPressed)
         {
             //Special case: our wallRunDirection / velocity in X and Z is 0
@@ -133,14 +136,14 @@ public class WallRunController : AbstractBehavior {
                 //Depending on which way we are looking, start moving in that direction
                 if (angle > 20)
                 {
-                    Vector3 temp = Quaternion.AngleAxis(dir > 0 ? 90 : -90, Vector3.up) * wallRunNormal * 14;
+                    Vector3 temp = Quaternion.AngleAxis(dir > 0 ? 90 : -90, Vector3.up) * wallRunNormal * _wallRunSpeed;
                     velocity = new Vector3(temp.x, velocity.y, temp.z);
                 }
             }
             else
             {
                 Vector3 temp = new Vector3(velocity.x, 0, velocity.z);
-                Vector3 nVelocity = temp.normalized * 14;
+                Vector3 nVelocity = temp.normalized * _wallRunSpeed;
                 nVelocity.y = velocity.y;
                 velocity = nVelocity;
             }
@@ -152,8 +155,8 @@ public class WallRunController : AbstractBehavior {
             velocity.z *= 0.75f;
         }
         //Make sure we don't move too fast
-        velocity.x = Mathf.Clamp(velocity.x, -14f, 14f);
-        velocity.z = Mathf.Clamp(velocity.z, -14f, 14f);
+        velocity.x = Mathf.Clamp(velocity.x, -_wallRunSpeed, _wallRunSpeed);
+        velocity.z = Mathf.Clamp(velocity.z, -_wallRunSpeed, _wallRunSpeed);
         return velocity;
     }
 
@@ -274,15 +277,21 @@ public class WallRunController : AbstractBehavior {
 			RaycastHit rHit;
 			RaycastHit lHit;
 			RaycastHit bHit;
+			
 			Vector3 pushDir = new Vector3(velocity.x, 0, velocity.z);
             float rayDistance = isWallRunning() ? 1.5f : 0.825f;
             Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
+            
+            // Layer mask so we don't wall-run on non-wall-runnable surfaces
+            int layerMask = 1 << 10;
+            layerMask = ~layerMask;
+            
             Physics.Raycast(rayPos, pushDir, out vHit, 0.825f);
-            Physics.Raycast(rayPos, transform.right, out rHit, rayDistance);
-            Physics.Raycast(rayPos, -transform.right, out lHit, rayDistance);
-            Physics.Raycast(rayPos, -transform.forward, out bHit, rayDistance);
+            Physics.Raycast(rayPos, transform.right, out rHit, rayDistance, layerMask);
+            Physics.Raycast(rayPos, -transform.right, out lHit, rayDistance, layerMask);
+            Physics.Raycast(rayPos, -transform.forward, out bHit, rayDistance, layerMask);
 
-            //Check the angle between our velocity any wall we may have impacted
+            //Check the angle between our velocity and any wall we may have impacted
             bool rightGood = false;
 			bool leftGood = false;
             bool backGood = false;
@@ -463,12 +472,12 @@ public class WallRunController : AbstractBehavior {
         float leftAxis = inputState.GetButtonValue(inputs[2]);
         float rightAxis = inputState.GetButtonValue(inputs[3]);
         //Determine our target jump direction relative to player based on input
-        Vector3 targetDir = new Vector3(leftAxis + rightAxis, 0, forwardAxis + backwardAxis) * 14f;
+        Vector3 targetDir = new Vector3(leftAxis + rightAxis, 0, forwardAxis + backwardAxis) * _wallJumpSpeed;
         targetDir = cameraRot * targetDir;
         //Disable wall-running
         ResetActiveVars();
         //Find the angle, in radians, between our target direction and current direction
-        Vector3 dir = wallRunNormal * 14f;
+        Vector3 dir = wallRunNormal * _wallJumpSpeed;
         float degrees = Vector3.Angle(dir, targetDir);
         float radians = degrees * Mathf.Deg2Rad;
         //Rotate the current direction the amount of radians determined above

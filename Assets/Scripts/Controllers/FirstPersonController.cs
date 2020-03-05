@@ -1,6 +1,4 @@
 ﻿using UnityEngine;
-using System.Collections;
-using UnityEditorInternal;
 
 [RequireComponent(typeof (CrouchController))]
 [RequireComponent(typeof (PlayerJump))]
@@ -39,7 +37,7 @@ public class FirstPersonController : AbstractBehavior
 	////////////////////////////////////////////
 
 	/// VELOCITY VARIABLES /////////////////////
-	private float movementSpeed = 0.96f;
+	private float movementSpeed = 1f;
 	private float jumpSpeed = 8f;
 	[HideInInspector] public float forwardSpeed;
 	[HideInInspector] public float sideSpeed;
