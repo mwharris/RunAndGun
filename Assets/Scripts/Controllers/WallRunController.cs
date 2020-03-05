@@ -29,7 +29,7 @@ public class WallRunController : AbstractBehavior {
     private bool wrapAroundRotationCircle = false;
 
     private float _wallRunSpeed = 16f;
-    private float _wallJumpSpeed = 17.6f;
+    private float _wallJumpSpeed = 18f;
 
     void Start() 
 	{
