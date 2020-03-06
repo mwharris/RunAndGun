@@ -169,7 +169,9 @@ public class FirstPersonController : AbstractBehavior
         {
             cc.Move(inputState.playerVelocity * Time.deltaTime);
         }
-        //Debug.Log(inputState.playerVelocity);
+        
+        //Vector3 t = new Vector3(inputState.playerVelocity.x, 0f, inputState.playerVelocity.z);
+        //Debug.Log("(" + t.x + "," + t.y + "," + t.z + "), " + Vector3.Magnitude(t));
     }
 
     void GatherOptions()
@@ -311,6 +313,22 @@ public class FirstPersonController : AbstractBehavior
         {
             //Make sure we reset wall-sticking vars
             wallRunController.wallStickVelocitySet = false;
+            
+            if (inputState.playerIsCrouching || inputState.playerIsAiming)
+            {
+	            forwardSpeed *= crouchController.CrouchMovementSpeed;
+	            sideSpeed *= crouchController.CrouchMovementSpeed;
+	            //Disable head/body bob while crouching
+	            bobScript.enabled = false;
+            }
+            else
+            {
+	            forwardSpeed *= movementSpeed * 1.5f;
+	            sideSpeed *= movementSpeed * 1.5f;
+	            //Enable head/body bob while sprinting
+	            bobScript.enabled = true;
+            }
+            /*
             //Apply movement speed based on crouching, sprinting, or standing
             if (inputState.playerIsCrouching || inputState.playerIsAiming)
 			{
@@ -333,6 +351,7 @@ public class FirstPersonController : AbstractBehavior
                 //Disable head bob while walking
                 bobScript.enabled = false;
 			}
+			*/
 
 			//Play sprinting FX while sprinting
 			if(forwardSpeed != 0 || sideSpeed != 0)
