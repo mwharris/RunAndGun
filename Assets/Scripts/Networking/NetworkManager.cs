@@ -139,7 +139,7 @@ public class NetworkManager : AbstractBehavior {
     {
         HandlePlayerBody(myPlayer);
         //Enable various scripts that only run on the local player
-        myPlayer.GetComponent<FirstPersonController>().enabled = true;
+        //myPlayer.GetComponent<FirstPersonController>().enabled = true;
         myPlayer.GetComponent<ShootController>().enabled = true;
         myPlayer.GetComponent<AccuracyController>().enabled = true;
         myPlayer.GetComponent<WallRunController>().enabled = true;
