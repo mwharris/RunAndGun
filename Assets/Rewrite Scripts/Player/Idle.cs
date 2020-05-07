@@ -25,8 +25,8 @@ public class Idle : IState
     
     public bool IsIdle()
     {
-        var noHorizontal = !_inputState.GetButtonPressed(_inputs[2]) && !_inputState.GetButtonPressed(_inputs[3]);
-        var noVertical = !_inputState.GetButtonPressed(_inputs[0]) && !_inputState.GetButtonPressed(_inputs[1]);
+        var noHorizontal = !PlayerInput.Instance.HorizontalHeld;
+        var noVertical = !PlayerInput.Instance.VerticalHeld;
         return noHorizontal && noVertical && _characterController.isGrounded;
     }
     
