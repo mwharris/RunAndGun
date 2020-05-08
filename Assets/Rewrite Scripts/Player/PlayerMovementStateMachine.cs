@@ -115,7 +115,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
         // Apply gravity (call move twice because t-squared)
         HandleGravity();
 
-        DebugPrintVelocity();
+        // DebugPrintVelocity();
     }
 
     private void HandleGravity()

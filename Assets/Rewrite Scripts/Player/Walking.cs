@@ -8,7 +8,7 @@ public class Walking : IState
     private readonly Buttons[] _inputs;
     
     // 3.4 m/s
-    private float _walkingSpeed = 3.4f;
+    private float _walkingSpeed = 6.8f;
 
     public Walking(InputState inputState, Buttons[] inputs, Player player)
     {

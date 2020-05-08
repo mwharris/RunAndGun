@@ -11,7 +11,8 @@ public class WallRunning : IState
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
     
-    private readonly float _wallRunSpeed = 6.8f;
+    // 6.8 m/s
+    private readonly float _wallRunSpeed = 13.6f;
     private readonly float _wallRunSlowSpeed = 1f;
     private readonly float _wallRunCameraTilt = 0.08f;
     

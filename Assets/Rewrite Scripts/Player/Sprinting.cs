@@ -6,7 +6,8 @@ public class Sprinting : IState
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
     
-    private float _sprintingSpeed = 5.1f;
+    // 5.1 m/s
+    private float _sprintingSpeed = 10.2f;
 
     public Sprinting(InputState inputState, Buttons[] inputs, Player player)
     {
