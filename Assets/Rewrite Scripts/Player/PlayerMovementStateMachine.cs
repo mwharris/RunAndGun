@@ -8,12 +8,12 @@ public class PlayerMovementStateMachine : AbstractBehavior
     private IStateParams _stateParams;
     private PlayerMovementStateMachineHelper _stateHelper;
     private PlayerLookVars _playerLookVars;
+    private WallRunHelper _wallRunHelper;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
     private float defaultGravity = -14f;
     private bool _preserveSprint = false;
-    
     private bool _isWallRunning = false;
     
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
@@ -28,6 +28,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
         _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
         _playerLookVars = new PlayerLookVars();
+        _wallRunHelper = new WallRunHelper();
 
         // Hook into the BaseStateMachine OnStateChanged event
         _stateMachine.OnStateChanged += HandleStateChanged;
@@ -98,7 +99,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
         playerIsGrounded = _characterController.isGrounded;
         
         // Wall-running raycast and hit info checks
-        DoWallRunCheck(_stateParams, _velocity, _characterController.isGrounded);
+        _isWallRunning = _wallRunHelper.DoWallRunCheck(_stateParams, transform, _velocity, _isWallRunning, _characterController.isGrounded);
 
         // Tick our current state to handle our movement
         _stateParams.Velocity = _velocity;
@@ -116,6 +117,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
         HandleGravity();
 
         // DebugPrintVelocity();
+        // DebugWallRunRaycast();
     }
 
     private void HandleGravity()
@@ -151,62 +153,6 @@ public class PlayerMovementStateMachine : AbstractBehavior
         }
     }
 
-    private void DoWallRunCheck(IStateParams stateParams, Vector3 velocity, bool isGrounded)
-    {
-        float rayDistance = 1f;
-        
-        if (!isGrounded)
-        {
-            var lastHitInfo = stateParams.WallRunHitInfo;
-            // Check initialization of wall-running rules.
-            // Right now this just mean checking if our velocity vector touches any walls.
-            if (!_isWallRunning)
-            {
-                RaycastHit velocityHitInfo;
-                RaycastHit inputHitInfo;
-                Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
-                Vector3 iDir = CreateInputVector();
-                Physics.Raycast(transform.position, vDir, out velocityHitInfo, rayDistance);
-                Physics.Raycast(transform.position, iDir, out inputHitInfo, rayDistance);
-                Debug.DrawRay(transform.position, Vector3.ClampMagnitude(vDir, rayDistance), Color.yellow);
-                Debug.DrawRay(transform.position, Vector3.ClampMagnitude(iDir, rayDistance), Color.black);
-                if (velocityHitInfo.collider != null || inputHitInfo.collider != null)
-                {
-                    _isWallRunning = true;
-                    stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
-                    return;
-                }
-            }
-            // Check continuous wall-running rules.
-            // Raycast along the last hit info's normal, in the reverse direction, to see if we're still on a wall.
-            else if (lastHitInfo.collider != null)
-            {
-                RaycastHit wallNormalHitInfo;
-                Vector3 rayDir = new Vector3(-lastHitInfo.normal.x, 0, -lastHitInfo.normal.z);
-                Physics.Raycast(transform.position, rayDir, out wallNormalHitInfo, rayDistance);
-                if (wallNormalHitInfo.collider != null)
-                {
-                    stateParams.WallRunHitInfo = wallNormalHitInfo;
-                    return;
-                }
-            }
-        }
-        // If we reached this point we shouldn't be wall-running
-        _isWallRunning = false;
-        // This is here to make sure we're not creating new RaycastHits every frame
-        if (stateParams.WallRunHitInfo.collider != null)
-        {
-            stateParams.WallRunHitInfo = new RaycastHit();
-        }
-    }
-
-    private Vector3 CreateInputVector()
-    {
-        float forwardSpeed = PlayerInput.Instance.Vertical;
-        float sideSpeed = PlayerInput.Instance.Horizontal;
-        return ((transform.forward * forwardSpeed) + (transform.right * sideSpeed));
-    }
-
     public PlayerLookVars GetPlayerLookVars()
     {
         _playerLookVars.PlayerIsWallRunning = CurrentStateType == typeof(WallRunning);
@@ -216,8 +162,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
 
     private void DebugPrintVelocity()
     {
-        Vector3 horizontalVelocity = new Vector3(_velocity.x, 0f, _velocity.z);
-        
+        Vector3 horizontalVelocity = new Vector3(_velocity.x, 0f, _velocity.z); 
         Debug.Log(
             "Velocity: " + _velocity 
                          + ", Horiz. Magnitude: " + horizontalVelocity.magnitude

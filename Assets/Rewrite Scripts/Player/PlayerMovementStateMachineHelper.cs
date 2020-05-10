@@ -70,4 +70,9 @@ public class PlayerMovementStateMachineHelper
     {
         return crouching.ToSprint && !crouching.IsCrouching && !crouching.Rising;
     }
+
+    public void DoWallRunCheck()
+    {
+        
+    }
 }
