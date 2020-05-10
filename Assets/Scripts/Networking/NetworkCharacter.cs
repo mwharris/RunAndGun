@@ -32,8 +32,8 @@ public class NetworkCharacter : Photon.MonoBehaviour
 
     //Character Controller properties need to be passed due to Crouch animations
     private CharacterController cc;
-    private CrouchController crouchController;
-    private PlayerJump jumpController;
+    private D_CrouchController _dCrouchController;
+    private D_PlayerJump jumpController;
     private CapsuleCollider bodyCollider;
     private FixWallRunningAnimation wrAnimFix;
 
@@ -42,8 +42,8 @@ public class NetworkCharacter : Photon.MonoBehaviour
         cc = GetComponent<CharacterController>();
         bodyCollider = GetComponent<CapsuleCollider>();
         bodyControl = GetComponent<BodyController>();
-        crouchController = GetComponent<CrouchController>();
-        jumpController = GetComponent<PlayerJump>();
+        _dCrouchController = GetComponent<D_CrouchController>();
+        jumpController = GetComponent<D_PlayerJump>();
         inputState = GetComponent<InputState>();
         wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
@@ -83,7 +83,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            crouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);
+            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);
 
             //Set Capsule Collider and Character Controller variables for jumping
             jumpController.HandleHitboxes(gameObject, isAirborne, isCrouching, jumpReset);

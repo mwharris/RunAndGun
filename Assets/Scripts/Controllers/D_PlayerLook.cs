@@ -2,7 +2,7 @@
 using UnityEngine;
 
 [Serializable]
-public class PlayerLook
+public class D_PlayerLook
 {
     private Transform neck;
 

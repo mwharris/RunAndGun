@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class WallRunController : AbstractBehavior {
+public class D_WallRunController : AbstractBehavior {
 
 	[HideInInspector] public bool wallSticking = false;
     [HideInInspector] public bool wallStickVelocitySet = false;
@@ -24,7 +24,7 @@ public class WallRunController : AbstractBehavior {
 	private float cameraRotAmount = 0.1f;
 
 	private FXManager fxManager;
-	private PlayerJump jumpController;
+	private D_PlayerJump jumpController;
     
     private bool wrapAroundRotationCircle = false;
 
@@ -32,7 +32,7 @@ public class WallRunController : AbstractBehavior {
 	{
 		//Initialize references to various scripts we need
 		fxManager = GameObject.FindObjectOfType<FXManager>();
-		jumpController = GetComponent<PlayerJump>();
+		jumpController = GetComponent<D_PlayerJump>();
     }
 
 	/*

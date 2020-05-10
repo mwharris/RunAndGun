@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class PlayerJump : AbstractBehavior
+public class D_PlayerJump : AbstractBehavior
 {
 	public int maxJumps;
 	public float jumpSpeed = 8f;
@@ -22,7 +22,7 @@ public class PlayerJump : AbstractBehavior
     private int jumps;
     private bool justJumped = false;
     private bool jumpResetting = false;
-	private WallRunController wallRunController;
+	private D_WallRunController _dWallRunController;
 	private FXManager fxManager;
 	private GameManager gm;
 	private AudioSource aSource;
@@ -37,7 +37,7 @@ public class PlayerJump : AbstractBehavior
 		jumps = maxJumps;
         bodyControl = GetComponent<BodyController>();
         playerCamera = bodyControl.PlayerBodyData.playerCamera;
-		wallRunController = GetComponent<WallRunController>();
+		_dWallRunController = GetComponent<D_WallRunController>();
         fxManager = GameObject.FindObjectOfType<FXManager>();
 		aSource = GetComponent<AudioSource>();
 		gm = GameObject.FindObjectOfType<GameManager>();
@@ -84,10 +84,10 @@ public class PlayerJump : AbstractBehavior
                 //Add an immediate velocity upwards to jump
                 inputState.playerVelocity.y = jumpSpeed;
                 //If we're wall-running, angle our jump outwards
-                if (wallRunController.isWallRunning())
+                if (_dWallRunController.isWallRunning())
                 {
                     //Handle double jumping
-                    inputState.playerVelocity = wallRunController.WallJump(inputState.playerVelocity, jumpSpeed, playerCamera);
+                    inputState.playerVelocity = _dWallRunController.WallJump(inputState.playerVelocity, jumpSpeed, playerCamera);
                 }
                 else
                 {

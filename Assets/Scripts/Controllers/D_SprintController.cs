@@ -1,14 +1,14 @@
 ﻿using UnityEngine;
 using System.Collections;
 
-[RequireComponent(typeof (CrouchController))]
-public class SprintController : AbstractBehavior {
+[RequireComponent(typeof (D_CrouchController))]
+public class D_SprintController : AbstractBehavior {
 
-	private CrouchController crouchController;
+	private D_CrouchController _dCrouchController;
 
 	void Start()
 	{
-		crouchController = GetComponent<CrouchController>();
+		_dCrouchController = GetComponent<D_CrouchController>();
 	}
 
 	void Update()
@@ -25,7 +25,7 @@ public class SprintController : AbstractBehavior {
 			//Come out of crouch if we're crouching
 			if(inputState.playerIsSprinting && inputState.playerIsCrouching)
 			{
-				crouchController.StopCrouching();
+				_dCrouchController.StopCrouching();
 			}
 		}
 		//If we Aim while Sprinting, toggle Sprinting off in order to allow Aim out of Sprint

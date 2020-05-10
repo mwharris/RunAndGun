@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class CrouchController : AbstractBehavior
+public class D_CrouchController : AbstractBehavior
 {
 	private float crouchMovementSpeed;
 	public float CrouchMovementSpeed {

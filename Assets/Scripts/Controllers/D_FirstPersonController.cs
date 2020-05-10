@@ -1,12 +1,13 @@
 ﻿using UnityEngine;
 using System.Collections;
+using UnityEngine.Serialization;
 
-[RequireComponent(typeof (CrouchController))]
-[RequireComponent(typeof (PlayerJump))]
-[RequireComponent(typeof (WallRunController))]
+[RequireComponent(typeof (D_CrouchController))]
+[RequireComponent(typeof (D_PlayerJump))]
+[RequireComponent(typeof (D_WallRunController))]
 [RequireComponent(typeof (CharacterController))]
 [RequireComponent(typeof (AudioSource))]
-public class FirstPersonController : AbstractBehavior 
+public class D_FirstPersonController : AbstractBehavior 
 {
 	[HideInInspector] public CharacterController cc;
 	public AudioClip jumpSound;  
@@ -54,13 +55,13 @@ public class FirstPersonController : AbstractBehavior
 
 	/// IMPORTED SCRIPTS //////////////////
 	private GameManager gm;
-	private CrouchController crouchController;
-	private WallRunController wallRunController;
+	private D_CrouchController _dCrouchController;
+	private D_WallRunController _dWallRunController;
 	private MenuController menuController;
 	private FXManager fxManager;
 	private BobController bobScript;
     private BodyController bodyControl;
-    [SerializeField] private PlayerLook playerLook;
+    [FormerlySerializedAs("playerLook")] [SerializeField] private D_PlayerLook dPlayerLook;
     ////////////////////////////////////////////
     
     private Camera playerCamera;
@@ -73,7 +74,7 @@ public class FirstPersonController : AbstractBehavior
     {
         if (playerCamera != null)
         {
-            playerLook.DrawDebugGizmos(playerCamera.transform);
+            dPlayerLook.DrawDebugGizmos(playerCamera.transform);
         }
     }
 
@@ -96,12 +97,12 @@ public class FirstPersonController : AbstractBehavior
 		gm = GameObject.FindObjectOfType<GameManager>();
 		menuController = GameObject.FindObjectOfType<MenuController>();
 		//Set up the various controllers
-		crouchController = GetComponent<CrouchController>();
-		wallRunController = GetComponent<WallRunController>();
+		_dCrouchController = GetComponent<D_CrouchController>();
+		_dWallRunController = GetComponent<D_WallRunController>();
         //Initiliaze crouch controller variables
-        crouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
+        _dCrouchController.CalculateCrouchVars(this.gameObject, playerCamera.gameObject, movementSpeed);
         //Initialize player looking mechanics
-        playerLook.Init(transform, playerCamera.transform, bodyControl.PlayerBodyData);
+        dPlayerLook.Init(transform, playerCamera.transform, bodyControl.PlayerBodyData);
     }
 
     private void LateUpdate()
@@ -112,10 +113,10 @@ public class FirstPersonController : AbstractBehavior
     void Update () {
         //Test stuff
         Vector3 rayPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z);
-        Debug.DrawRay(rayPos, transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(rayPos, -transform.right * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(rayPos, transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
-		Debug.DrawRay(rayPos, -transform.forward * (wallRunController.isWallRunning() ? 1.5f : 0.825f));
+        Debug.DrawRay(rayPos, transform.right * (_dWallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, -transform.right * (_dWallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, transform.forward * (_dWallRunController.isWallRunning() ? 1.5f : 0.825f));
+		Debug.DrawRay(rayPos, -transform.forward * (_dWallRunController.isWallRunning() ? 1.5f : 0.825f));
 		Vector3 testV = new Vector3(inputState.playerVelocity.x, 0, inputState.playerVelocity.z);
 		Debug.DrawRay(rayPos, testV);
 
@@ -126,7 +127,7 @@ public class FirstPersonController : AbstractBehavior
 		//Gather all mouse and keyboard inputs if we aren't paused
 		GatherInputs();
 		//Handle crouching
-		crouchController.HandleCrouching(playerCamera.transform, gm.GetGameState());
+		_dCrouchController.HandleCrouching(playerCamera.transform, gm.GetGameState());
 		//Handle the movement of the player
 		HandleMovement();
         //Handle any mouse input that occurred
@@ -136,9 +137,9 @@ public class FirstPersonController : AbstractBehavior
 		//Handle jumping of the player
 		HandleJumping();
         //Tell the wall-run controller to also handle any wall-sticking tasks
-        wallRunController.HandleWallSticking();
+        _dWallRunController.HandleWallSticking();
         //Tell the wall-run controller to handle any wall-running tasks
-        wallRunController.HandleWallRunning(inputState.playerVelocity, inputState.playerIsGrounded, bodyControl.PlayerBodyData);
+        _dWallRunController.HandleWallRunning(inputState.playerVelocity, inputState.playerIsGrounded, bodyControl.PlayerBodyData);
         //Set a flag if we're airborne this frame
         if (!inputState.playerIsGrounded)
 		{
@@ -283,15 +284,15 @@ public class FirstPersonController : AbstractBehavior
 			invertY, 
 	        aimAssist, 
 	        inputState.playerIsAiming, 
-	        wallRunController.isWallRunning(), 
+	        _dWallRunController.isWallRunning(), 
 	        0f, 
 	        false, 
 	        inputState.playerLockedOnEnemy
 	    );
         //Handle any look rotation updates due to wall-running
-        wallRunController.SetWallRunLookRotationInputs(_lookRotationInput, playerCamera, inputState.playerVelocity);
+        _dWallRunController.SetWallRunLookRotationInputs(_lookRotationInput, playerCamera, inputState.playerVelocity);
         //Finally apply our look rotations and calculate head angle
-        playerLook.LookRotation(_lookRotationInput);
+        dPlayerLook.LookRotation(_lookRotationInput);
         //Set calculated values in our global InputState object
         inputState.playerLookAngle = _lookRotationInput.HeadAngle;
         inputState.playerLockedOnEnemy = _lookRotationInput.LockedOnPlayer;
@@ -309,12 +310,12 @@ public class FirstPersonController : AbstractBehavior
 		if(inputState.playerIsGrounded)
         {
             //Make sure we reset wall-sticking vars
-            wallRunController.wallStickVelocitySet = false;
+            _dWallRunController.wallStickVelocitySet = false;
             //Apply movement speed based on crouching, sprinting, or standing
             if (inputState.playerIsCrouching || inputState.playerIsAiming)
 			{
-				forwardSpeed *= crouchController.CrouchMovementSpeed;
-				sideSpeed *= crouchController.CrouchMovementSpeed;
+				forwardSpeed *= _dCrouchController.CrouchMovementSpeed;
+				sideSpeed *= _dCrouchController.CrouchMovementSpeed;
                 //Disable head/body bob while crouching
                 bobScript.enabled = false;
 			}
@@ -359,24 +360,24 @@ public class FirstPersonController : AbstractBehavior
             bobScript.enabled = false;
 
             //If we're wall-sticking
-            if (wallRunController.wallSticking)
+            if (_dWallRunController.wallSticking)
             {
                 //Calculate our wall-running velocity in order to set clamp angles
-                if (!wallRunController.wallStickVelocitySet)
+                if (!_dWallRunController.wallStickVelocitySet)
                 {
-                    wallRunController.wallStickVelocitySet = true;
-                    wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
+                    _dWallRunController.wallStickVelocitySet = true;
+                    _dWallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
                 }
                 //Stop all movement
                 inputState.playerVelocity = Vector3.zero;
             }
 			//If we're wall-running
-			else if(wallRunController.isWallRunning())
+			else if(_dWallRunController.isWallRunning())
             {
                 //Make sure we reset wall-sticking vars
-                wallRunController.wallStickVelocitySet = false;
+                _dWallRunController.wallStickVelocitySet = false;
                 //Calculate our wall-running velocity
-                inputState.playerVelocity = wallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
+                inputState.playerVelocity = _dWallRunController.SetWallRunVelocity(inputState.playerVelocity, isWDown, isSDown);
                 //Play footstep FX while wall-running
                 PlayFootStepAudio(false, true, false, false);
 			}
@@ -384,7 +385,7 @@ public class FirstPersonController : AbstractBehavior
 			else
             {
                 //Make sure we reset wall-sticking vars
-                wallRunController.wallStickVelocitySet = false;
+                _dWallRunController.wallStickVelocitySet = false;
                 //If we jumped straight up then allow air movement 
                 if (inputState.allowAirMovement)
                 {
@@ -427,7 +428,7 @@ public class FirstPersonController : AbstractBehavior
 	void HandleGravity()
 	{
 		//Add normal gravity if we aren't wall-running
-		if(!wallRunController.isWallRunning())
+		if(!_dWallRunController.isWallRunning())
 		{
             //Add gravity only when we aren't on the ground
             if (!inputState.playerIsGrounded)
