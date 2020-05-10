@@ -8,6 +8,7 @@ public class Crouching : IState
     
     private readonly Player _player;
     private readonly CharacterController _characterController;
+    private readonly CapsuleCollider _shotCollider;
     private readonly Transform _playerBody;
     private readonly Transform _playerCamera;
     private readonly InputState _inputState;
@@ -18,7 +19,9 @@ public class Crouching : IState
     
     private readonly float _originalCharacterHeight;
     private readonly float _originalCameraHeight;
-
+    private readonly float _crouchCharacterHeight = 1.12f;
+    private readonly float _crouchCameraHeight = 1.5f;
+    
     private bool _firstFrame = false;
     private bool _lowering = false;
     private bool _rising = false;
@@ -36,6 +39,7 @@ public class Crouching : IState
         _playerBody = player.PlayerBody;
         _playerCamera = player.PlayerCamera.transform;
         _characterController = player.GetComponent<CharacterController>();
+        _shotCollider = player.GetComponent<CapsuleCollider>();
 
         _originalCharacterHeight = _characterController.height;
         _originalCameraHeight = _playerCamera.transform.localPosition.y;
@@ -107,56 +111,63 @@ public class Crouching : IState
     private void Crouch()
     {
         IsCrouching = true;
-        var targetBodyScale = 0.5f;
-        var targetCcHeight = _originalCharacterHeight / 2;
-        var targetCameraHeight = _originalCameraHeight / 2;
+        var targetCcHeight = _crouchCharacterHeight;
+        var targetCameraHeight = _crouchCameraHeight;
         
-        var playerBodyScale = _playerBody.localScale;
         var ccHeight = _characterController.height;
         var ccCenter = _characterController.center;
         var cameraPosition = _playerCamera.transform.localPosition;
+        var capsuleHeight = _shotCollider.height;
+        var capsuleCenter = _shotCollider.center;
 
-        playerBodyScale.y = Lower(playerBodyScale.y, targetBodyScale, Time.deltaTime * 8f);
         ccHeight = Lower(ccHeight, targetCcHeight, Time.deltaTime * 4f);
-        ccCenter = Vector3.down * (2f - ccHeight) / 2.0f;
-        cameraPosition.y = Lower(cameraPosition.y, targetCameraHeight, Time.deltaTime * 8f);
+        capsuleHeight = ccHeight;
+        // CC Radius
+        ccCenter.y = (ccHeight / 2) + 0.3f;
+        capsuleCenter.y = (capsuleHeight / 2) + 0.3f;
+        cameraPosition.y = Lower(cameraPosition.y, targetCameraHeight, Time.deltaTime * 4f);
+        // Body Z
+        // Head Z
+        // Head Y
         
-        _playerBody.localScale = playerBodyScale;
+        _playerCamera.transform.localPosition = cameraPosition;
         _characterController.height = ccHeight;
         _characterController.center = ccCenter;
-        _playerCamera.transform.localPosition = cameraPosition;
+        _shotCollider.height = capsuleHeight;
+        _shotCollider.center = capsuleCenter;
     }
 
     private void Stand()
     {
         IsCrouching = false;
-        float riseSpeed = Time.deltaTime * (_toSprint ? 20f : 16f);
-        var targetBodyScale = 1f;
+        float riseSpeed = Time.deltaTime * (_toSprint ? 16f : 10f);
         var targetCcHeight = _originalCharacterHeight;
         var targetCameraHeight = _originalCameraHeight;
         
-        var playerBodyScale = _playerBody.localScale;
         var ccHeight = _characterController.height;
         var ccCenter = _characterController.center;
         var cameraPosition = _playerCamera.transform.localPosition;
-
-        playerBodyScale.y = Raise(playerBodyScale.y, targetBodyScale, riseSpeed);
+        var capsuleHeight = _shotCollider.height;
+        var capsuleCenter = _shotCollider.center;
+        
         ccHeight = Raise(ccHeight, targetCcHeight, riseSpeed);
-        ccCenter = Vector3.down * (_originalCharacterHeight - ccHeight) / 2.0f;
+        capsuleHeight = ccHeight - 0.2f;
+        ccCenter.y = (ccHeight / 2) + 0.3f;
+        capsuleCenter.y = (capsuleHeight / 2) + 0.3f;
         cameraPosition.y = Raise(cameraPosition.y, targetCameraHeight, riseSpeed);
         
-        _playerBody.localScale = playerBodyScale;
+        _playerCamera.transform.localPosition = cameraPosition;
         _characterController.height = ccHeight;
         _characterController.center = ccCenter;
-        _playerCamera.transform.localPosition = cameraPosition;
+        _shotCollider.height = capsuleHeight;
+        _shotCollider.center = capsuleCenter;
 
-        _rising = !FinishedStanding(targetBodyScale, targetCcHeight, targetCameraHeight);
+        _rising = !FinishedStanding(targetCcHeight, targetCameraHeight);
     }
 
-    private bool FinishedStanding(float targetBodyScale, float targetCcHeight, float targetCameraHeight)
+    private bool FinishedStanding(float targetCcHeight, float targetCameraHeight)
     {
-        if (_playerBody.localScale.y == targetBodyScale
-            && _characterController.height == targetCcHeight
+        if (_characterController.height == targetCcHeight
             && _playerCamera.transform.localPosition.y == targetCameraHeight)
         {
             return true;
