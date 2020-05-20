@@ -117,7 +117,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
         HandleGravity();
 
         // DebugPrintVelocity();
-        // DebugWallRunRaycast();
+        DebugWallRunRaycast();
     }
 
     private void HandleGravity()
@@ -174,6 +174,14 @@ public class PlayerMovementStateMachine : AbstractBehavior
     {
         Vector3 vDir = new Vector3(_velocity.x, 0, _velocity.z);
         Debug.DrawRay(transform.position, vDir, Color.yellow);
+
+        Vector3 iDir = _wallRunHelper.CreateInputVector(transform);
+        Debug.DrawRay(transform.position, iDir, Color.red);
+
+        Vector3 rDir = transform.right;
+        Vector3 lDir = -transform.right;
+        Debug.DrawRay(transform.position, rDir, Color.white);
+        Debug.DrawRay(transform.position, lDir, Color.white);
     }
 
 }
