@@ -85,6 +85,7 @@ public class WallRunning : IState
         }
     }
 
+    // TODO: THE WALL-RUNNING PROBLEM IS HERE
     private void SetWallRunSide()
     {
         float rayDistance = 1f;

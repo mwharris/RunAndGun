@@ -34,12 +34,10 @@ public class WallRunHelper
                 {
                     if (velocityHitInfo.collider != null || inputHitInfo.collider != null)
                     {
-                        Debug.Log("Activate wall-running: VELOCITY or INPUT");
                         stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
                     }
                     else if (rightHitInfo.collider != null || leftHitInfo.collider != null)
                     {
-                        Debug.Log("Activate wall-running: RIGHT or LEFT");
                         stateParams.WallRunHitInfo = rightHitInfo.collider != null ? rightHitInfo : leftHitInfo;
                     }
                     return true;
@@ -64,11 +62,6 @@ public class WallRunHelper
         if (stateParams.WallRunHitInfo.collider != null)
         {
             stateParams.WallRunHitInfo = new RaycastHit();
-        }
-        // If we reached this point we shouldn't be wall-running
-        if (isWallRunning)
-        {
-            Debug.Log("Deactivate Wall-Running!");
         }
         return false;
     }
