@@ -29,6 +29,8 @@ public class WallRunning : IState
         _gravity = defaultGravity;
     }
 
+    // TODO: THIS NEEDS TO BE ON THE SAME PAGE AS WallRunHelper.DoWallRunCheck()
+    // SOMETIMES THIS FUNCTION CANNOT FIND A WALL-RUN SIDE DESPITE DoWallRunCheck() SAYING WE ARE WALL-RUNNING
     public IStateParams Tick(IStateParams stateParams)
     {
         var stateParamsVelocity = stateParams.Velocity;
@@ -53,9 +55,13 @@ public class WallRunning : IState
                 _wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
             }
             // Wall running left
-            else
+            else if (_wallRunningLeft)
             {
                 _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
+            }
+            else
+            {
+                Debug.Log("WallRunning: This shouldn't happen!");
             }
             // Apply our movement along the wall run axis we found above
             var moveAxis = _wallRunMoveAxis;
@@ -85,18 +91,18 @@ public class WallRunning : IState
         }
     }
 
-    // TODO: THE WALL-RUNNING PROBLEM IS HERE
     private void SetWallRunSide()
     {
-        float rayDistance = 1f;
         RaycastHit rightHitInfo;
         RaycastHit leftHitInfo;
+        Vector3 rayPos = new Vector3(_player.transform.position.x, _player.transform.position.y + 1, _player.transform.position.z);
+        float rayDistance = 1f;
         
         Vector3 rightDir = _player.transform.right;
         Vector3 leftDir = -_player.transform.right;
         
-        Physics.Raycast(_player.transform.position, rightDir, out rightHitInfo, rayDistance);
-        Physics.Raycast(_player.transform.position, leftDir, out leftHitInfo, rayDistance);
+        Physics.Raycast(rayPos, rightDir, out rightHitInfo, rayDistance);
+        Physics.Raycast(rayPos, leftDir, out leftHitInfo, rayDistance);
 
         _wallRunningRight = rightHitInfo.collider != null;
         _wallRunningLeft = leftHitInfo.collider != null;

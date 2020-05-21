@@ -22,8 +22,8 @@ public class WallRunHelper
                 Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
                 Vector3 iDir = CreateInputVector(player);
                 // Perform the raycasts
-                Physics.Raycast(rayPos, vDir, out velocityHitInfo, rayDistance);
-                Physics.Raycast(rayPos, iDir, out inputHitInfo, rayDistance);
+                Physics.Raycast(rayPos, vDir.normalized, out velocityHitInfo, rayDistance);
+                Physics.Raycast(rayPos, iDir.normalized, out inputHitInfo, rayDistance);
                 Physics.Raycast(rayPos, player.transform.right, out rightHitInfo, rayDistance);
                 Physics.Raycast(rayPos, -player.transform.right, out leftHitInfo, rayDistance);
                 // Make sure we're not looking too far into the wall
