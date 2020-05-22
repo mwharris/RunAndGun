@@ -9,5 +9,7 @@ public class StateParams : IStateParams
     public RaycastHit WallRunHitInfo { get; set; }
     public float WallRunZRotation { get; set; }
     public bool WallJumped { get; set; } = false;
+    public bool WallRunningLeft { get; set; } = false;
+    public bool WallRunningRight { get; set; } = false;
     public AbstractBehavior inputBehavior { get; set; }
 }

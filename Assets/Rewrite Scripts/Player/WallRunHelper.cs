@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Runtime.CompilerServices;
 using UnityEngine;
 
 public class WallRunHelper
@@ -6,6 +7,8 @@ public class WallRunHelper
     public bool DoWallRunCheck(IStateParams stateParams, Transform player, Vector3 velocity, bool isWallRunning, bool isGrounded)
     {
         float rayDistance = 1f;
+        bool wallRunningLeft = false;
+        bool wallRunningRight = false;
         
         if (!isGrounded)
         {
@@ -35,10 +38,22 @@ public class WallRunHelper
                     if (velocityHitInfo.collider != null || inputHitInfo.collider != null)
                     {
                         stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
+                        if (rightHitInfo.collider == null && leftHitInfo.collider == null)
+                        {
+                            Vector3 dir = velocityHitInfo.collider != null ? vDir : iDir;
+                            CalculateWallRunSide(stateParams, player.transform.forward);
+                        }
+                        else
+                        {
+                            stateParams.WallRunningRight = rightHitInfo.collider != null;
+                            stateParams.WallRunningLeft = leftHitInfo.collider != null;
+                        }
                     }
                     else if (rightHitInfo.collider != null || leftHitInfo.collider != null)
                     {
                         stateParams.WallRunHitInfo = rightHitInfo.collider != null ? rightHitInfo : leftHitInfo;
+                        stateParams.WallRunningRight = rightHitInfo.collider != null;
+                        stateParams.WallRunningLeft = leftHitInfo.collider != null;
                     }
                     return true;
                 }
@@ -102,30 +117,32 @@ public class WallRunHelper
 
         return lookAngleGood;
     }
-    
-    private Vector3 GetWallRunHitNormal(RaycastHit velocityHitInfo, RaycastHit inputHitInfo, 
-        RaycastHit rightHitInfo, RaycastHit leftHitInfo)
+
+    // Calculate the wall-run side using Cross and Dot product
+    private void CalculateWallRunSide(IStateParams stateParams, Vector3 forward)
     {
-        Vector3 hitNormal = Vector3.zero;
-        if (velocityHitInfo.collider != null)
+        Vector3 normal = stateParams.WallRunHitInfo.normal;
+        Vector3 normalNoY = new Vector3(normal.x, 0, normal.z);
+        // Take the cross product of the wall's normal (A) and our forward direction (B).
+        // Yields a vector pointing Up if B is to the right of A or Down if B is to the left of A.
+        Vector3 cross = Vector3.Cross(normalNoY, forward);
+        // Use Dot product to determine if the vector is pointing Up or Down.
+        float dot = Vector3.Dot(cross, Vector3.up);
+        // If the result is negative then it's pointing down
+        Debug.Log("Calculating wall run side...");
+        if (dot < 0)
         {
-            return velocityHitInfo.normal;
+            Debug.Log("LEFT!");
+            stateParams.WallRunningLeft = true;
         }
-        if (inputHitInfo.collider != null)
+        // If the result is positive then it's pointing up
+        else if (dot > 0)
         {
-            return inputHitInfo.normal;
+            Debug.Log("RIGHT!");
+            stateParams.WallRunningRight = true;
         }
-        if (rightHitInfo.collider != null)
-        {
-            return rightHitInfo.normal;
-        }
-        if (leftHitInfo.collider != null)
-        {
-            return leftHitInfo.normal;
-        }
-        return hitNormal;
     }
-    
+
     public Vector3 CreateInputVector(Transform player)
     {
         float forwardSpeed = PlayerInput.Instance.Vertical;

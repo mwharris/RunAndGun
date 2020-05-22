@@ -52,7 +52,7 @@ public class BaseStateMachine
         var toState = state;
         
         stateParams = _currentState != null ? _currentState.OnExit(stateParams) : stateParams;
-        Debug.Log($"Changed from {_currentState} to {state}");
+        //Debug.Log($"Changed from {_currentState} to {state}");
         _currentState = state;
         stateParams = _currentState != null ? _currentState.OnEnter(stateParams) : stateParams;
         

@@ -17,8 +17,6 @@ public class WallRunning : IState
     private readonly float _wallRunCameraTilt = 0.08f;
     
     private Vector3 _wallRunMoveAxis = Vector3.zero;
-    private bool _wallRunningRight = false;
-    private bool _wallRunningLeft = false;
 
     public WallRunning(InputState inputState, Buttons[] inputs, Player player, float defaultGravity)
     {
@@ -45,17 +43,16 @@ public class WallRunning : IState
         }
         else
         {
-            // Find the direction parallel to the wall using the wallRunHitInfo.normal
-            SetWallRunSide();
+            SetWallRunSide(stateParams);
             // Tilt the camera in the opposite direction of the wall-run
             TiltCamera(stateParams);
             // Wall running right
-            if (_wallRunningRight)
+            if (stateParams.WallRunningRight)
             {
                 _wallRunMoveAxis = Vector3.Cross(Vector3.up, wallRunHitInfo.normal);
             }
             // Wall running left
-            else if (_wallRunningLeft)
+            else if (stateParams.WallRunningLeft)
             {
                 _wallRunMoveAxis = Vector3.Cross(wallRunHitInfo.normal, Vector3.up);
             }
@@ -81,31 +78,35 @@ public class WallRunning : IState
     {
         var lerpSpeed = Time.deltaTime * 4f;
         // This value will be retrieved by the PlayerLook script via PlayerLookVars
-        if (_wallRunningRight)
+        if (stateParams.WallRunningRight)
         {
             stateParams.WallRunZRotation = Mathf.Lerp(_playerCamera.localRotation.z, _wallRunCameraTilt, lerpSpeed);
         }
-        else if (_wallRunningLeft) 
+        else if (stateParams.WallRunningLeft) 
         {
             stateParams.WallRunZRotation = Mathf.Lerp(_playerCamera.localRotation.z, -_wallRunCameraTilt, lerpSpeed);
         }
     }
 
-    private void SetWallRunSide()
+    private void SetWallRunSide(IStateParams stateParams)
     {
-        RaycastHit rightHitInfo;
-        RaycastHit leftHitInfo;
-        Vector3 rayPos = new Vector3(_player.transform.position.x, _player.transform.position.y + 1, _player.transform.position.z);
-        float rayDistance = 1f;
-        
-        Vector3 rightDir = _player.transform.right;
-        Vector3 leftDir = -_player.transform.right;
-        
-        Physics.Raycast(rayPos, rightDir, out rightHitInfo, rayDistance);
-        Physics.Raycast(rayPos, leftDir, out leftHitInfo, rayDistance);
+        if (!stateParams.WallRunningRight && !stateParams.WallRunningLeft)
+        {
+            RaycastHit rightHitInfo;
+            RaycastHit leftHitInfo;
+            Vector3 rayPos = new Vector3(_player.transform.position.x, _player.transform.position.y + 1,
+                _player.transform.position.z);
+            float rayDistance = 1f;
 
-        _wallRunningRight = rightHitInfo.collider != null;
-        _wallRunningLeft = leftHitInfo.collider != null;
+            Vector3 rightDir = _player.transform.right;
+            Vector3 leftDir = -_player.transform.right;
+
+            Physics.Raycast(rayPos, rightDir, out rightHitInfo, rayDistance);
+            Physics.Raycast(rayPos, leftDir, out leftHitInfo, rayDistance);
+
+            stateParams.WallRunningRight = rightHitInfo.collider != null;
+            stateParams.WallRunningLeft = leftHitInfo.collider != null;
+        }
     }
 
     private IStateParams SetGravity(IStateParams stateParams)
