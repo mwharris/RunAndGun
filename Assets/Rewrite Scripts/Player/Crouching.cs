@@ -111,6 +111,7 @@ public class Crouching : IState
     private void Crouch()
     {
         IsCrouching = true;
+        float lowerSpeed = Time.deltaTime * 10f;
         var targetCcHeight = _crouchCharacterHeight;
         var targetCameraHeight = _crouchCameraHeight;
         
@@ -120,12 +121,12 @@ public class Crouching : IState
         var capsuleHeight = _shotCollider.height;
         var capsuleCenter = _shotCollider.center;
 
-        ccHeight = Lower(ccHeight, targetCcHeight, Time.deltaTime * 4f);
+        ccHeight = Lower(ccHeight, targetCcHeight, lowerSpeed);
         capsuleHeight = ccHeight;
         // CC Radius
         ccCenter.y = (ccHeight / 2) + 0.3f;
         capsuleCenter.y = (capsuleHeight / 2) + 0.3f;
-        cameraPosition.y = Lower(cameraPosition.y, targetCameraHeight, Time.deltaTime * 4f);
+        cameraPosition.y = Lower(cameraPosition.y, targetCameraHeight, lowerSpeed);
         // Body Z
         // Head Z
         // Head Y
