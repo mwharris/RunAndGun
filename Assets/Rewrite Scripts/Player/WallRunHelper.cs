@@ -39,22 +39,23 @@ public class WallRunHelper
                         stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
                         if (rightHitInfo.collider == null && leftHitInfo.collider == null)
                         {
-                            Debug.Log("Calculating...");
+                            // Debug.Log("Calculating...");
                             Vector3 dir = velocityHitInfo.collider != null ? vDir : iDir;
                             CalculateWallRunSide(stateParams, player.transform.forward);
                         }
                         else
                         {
+                            /*
                             Debug.Log("Velocity / Input...");
                             if (rightHitInfo.collider != null && leftHitInfo.collider != null)
                             {
-                                // TODO: weird issue here where rightHitInfo.collider.name was null but rightHitInfo.collider is NOT null..
                                 Debug.Log("BOTH: " + rightHitInfo.collider.name + ", " + leftHitInfo.collider.name);
                             }
-                            // TODO: sometimes we set both WallRunningRight and WallRunningLeft to true...this should never happen
+                            */
+                            //TODO: Refactor this garbage...
                             if (rightHitInfo.collider != null)
                             {
-                                Debug.Log("RIGHT");
+                                //Debug.Log("RIGHT");
                                 stateParams.WallRunningRight = true;
                             }
                             else
@@ -63,7 +64,7 @@ public class WallRunHelper
                             }
                             if (leftHitInfo.collider != null)
                             {
-                                Debug.Log("LEFT");
+                                //Debug.Log("LEFT");
                                 stateParams.WallRunningLeft = true;
                             }
                             else
@@ -75,14 +76,17 @@ public class WallRunHelper
                     else if (rightHitInfo.collider != null || leftHitInfo.collider != null)
                     {
                         stateParams.WallRunHitInfo = rightHitInfo.collider != null ? rightHitInfo : leftHitInfo;
+                        /*
                         Debug.Log("Right / Left...");
                         if (rightHitInfo.collider != null && leftHitInfo.collider != null)
                         {
                             Debug.Log("BOTH: " + rightHitInfo.collider.name + ", " + leftHitInfo.collider.name);
                         }
+                        */
+                        //TODO: Refactor this garbage...
                         if (rightHitInfo.collider != null)
                         {
-                            Debug.Log("RIGHT");
+                            //Debug.Log("RIGHT");
                             stateParams.WallRunningRight = true;
                         }
                         else
@@ -91,7 +95,7 @@ public class WallRunHelper
                         }
                         if (leftHitInfo.collider != null)
                         {
-                            Debug.Log("LEFT");
+                            //Debug.Log("LEFT");
                             stateParams.WallRunningLeft = true;
                         }
                         else
