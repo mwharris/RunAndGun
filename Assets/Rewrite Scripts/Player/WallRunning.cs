@@ -92,6 +92,7 @@ public class WallRunning : IState
     {
         if (!stateParams.WallRunningRight && !stateParams.WallRunningLeft)
         {
+            Debug.Log("WallRunning: Calculating wall-run side");
             RaycastHit rightHitInfo;
             RaycastHit leftHitInfo;
             Vector3 rayPos = new Vector3(_player.transform.position.x, _player.transform.position.y + 1,
@@ -135,6 +136,8 @@ public class WallRunning : IState
 
     public IStateParams OnExit(IStateParams stateParams)
     {
+        stateParams.WallRunningRight = false;
+        stateParams.WallRunningLeft = false;
         return stateParams;
     }
 }

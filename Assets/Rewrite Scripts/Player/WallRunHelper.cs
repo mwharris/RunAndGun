@@ -7,8 +7,6 @@ public class WallRunHelper
     public bool DoWallRunCheck(IStateParams stateParams, Transform player, Vector3 velocity, bool isWallRunning, bool isGrounded)
     {
         float rayDistance = 1f;
-        bool wallRunningLeft = false;
-        bool wallRunningRight = false;
         
         if (!isGrounded)
         {
@@ -40,20 +38,65 @@ public class WallRunHelper
                         stateParams.WallRunHitInfo = velocityHitInfo.collider != null ? velocityHitInfo : inputHitInfo;
                         if (rightHitInfo.collider == null && leftHitInfo.collider == null)
                         {
+                            Debug.Log("Calculating...");
                             Vector3 dir = velocityHitInfo.collider != null ? vDir : iDir;
                             CalculateWallRunSide(stateParams, player.transform.forward);
                         }
                         else
                         {
-                            stateParams.WallRunningRight = rightHitInfo.collider != null;
-                            stateParams.WallRunningLeft = leftHitInfo.collider != null;
+                            Debug.Log("Velocity / Input...");
+                            if (rightHitInfo.collider != null && leftHitInfo.collider != null)
+                            {
+                                // TODO: weird issue here where rightHitInfo.collider.name was null but rightHitInfo.collider is NOT null..
+                                Debug.Log("BOTH: " + rightHitInfo.collider.name + ", " + leftHitInfo.collider.name);
+                            }
+                            // TODO: sometimes we set both WallRunningRight and WallRunningLeft to true...this should never happen
+                            if (rightHitInfo.collider != null)
+                            {
+                                Debug.Log("RIGHT");
+                                stateParams.WallRunningRight = true;
+                            }
+                            else
+                            {
+                                stateParams.WallRunningRight = false;
+                            }
+                            if (leftHitInfo.collider != null)
+                            {
+                                Debug.Log("LEFT");
+                                stateParams.WallRunningLeft = true;
+                            }
+                            else
+                            {
+                                stateParams.WallRunningLeft = false;
+                            }
                         }
                     }
                     else if (rightHitInfo.collider != null || leftHitInfo.collider != null)
                     {
                         stateParams.WallRunHitInfo = rightHitInfo.collider != null ? rightHitInfo : leftHitInfo;
-                        stateParams.WallRunningRight = rightHitInfo.collider != null;
-                        stateParams.WallRunningLeft = leftHitInfo.collider != null;
+                        Debug.Log("Right / Left...");
+                        if (rightHitInfo.collider != null && leftHitInfo.collider != null)
+                        {
+                            Debug.Log("BOTH: " + rightHitInfo.collider.name + ", " + leftHitInfo.collider.name);
+                        }
+                        if (rightHitInfo.collider != null)
+                        {
+                            Debug.Log("RIGHT");
+                            stateParams.WallRunningRight = true;
+                        }
+                        else
+                        {
+                            stateParams.WallRunningRight = false;
+                        }
+                        if (leftHitInfo.collider != null)
+                        {
+                            Debug.Log("LEFT");
+                            stateParams.WallRunningLeft = true;
+                        }
+                        else
+                        {
+                            stateParams.WallRunningLeft = false;
+                        }
                     }
                     return true;
                 }
@@ -129,16 +172,17 @@ public class WallRunHelper
         // Use Dot product to determine if the vector is pointing Up or Down.
         float dot = Vector3.Dot(cross, Vector3.up);
         // If the result is negative then it's pointing down
-        Debug.Log("Calculating wall run side...");
         if (dot < 0)
         {
             Debug.Log("LEFT!");
             stateParams.WallRunningLeft = true;
+            stateParams.WallRunningRight = false;
         }
         // If the result is positive then it's pointing up
         else if (dot > 0)
         {
             Debug.Log("RIGHT!");
+            stateParams.WallRunningLeft = false;
             stateParams.WallRunningRight = true;
         }
     }
