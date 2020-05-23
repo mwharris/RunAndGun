@@ -92,9 +92,10 @@ public class WallRunning : IState
     {
         if (!stateParams.WallRunningRight && !stateParams.WallRunningLeft)
         {
-            Debug.Log("WallRunning: Calculating wall-run side");
             RaycastHit rightHitInfo;
             RaycastHit leftHitInfo;
+            int layerMask = ~(1 << 10);
+
             Vector3 rayPos = new Vector3(_player.transform.position.x, _player.transform.position.y + 1,
                 _player.transform.position.z);
             float rayDistance = 1f;
@@ -102,8 +103,8 @@ public class WallRunning : IState
             Vector3 rightDir = _player.transform.right;
             Vector3 leftDir = -_player.transform.right;
 
-            Physics.Raycast(rayPos, rightDir, out rightHitInfo, rayDistance);
-            Physics.Raycast(rayPos, leftDir, out leftHitInfo, rayDistance);
+            Physics.Raycast(rayPos, rightDir, out rightHitInfo, rayDistance, layerMask);
+            Physics.Raycast(rayPos, leftDir, out leftHitInfo, rayDistance, layerMask);
 
             stateParams.WallRunningRight = rightHitInfo.collider != null;
             stateParams.WallRunningLeft = leftHitInfo.collider != null;

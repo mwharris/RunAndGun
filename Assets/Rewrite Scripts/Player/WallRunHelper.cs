@@ -7,6 +7,7 @@ public class WallRunHelper
     public bool DoWallRunCheck(IStateParams stateParams, Transform player, Vector3 velocity, bool isWallRunning, bool isGrounded)
     {
         float rayDistance = 1f;
+        int layerMask = ~(1 << 10);
         
         if (!isGrounded)
         {
@@ -23,10 +24,10 @@ public class WallRunHelper
                 Vector3 vDir = new Vector3(velocity.x, 0, velocity.z);
                 Vector3 iDir = CreateInputVector(player);
                 // Perform the raycasts
-                Physics.Raycast(rayPos, vDir.normalized, out velocityHitInfo, rayDistance);
-                Physics.Raycast(rayPos, iDir.normalized, out inputHitInfo, rayDistance);
-                Physics.Raycast(rayPos, player.transform.right, out rightHitInfo, rayDistance);
-                Physics.Raycast(rayPos, -player.transform.right, out leftHitInfo, rayDistance);
+                Physics.Raycast(rayPos, vDir.normalized, out velocityHitInfo, rayDistance, layerMask);
+                Physics.Raycast(rayPos, iDir.normalized, out inputHitInfo, rayDistance, layerMask);
+                Physics.Raycast(rayPos, player.transform.right, out rightHitInfo, rayDistance, layerMask);
+                Physics.Raycast(rayPos, -player.transform.right, out leftHitInfo, rayDistance, layerMask);
                 // Make sure we're not looking too far into the wall
                 var lookAngleGood =
                     LookAngleGood(player, vDir, iDir, velocityHitInfo, inputHitInfo, rightHitInfo, leftHitInfo);
@@ -107,7 +108,7 @@ public class WallRunHelper
                 // Raycast along the last hit info's normal, in the reverse direction, to see if we're still on a wall.
                 RaycastHit wallNormalHitInfo;
                 Vector3 rayDir = new Vector3(-lastHitInfo.normal.x, 0, -lastHitInfo.normal.z);
-                Physics.Raycast(rayPos, rayDir, out wallNormalHitInfo, rayDistance);
+                Physics.Raycast(rayPos, rayDir, out wallNormalHitInfo, rayDistance, layerMask);
                 Debug.DrawRay(rayPos, rayDir, Color.green);
                 if (wallNormalHitInfo.collider != null)
                 {

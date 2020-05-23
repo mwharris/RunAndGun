@@ -914,7 +914,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4792770270484274}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: FirstPerson
   m_TagString: FPSBody
   m_Icon: {fileID: 0}
@@ -2017,7 +2017,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 4856108758902480}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: ThirdPerson
   m_TagString: TPSBody
   m_Icon: {fileID: 0}
@@ -2286,7 +2286,7 @@ GameObject:
   - component: {fileID: 114592051471689106}
   - component: {fileID: 114877375779654786}
   - component: {fileID: 114094180925807336}
-  m_Layer: 0
+  m_Layer: 10
   m_Name: RecoilPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
