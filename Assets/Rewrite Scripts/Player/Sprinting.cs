@@ -3,17 +3,19 @@
 public class Sprinting : IState
 {
     private readonly Player _player;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
+    private readonly Camera _playerCamera;
+    private readonly Transform _playerCameraTransform;
+    private readonly CameraController _cameraController;
     
     // 5.1 m/s
     private float _sprintingSpeed = 10.2f;
 
-    public Sprinting(InputState inputState, Buttons[] inputs, Player player)
+    public Sprinting(Player player, CameraController cameraController)
     {
         _player = player;
-        _inputState = inputState;
-        _inputs = inputs;
+        _playerCamera = player.PlayerCamera;
+        _playerCameraTransform = player.PlayerCamera.transform;
+        _cameraController = cameraController;
     }
 
     public IStateParams Tick(IStateParams stateParams)
@@ -57,11 +59,13 @@ public class Sprinting : IState
 
     public IStateParams OnEnter(IStateParams stateParams)
     {
+        _cameraController.PlayerIsSprinting = true;
         return stateParams;
     }
 
     public IStateParams OnExit(IStateParams stateParams)
     {
+        _cameraController.PlayerIsSprinting = false;
         return stateParams;
     }
 }

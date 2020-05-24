@@ -2286,6 +2286,7 @@ GameObject:
   - component: {fileID: 114592051471689106}
   - component: {fileID: 114877375779654786}
   - component: {fileID: 114094180925807336}
+  - component: {fileID: 114029144374313348}
   m_Layer: 10
   m_Name: RecoilPlayer
   m_TagString: Player
@@ -6139,6 +6140,18 @@ MonoBehaviour:
   instantiationId: -1
   currentMasterID: -1
   isRuntimeInstantiated: 0
+--- !u!114 &114029144374313348
+MonoBehaviour:
+  m_ObjectHideFlags: 1
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInternal: {fileID: 100100000}
+  m_GameObject: {fileID: 1886960915426844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 03e748202584f0d4381b2bdb8dbb6411, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  _camera: {fileID: 20096753067228822}
 --- !u!114 &114031549631280388
 MonoBehaviour:
   m_ObjectHideFlags: 1
@@ -7599,7 +7612,6 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: b2f3d9fb43dff57499c3e9faf4a6929a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  inputs: 020000000300000001000000000000000a0000000d000000
   playerIsGrounded: 0
 --- !u!114 &114881660270338650
 MonoBehaviour:

@@ -7,8 +7,6 @@ public class Sliding : IState
     
     private readonly Player _player;
     private readonly CharacterController _characterController;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
     private readonly Transform _playerBody;
     private readonly Transform _playerCamera;
     private readonly float _originalCharacterHeight;
@@ -19,11 +17,8 @@ public class Sliding : IState
     private const float DragAmount = 0.01f;
     private const float CrouchThreshold = 1f;
 
-    public Sliding(InputState inputState, Buttons[] inputs, Player player)
+    public Sliding(Player player)
     {
-        _inputState = inputState;
-        _inputs = inputs;
-        
         _player = player;
         _playerBody = player.PlayerBody;
         _playerCamera = player.PlayerCamera.transform;

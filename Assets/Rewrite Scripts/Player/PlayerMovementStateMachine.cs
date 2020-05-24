@@ -1,14 +1,15 @@
 ﻿using System;
 using UnityEngine;
 
-public class PlayerMovementStateMachine : AbstractBehavior
+public class PlayerMovementStateMachine : MonoBehaviour
 {
     private BaseStateMachine _stateMachine;
-    private CharacterController _characterController;
     private IStateParams _stateParams;
     private PlayerMovementStateMachineHelper _stateHelper;
-    private PlayerLookVars _playerLookVars;
     private WallRunHelper _wallRunHelper;
+    private CharacterController _characterController;
+    private CameraController _cameraController;
+    private PlayerLookVars _playerLookVars;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
@@ -25,6 +26,7 @@ public class PlayerMovementStateMachine : AbstractBehavior
     {
         Player player = FindObjectOfType<Player>();
         _characterController = GetComponent<CharacterController>();
+        _cameraController = GetComponent<CameraController>();
         _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
         _playerLookVars = new PlayerLookVars();
@@ -39,13 +41,13 @@ public class PlayerMovementStateMachine : AbstractBehavior
         _stateParams.GravityOverride = defaultGravity;
 
         // Create our states
-        Idle idle = new Idle(this.inputState, this.inputs, player);
-        Walking walking = new Walking(this.inputState, this.inputs, player);
-        Sprinting sprinting = new Sprinting(this.inputState, this.inputs, player);
-        Jumping jumping = new Jumping(this.inputState, this.inputs, player);
-        WallRunning wallRunning = new WallRunning(this.inputState, this.inputs, player, defaultGravity);
-        Crouching crouching = new Crouching(this.inputState, this.inputs, player);
-        Sliding sliding = new Sliding(this.inputState, this.inputs, player);
+        Idle idle = new Idle(player);
+        Walking walking = new Walking(player);
+        Sprinting sprinting = new Sprinting(player, _cameraController);
+        Jumping jumping = new Jumping(player);
+        WallRunning wallRunning = new WallRunning(player, defaultGravity);
+        Crouching crouching = new Crouching(player);
+        Sliding sliding = new Sliding(player);
 
         // Create our state transitions
         // Any -> Idle
@@ -183,5 +185,4 @@ public class PlayerMovementStateMachine : AbstractBehavior
         Debug.DrawRay(transform.position, rDir, Color.white);
         Debug.DrawRay(transform.position, lDir, Color.white);
     }
-
 }

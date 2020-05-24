@@ -13,7 +13,6 @@ public class Jumping : IState
 
     // 5
     private const float JumpSpeed = 6f;
-    
     // 8.5 m/s
     private const float WallJumpHorizontalSpeed = 17f;
     
@@ -22,10 +21,8 @@ public class Jumping : IState
 
     public bool ToSlide { get; private set; } = false;
 
-    public Jumping(InputState inputState, Buttons[] inputs, Player player)
+    public Jumping(Player player)
     {
-        _inputState = inputState;
-        _inputs = inputs;
         _player = player;
         _characterController = player.GetComponent<CharacterController>();
     }

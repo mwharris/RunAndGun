@@ -4,18 +4,14 @@ public class Walking : IState
 {
     private readonly Player _player;
     private readonly CharacterController _characterController;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
     
     // 3.4 m/s
     private float _walkingSpeed = 6.8f;
 
-    public Walking(InputState inputState, Buttons[] inputs, Player player)
+    public Walking(Player player)
     {
         _player = player;
         _characterController = player.GetComponent<CharacterController>();
-        _inputState = inputState;
-        _inputs = inputs;
     }
     
     public IStateParams Tick(IStateParams stateParams)

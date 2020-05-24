@@ -8,8 +8,6 @@ public class WallRunning : IState
     private readonly Player _player;
     private readonly Transform _playerCamera;
     private readonly float _gravity;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
     
     // 6.8 m/s
     private readonly float _wallRunSpeed = 13.6f;
@@ -18,10 +16,8 @@ public class WallRunning : IState
     
     private Vector3 _wallRunMoveAxis = Vector3.zero;
 
-    public WallRunning(InputState inputState, Buttons[] inputs, Player player, float defaultGravity)
+    public WallRunning(Player player, float defaultGravity)
     {
-        _inputState = inputState;
-        _inputs = inputs;
         _player = player;
         _playerCamera = player.PlayerCamera.transform;
         _gravity = defaultGravity;

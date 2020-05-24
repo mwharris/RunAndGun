@@ -4,14 +4,10 @@ using UnityEngine;
 public class Idle : IState
 {
     private readonly CharacterController _characterController;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
     
-    public Idle(InputState inputState, Buttons[] inputs, Player player)
+    public Idle(Player player)
     {
         _characterController = player.GetComponent<CharacterController>();
-        _inputState = inputState;
-        _inputs = inputs;
     }
 
     public IStateParams Tick(IStateParams stateParams)

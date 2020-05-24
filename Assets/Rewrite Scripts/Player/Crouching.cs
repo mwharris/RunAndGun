@@ -11,8 +11,6 @@ public class Crouching : IState
     private readonly CapsuleCollider _shotCollider;
     private readonly Transform _playerBody;
     private readonly Transform _playerCamera;
-    private readonly InputState _inputState;
-    private readonly Buttons[] _inputs;
     
     // 1.7 m/s
     private float _crouchingWalkSpeed = 1.7f;
@@ -30,11 +28,8 @@ public class Crouching : IState
     public bool Rising => _rising;
     public bool ToSprint => _toSprint;
 
-    public Crouching(InputState inputState, Buttons[] inputs, Player player)
+    public Crouching(Player player)
     {
-        _inputState = inputState;
-        _inputs = inputs;
-        
         _player = player;
         _playerBody = player.PlayerBody;
         _playerCamera = player.PlayerCamera.transform;
