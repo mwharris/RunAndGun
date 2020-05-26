@@ -14,7 +14,6 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
     private float defaultGravity = -14f;
-    private bool _preserveSprint = false;
     private bool _isWallRunning = false;
     
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
@@ -44,7 +43,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Idle idle = new Idle(player);
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player, _cameraController);
-        Jumping jumping = new Jumping(player);
+        Jumping jumping = new Jumping(player, _cameraController);
         WallRunning wallRunning = new WallRunning(player, defaultGravity, _cameraController);
         Crouching crouching = new Crouching(player);
         Sliding sliding = new Sliding(player);
@@ -53,7 +52,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Any -> Idle
         _stateMachine.AddAnyTransition(idle, () => _stateHelper.ToIdle(idle, jumping, crouching, sliding));
         // Any -> Jumping
-        _stateMachine.AddAnyTransition(jumping, () => _stateHelper.ToJump(jumping, _isWallRunning, _stateParams.WallJumped));
+        _stateMachine.AddAnyTransition(jumping,
+            () => _stateHelper.ToJump(jumping, _isWallRunning, _stateParams.WallJumped));
 
         // Idle -> Walking
         _stateMachine.AddTransition(idle, walking, () => walking.IsWalking());
@@ -61,7 +61,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
         // Sprinting -> Walking
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
-        
+
         // Idle -> Crouching
         _stateMachine.AddTransition(idle, crouching, () => PlayerInput.Instance.CrouchDown);
         // Walking -> Crouching
@@ -72,20 +72,24 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(crouching, sprinting, () => _stateHelper.CrouchToSprint(crouching));
         // Sprinting -> Sliding (Crouching)
         _stateMachine.AddTransition(sprinting, sliding, () => PlayerInput.Instance.CrouchDown);
-        
+
         // Jumping -> Sliding
         _stateMachine.AddTransition(jumping, sliding, () => _stateHelper.JumpToSlide(jumping));
         // Jumping -> Sprinting
-        _stateMachine.AddTransition(jumping, sprinting, () => _stateHelper.JumpToSprint(jumping, _preserveSprint));
+        _stateMachine.AddTransition(jumping, sprinting,
+            () => _stateHelper.JumpToSprint(jumping, _stateParams.PreserveSprint));
         // Jumping -> Walking
-        _stateMachine.AddTransition(jumping, walking, () => _stateHelper.JumpToWalk(jumping, walking, _preserveSprint));
+        _stateMachine.AddTransition(jumping, walking,
+            () => _stateHelper.JumpToWalk(jumping, walking, _stateParams.PreserveSprint));
         // Jumping -> Wall Running
         _stateMachine.AddTransition(jumping, wallRunning, () => _isWallRunning);
-        
+
         // Wall Running -> Sprinting
-        _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToSprint(jumping, _isWallRunning, _preserveSprint));
+        _stateMachine.AddTransition(wallRunning, jumping,
+            () => _stateHelper.WallRunToSprint(jumping, _isWallRunning, _stateParams.PreserveSprint));
         // Wall Running -> Walking
-        _stateMachine.AddTransition(wallRunning, jumping, () => _stateHelper.WallRunToWalk(jumping, walking, _isWallRunning));
+        _stateMachine.AddTransition(wallRunning, jumping,
+            () => _stateHelper.WallRunToWalk(jumping, walking, _isWallRunning));
         
         // Default to Idle
         _stateParams = _stateMachine.SetState(idle, _stateParams);
@@ -101,7 +105,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
         playerIsGrounded = _characterController.isGrounded;
         
         // Wall-running raycast and hit info checks
-        _isWallRunning = _wallRunHelper.DoWallRunCheck(_stateParams, transform, _velocity, _isWallRunning, _characterController.isGrounded);
+        _isWallRunning = _wallRunHelper.DoWallRunCheck(_stateParams, transform, _velocity, _isWallRunning,
+            _characterController.isGrounded);
 
         // Tick our current state to handle our movement
         _stateParams.Velocity = _velocity;
@@ -143,11 +148,11 @@ public class PlayerMovementStateMachine : MonoBehaviour
     {
         if (from is Sprinting && to is Jumping)
         {
-            _preserveSprint = true;
+            _stateParams.PreserveSprint = true;
         }
-        else if (_preserveSprint && from is Jumping && !(to is WallRunning))
+        else if (_stateParams.PreserveSprint && from is Jumping && !(to is WallRunning))
         {
-            _preserveSprint = false;
+            _stateParams.PreserveSprint = false;
         }
         else if (from is WallRunning)
         {

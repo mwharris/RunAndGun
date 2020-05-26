@@ -4,6 +4,7 @@ public interface IStateParams
 {
     Vector3 Velocity { get; set; }
     float GravityOverride { get; set; }
+    bool PreserveSprint { get; set; }
     RaycastHit WallRunHitInfo { get; set; }
     float WallRunZRotation { get; set; }
     bool WallJumped { get; set; }

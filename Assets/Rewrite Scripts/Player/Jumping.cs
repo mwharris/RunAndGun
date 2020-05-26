@@ -5,6 +5,7 @@ public class Jumping : IState
 {
     private readonly Player _player;
     private readonly CharacterController _characterController;
+    private CameraController _cameraController;
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
 
@@ -21,15 +22,17 @@ public class Jumping : IState
 
     public bool ToSlide { get; private set; } = false;
 
-    public Jumping(Player player)
+    public Jumping(Player player, CameraController cameraController)
     {
         _player = player;
         _characterController = player.GetComponent<CharacterController>();
+        _cameraController = cameraController;
     }
 
     public IStateParams Tick(IStateParams stateParams)
     {
         var stateParamsVelocity = stateParams.Velocity;
+        _cameraController.PlayerIsAirborneFast = stateParams.WallJumped || stateParams.PreserveSprint;
 
         // Gather input and create an input vector from the values
         float forwardSpeed = PlayerInput.Instance.VerticalRaw;
@@ -132,6 +135,7 @@ public class Jumping : IState
         {
             _doJump = true;
         }
+        _cameraController.PlayerIsAirborneFast = stateParams.WallJumped || stateParams.PreserveSprint;
         return stateParams;
     }
 
@@ -139,6 +143,7 @@ public class Jumping : IState
     {
         _doubleJumpAvailable = true;
         ToSlide = false;
+        _cameraController.PlayerIsAirborneFast = false;
         return stateParams;
     }
 
