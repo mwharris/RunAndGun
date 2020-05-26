@@ -8,6 +8,7 @@ public class WallRunning : IState
     private readonly Player _player;
     private readonly Transform _playerCamera;
     private readonly float _gravity;
+    private CameraController _cameraController;
     
     // 6.8 m/s
     private readonly float _wallRunSpeed = 13.6f;
@@ -16,11 +17,12 @@ public class WallRunning : IState
     
     private Vector3 _wallRunMoveAxis = Vector3.zero;
 
-    public WallRunning(Player player, float defaultGravity)
+    public WallRunning(Player player, float defaultGravity, CameraController cameraController)
     {
         _player = player;
         _playerCamera = player.PlayerCamera.transform;
         _gravity = defaultGravity;
+        _cameraController = cameraController;
     }
 
     // TODO: THIS NEEDS TO BE ON THE SAME PAGE AS WallRunHelper.DoWallRunCheck()
@@ -128,6 +130,7 @@ public class WallRunning : IState
             stateParamsVelocity.y = 0;
             stateParams.Velocity = stateParamsVelocity;
         }
+        _cameraController.PlayerIsWallRunning = true;
         return stateParams;
     }
 
@@ -135,6 +138,7 @@ public class WallRunning : IState
     {
         stateParams.WallRunningRight = false;
         stateParams.WallRunningLeft = false;
+        _cameraController.PlayerIsWallRunning = false;
         return stateParams;
     }
 }

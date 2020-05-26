@@ -9,9 +9,9 @@ public class CameraController : MonoBehaviour
     private const float CameraSprintFov = 65f;
 
     public bool PlayerIsSprinting { get; set; } = false;
+    public bool PlayerIsWallRunning { get; set; } = false;
     
     private bool _playerIsGrounded = false;
-    private bool _playerIsWallRunning = false;
     private bool _playerJumped = false;
     private bool _playerIsAiming = false;
 
@@ -28,7 +28,7 @@ public class CameraController : MonoBehaviour
 
     private void HandleSprinting()
     {
-        if (PlayerIsSprinting || _playerIsWallRunning)
+        if (PlayerIsSprinting || PlayerIsWallRunning)
         {
             _camera.fieldOfView = Mathf.Lerp(_camera.fieldOfView, CameraSprintFov, Time.deltaTime * 5f);
         }

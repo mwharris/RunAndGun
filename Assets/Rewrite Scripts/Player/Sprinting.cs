@@ -3,8 +3,6 @@
 public class Sprinting : IState
 {
     private readonly Player _player;
-    private readonly Camera _playerCamera;
-    private readonly Transform _playerCameraTransform;
     private readonly CameraController _cameraController;
     
     // 5.1 m/s
@@ -13,8 +11,6 @@ public class Sprinting : IState
     public Sprinting(Player player, CameraController cameraController)
     {
         _player = player;
-        _playerCamera = player.PlayerCamera;
-        _playerCameraTransform = player.PlayerCamera.transform;
         _cameraController = cameraController;
     }
 
