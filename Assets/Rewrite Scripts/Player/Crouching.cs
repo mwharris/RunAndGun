@@ -9,11 +9,10 @@ public class Crouching : IState
     private readonly Player _player;
     private readonly CharacterController _characterController;
     private readonly CapsuleCollider _shotCollider;
-    private readonly Transform _playerBody;
     private readonly Transform _playerCamera;
     
     // 1.7 m/s
-    private float _crouchingWalkSpeed = 1.7f;
+    private float _crouchingWalkSpeed = 3.4f;
     
     private readonly float _originalCharacterHeight;
     private readonly float _originalCameraHeight;
@@ -31,7 +30,6 @@ public class Crouching : IState
     public Crouching(Player player)
     {
         _player = player;
-        _playerBody = player.PlayerBody;
         _playerCamera = player.PlayerCamera.transform;
         _characterController = player.GetComponent<CharacterController>();
         _shotCollider = player.GetComponent<CapsuleCollider>();

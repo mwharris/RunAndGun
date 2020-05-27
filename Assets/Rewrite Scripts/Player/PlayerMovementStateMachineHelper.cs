@@ -11,7 +11,7 @@ public class PlayerMovementStateMachineHelper
         return idle.IsIdle()
                && !jumping.IsJumping()
                && (!crouching.IsCrouching && !crouching.Rising)
-               && !sliding.IsSliding;
+               && (!sliding.IsSliding && !sliding.NoIdle);
     }
     
     public bool ToJump(Jumping jumping, bool isWallRunning, bool isWallJumping)
