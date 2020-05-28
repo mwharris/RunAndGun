@@ -12,10 +12,8 @@ public class Jumping : IState
     private bool _doJump = false;
     private bool _doubleJumpAvailable = true;
 
-    // 5
     private const float JumpSpeed = 6f;
-    // 8.5 m/s
-    private const float WallJumpHorizontalSpeed = 17f;
+    private const float WallJumpHorizontalSpeed = 17f;    // 8.5 m/s
     
     private bool JumpDown => PlayerInput.Instance.SpaceDown;
     private bool JumpHeld => PlayerInput.Instance.SpaceHeld;

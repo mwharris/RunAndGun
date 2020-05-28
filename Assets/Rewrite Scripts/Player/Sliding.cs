@@ -6,22 +6,25 @@ public class Sliding : IState
     public bool IsSliding { get; private set; } = false;
     public bool NoIdle { get; private set; } = false;
     public bool NoStand { get; private set; } = false;
-    
+
+    private readonly Player _player;
+    private readonly Transform _playerCamera;
     private readonly CharacterController _characterController;
     private readonly CapsuleCollider _shotCollider;
-    private readonly Transform _playerCamera;
+    private readonly float _originalCharacterHeight;
+    private readonly float _originalCameraHeight;
 
     private bool _lowering = false;
-    private float _originalCharacterHeight;
-    private float _originalCameraHeight;
 
     private const float CrouchThreshold = 1f;
     private const float CrouchCharacterHeight = 1.12f;
     private const float CrouchCameraHeight = 1.5f;
 
+    private Vector3 startPoint = Vector3.zero;
 
     public Sliding(Player player)
     {
+        _player = player;
         _playerCamera = player.PlayerCamera.transform;
         _characterController = player.GetComponent<CharacterController>();
         _shotCollider = player.GetComponent<CapsuleCollider>();

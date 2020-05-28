@@ -9,7 +9,7 @@ public class PlayerMovementStateMachineHelper
     public bool ToIdle(Idle idle, Jumping jumping, Crouching crouching, Sliding sliding)
     {
         return idle.IsIdle()
-               && !jumping.IsJumping()
+               && (!jumping.IsJumping() && !jumping.ToSlide)
                && (!crouching.IsCrouching && !crouching.Rising)
                && (!sliding.IsSliding && !sliding.NoIdle);
     }
