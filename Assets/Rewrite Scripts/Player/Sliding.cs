@@ -11,6 +11,7 @@ public class Sliding : IState
     private readonly Transform _playerCamera;
     private readonly CharacterController _characterController;
     private readonly CapsuleCollider _shotCollider;
+    private readonly CameraController _cameraController;
     private readonly float _originalCharacterHeight;
     private readonly float _originalCameraHeight;
 
@@ -28,6 +29,7 @@ public class Sliding : IState
         _playerCamera = player.PlayerCamera.transform;
         _characterController = player.GetComponent<CharacterController>();
         _shotCollider = player.GetComponent<CapsuleCollider>();
+        _cameraController = player.GetComponent<CameraController>();
         _originalCharacterHeight = _characterController.height;
         _originalCameraHeight = _playerCamera.transform.localPosition.y;
     }
@@ -118,23 +120,25 @@ public class Sliding : IState
 
     public IStateParams OnEnter(IStateParams stateParams)
     {
+        _cameraController.PlayerIsSliding = true;
+        _lowering = true;
         IsSliding = true;
         NoIdle = true;
-        _lowering = true;
         return stateParams;
     }
 
     public IStateParams OnExit(IStateParams stateParams)
     {
+        _cameraController.PlayerIsSliding = false;
+        _lowering = false;
+        IsSliding = false;
+        NoIdle = false;
         // Don't stand up if we're moving to crouched
         if (!NoStand)
         {
             NoStand = false;
             Stand();
         }
-        IsSliding = false;
-        NoIdle = false;
-        _lowering = false;
         return stateParams;
     }
 }
