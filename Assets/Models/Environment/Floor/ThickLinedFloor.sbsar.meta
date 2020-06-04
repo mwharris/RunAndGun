@@ -1,26 +1,54 @@
 fileFormatVersion: 2
 guid: 407d6fedd8a1dfd438b6e82e235f88d0
 ScriptedImporter:
-  fileIDToRecycleName:
-    100000: ThickLinedFloor/ThickLinedFloor
-    400000: ThickLinedFloor/ThickLinedFloor/Transform
-    2100000: Floor
-    2300000: ThickLinedFloor/ThickLinedFloor/MeshRenderer
-    2800000: Floor - baseColor
-    2800002: Floor - normal
-    2800004: Floor - height
-    2800006: Floor - emissive
-    3300000: ThickLinedFloor/ThickLinedFloor/MeshFilter
-    11400000: sbsar
-    11400002: graph0
-    13500000: ThickLinedFloor/ThickLinedFloor/SphereCollider
-    100100000: ThickLinedFloor
+  internalIDToNameTable:
+  - first:
+      1: 100000
+    second: ThickLinedFloor/ThickLinedFloor
+  - first:
+      4: 400000
+    second: ThickLinedFloor/ThickLinedFloor/Transform
+  - first:
+      21: 2100000
+    second: Floor
+  - first:
+      23: 2300000
+    second: ThickLinedFloor/ThickLinedFloor/MeshRenderer
+  - first:
+      28: 2800000
+    second: Floor - baseColor
+  - first:
+      28: 2800002
+    second: Floor - normal
+  - first:
+      28: 2800004
+    second: Floor - height
+  - first:
+      28: 2800006
+    second: Floor - emissive
+  - first:
+      33: 3300000
+    second: ThickLinedFloor/ThickLinedFloor/MeshFilter
+  - first:
+      114: 11400000
+    second: sbsar
+  - first:
+      114: 11400002
+    second: graph0
+  - first:
+      135: 13500000
+    second: ThickLinedFloor/ThickLinedFloor/SphereCollider
+  - first:
+      1001: 100100000
+    second: ThickLinedFloor
   externalObjects: {}
+  serializedVersion: 2
   userData: 
   assetBundleName: 
   assetBundleVariant: 
   script: {fileID: 232528478, guid: 43a8bbf65be290d44ba52b94476242b9, type: 3}
-  version: 17
+  version: 25
+  projectContext: 0
   mGraphInstanceData:
   - graphLabel: Floor
     prototypeName: Floor
@@ -29,18 +57,157 @@ ScriptedImporter:
     generateMipMaps: 1
     preset: " <sbspreset pkgurl=\"pkg://Floor\" label=\"\" >\n </sbspreset>\n"
     shaderName: Standard
-    outputNames: baseColor,normal,height,emissive
-    texturePackingList:
+    materialProperties:
+      shader: {fileID: 46, guid: 0000000000000000f000000000000000, type: 0}
+      shaderKeywords: _MAINTEX _NORMALMAP _PARALLAXMAP
+      lightmapFlags: 4
+      texEnvs:
+      - name: _BumpMap
+        texture: {fileID: 2800002, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _DetailAlbedoMap
+        texture: {instanceID: 0}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _DetailMask
+        texture: {instanceID: 0}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _DetailNormalMap
+        texture: {instanceID: 0}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _EmissionMap
+        texture: {fileID: 2800006, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _MainTex
+        texture: {fileID: 2800000, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _MetallicGlossMap
+        texture: {instanceID: 0}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _OcclusionMap
+        texture: {instanceID: 0}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      - name: _ParallaxMap
+        texture: {fileID: 2800004, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+        scale: {x: 1, y: 1}
+        offset: {x: 0, y: 0}
+      floats:
+      - name: _BumpScale
+        float: 1
+      - name: _Cutoff
+        float: 0.5
+      - name: _DetailNormalMapScale
+        float: 1
+      - name: _DstBlend
+        float: 0
+      - name: _GlossMapScale
+        float: 1
+      - name: _Glossiness
+        float: 0.5
+      - name: _GlossyReflections
+        float: 1
+      - name: _Metallic
+        float: 0
+      - name: _Mode
+        float: 0
+      - name: _OcclusionStrength
+        float: 1
+      - name: _Parallax
+        float: 0.02
+      - name: _SmoothnessTextureChannel
+        float: 0
+      - name: _SpecularHighlights
+        float: 1
+      - name: _SrcBlend
+        float: 1
+      - name: _UVSec
+        float: 0
+      - name: _ZWrite
+        float: 1
+      colors:
+      - name: _Color
+        color: {r: 1, g: 1, b: 1, a: 1}
+      - name: _EmissionColor
+        color: {r: 0, g: 0, b: 0, a: 1}
+    outputDescList:
     - outputName: baseColor
-      alphaSource: baseColor
+      identifier: basecolor
+      usageName: baseColor
+      channelStr: baseColor
+      label: Base Color
+      usage: 1
+      bImage: 1
+      bNumerical: 0
+      bLinear: 0
     - outputName: normal
-      alphaSource: normal
+      identifier: normal
+      usageName: normal
+      channelStr: normal
+      label: Normal
+      usage: 7
+      bImage: 1
+      bNumerical: 0
+      bLinear: 1
     - outputName: roughness
-      alphaSource: roughness
+      identifier: roughness
+      usageName: roughness
+      channelStr: roughness
+      label: Roughness
+      usage: 15
+      bImage: 1
+      bNumerical: 0
+      bLinear: 1
     - outputName: height
-      alphaSource: height
+      identifier: height
+      usageName: height
+      channelStr: height
+      label: Height
+      usage: 9
+      bImage: 1
+      bNumerical: 0
+      bLinear: 1
     - outputName: emissive
-      alphaSource: emissive
+      identifier: Emissive
+      usageName: emissive
+      channelStr: emissive
+      label: Emissive
+      usage: 3
+      bImage: 1
+      bNumerical: 0
+      bLinear: 0
+    texturePackingList:
+    - targetName: baseColor
+      components:
+      - sourceName: baseColor
+        from: 0
+        to: 3
+    - targetName: normal
+      components:
+      - sourceName: normal
+        from: 0
+        to: 3
+    - targetName: roughness
+      components:
+      - sourceName: roughness
+        from: 0
+        to: 3
+    - targetName: height
+      components:
+      - sourceName: height
+        from: 0
+        to: 3
+    - targetName: emissive
+      components:
+      - sourceName: emissive
+        from: 0
+        to: 3
     textureParameters:
     - textureName: Floor - baseColor
       wrapMode: 0
@@ -62,24 +229,20 @@ ScriptedImporter:
       wrapMode: 0
       filterMode: 1
       aniso: 1
-    colorSpaceList:
-    - outputName: baseColor
-      bLinear: 0
-    - outputName: normal
-      bLinear: 1
-    - outputName: roughness
-      bLinear: 1
-    - outputName: height
-      bLinear: 1
-    - outputName: emissive
-      bLinear: 0
+    colorSpaceList: []
     inputTextureMap: []
     targetSettingList:
-    - label: 
+    - label: Default
+      bOverride: 0
       bLockRatio: 1
       textureWidth: 256
       textureHeight: 256
-      textureFormat: 0
+      textureFormatMode: 0
+      normalCompressed: 0
       bGenerateOnLoad: 1
     material: {fileID: 2100000, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
-    generatedTextures: []
+    generatedTextures:
+    - {fileID: 2800000, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+    - {fileID: 2800002, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+    - {fileID: 2800004, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}
+    - {fileID: 2800006, guid: 407d6fedd8a1dfd438b6e82e235f88d0, type: 3}

@@ -10,18 +10,22 @@ public class BaseStateMachine
     private List<StateTransition> _stateTransitions = new List<StateTransition>();
     private List<StateTransition> _anyStateTransitions = new List<StateTransition>();
 
+	// Event that states and others can hook into to be notified when state changes 
     public event Action<IState, IState> OnStateChanged;
     
     public IStateParams Tick(IStateParams stateParams)
     {
+		// First check if we should transition to a new state
         StateTransition stateTransition = CheckForTransition();
         if (stateTransition != null)
         {
             stateParams = SetState(stateTransition.To, stateParams);
         }
+		// Tick our current state
         return _currentState.Tick(stateParams);
     }
 
+	// Check if there's any state transitions we need to perform
     private StateTransition CheckForTransition()
     {
         // "Any" State Transitions have priority
@@ -42,6 +46,7 @@ public class BaseStateMachine
         return null;
     }
     
+	// Update the current state
     public IStateParams SetState(IState state, IStateParams stateParams)
     {
         if (_currentState == state)
@@ -51,11 +56,15 @@ public class BaseStateMachine
         var fromState = _currentState;
         var toState = state;
         
+		// Exit the current state
         stateParams = _currentState != null ? _currentState.OnExit(stateParams) : stateParams;
         Debug.Log($"Changed from {_currentState} to {state}");
+		
+		// Enter the new state
         _currentState = state;
         stateParams = _currentState != null ? _currentState.OnEnter(stateParams) : stateParams;
         
+		// Notify subscribers of state change
         OnStateChanged?.Invoke(fromState, toState);
         
         return stateParams;

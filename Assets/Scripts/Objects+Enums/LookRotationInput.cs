@@ -1,7 +1,4 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
-using UnityEngine.Experimental.UIElements.StyleEnums;
+﻿using UnityEngine;
 
 public class LookRotationInput
 {
