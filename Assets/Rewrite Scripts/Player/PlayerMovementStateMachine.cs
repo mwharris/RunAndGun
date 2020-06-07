@@ -9,6 +9,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private WallRunHelper _wallRunHelper;
     private CharacterController _characterController;
     private CameraController _cameraController;
+    private ControlAnimations _animationController;
     private PlayerLookVars _playerLookVars;
     
     private Vector3 _velocity = Vector3.zero;
@@ -18,6 +19,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     public bool IsGrounded => _characterController.isGrounded;
+    public Vector3 PlayerVelocity => _stateParams.Velocity;
 
     [SerializeField] private bool playerIsGrounded;
 
@@ -26,6 +28,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Player player = FindObjectOfType<Player>();
         _characterController = GetComponent<CharacterController>();
         _cameraController = GetComponent<CameraController>();
+        _animationController = GetComponent<ControlAnimations>();
         _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
         _playerLookVars = new PlayerLookVars();
@@ -43,7 +46,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Idle idle = new Idle(player);
         Walking walking = new Walking(player);
         Sprinting sprinting = new Sprinting(player, _cameraController);
-        Jumping jumping = new Jumping(player, _cameraController);
+        Jumping jumping = new Jumping(player, _cameraController, _animationController);
         WallRunning wallRunning = new WallRunning(player, defaultGravity, _cameraController);
         Crouching crouching = new Crouching(player);
         Sliding sliding = new Sliding(player);

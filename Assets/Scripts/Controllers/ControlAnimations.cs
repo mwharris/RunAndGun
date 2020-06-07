@@ -6,85 +6,77 @@ public class ControlAnimations : AbstractBehavior
 {
     public AnimationPosInfo crouchPosition;
     public AnimationPosInfo dhPosition;
-    
-    private Vector3 origLocalPos;
+    public bool JumpStart { get; set; } = false;
 
-    private BodyController bodyControl;
-    private PlayerBodyData playerBodyData;
+    private BodyController _bodyController;
+    private PlayerBodyData _playerBodyData;
+    private PlayerMovementStateMachine _playerMovementStateMachine;
 
     void Start()
     {
+        _playerMovementStateMachine = GetComponent<PlayerMovementStateMachine>();
         //PlayerBodyData stores all info needed to control either our 1st or 3rd person body
-        bodyControl = GetComponent<BodyController>();
-        playerBodyData = bodyControl.PlayerBodyData;
-        //Set original player body positions and rotations
-        origLocalPos = playerBodyData.body.localPosition;
+        _bodyController = GetComponent<BodyController>();
+        _playerBodyData = _bodyController.PlayerBodyData;
     }
 
     void Update()
     {
-        playerBodyData = bodyControl.PlayerBodyData;
-        WeaponData currWeaponData = playerBodyData.GetWeaponData();
+        _playerBodyData = _bodyController.PlayerBodyData;
+        WeaponData currWeaponData = _playerBodyData.GetWeaponData();
 
         //Alias player body data information for later
-        Animator bodyAnim = playerBodyData.GetBodyAnimator();
+        Animator bodyAnim = _playerBodyData.GetBodyAnimator();
         //Animator weaponIKAnim = currWeaponData.WeaponIKAnimator;
-        Animator weaponAnim = playerBodyData.weapon.GetComponent<Animator>();
-        Animator thirdPersonAnim = bodyControl.ThirdPersonBody.GetBodyAnimator();
-
-        //Set various Animator properties to control the animators properly
-        bodyAnim.SetBool("Sprinting", inputState.playerIsSprinting);
-        thirdPersonAnim.SetBool("Sprinting", inputState.playerIsSprinting);
+        Animator weaponAnim = _playerBodyData.weapon.GetComponent<Animator>();
+        Animator thirdPersonAnim = _bodyController.ThirdPersonBody.GetBodyAnimator();
+        
+        SetAnimatorParams(bodyAnim);
+        SetAnimatorParams(thirdPersonAnim);
 
         bodyAnim.SetBool("SingleHanded", inputState.playerWeaponStyle == WeaponStyles.SingleHanded);
         bodyAnim.SetBool("DoubleHanded", inputState.playerWeaponStyle == WeaponStyles.DoubleHanded);
 
-        bodyAnim.SetBool("Aiming", inputState.playerIsAiming);
-        thirdPersonAnim.SetBool("Aiming", inputState.playerIsAiming);
-        /*if (weaponIKAnim.gameObject.activeSelf)
-        {
-            weaponIKAnim.SetBool("Aiming", inputState.playerIsAiming);
-        }*/
-        //weaponAnim.SetBool("Aiming", inputState.playerIsAiming);
-
-        bodyAnim.SetBool("Crouching", inputState.playerIsCrouching);
-        thirdPersonAnim.SetBool("Crouching", inputState.playerIsCrouching);
-
+        // TODO: clean this up
+        HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
         if (inputState.playerIsShooting)
         {
-            bodyAnim.SetTrigger("ShootTrig");
-            thirdPersonAnim.SetTrigger("ShootTrig");
             weaponAnim.SetTrigger("ShootTrig");
+        }
+    }
+
+    private void SetAnimatorParams(Animator anim)
+    {
+        var fwdSpeed = Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.forward);
+        var sideSpeed = Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.right);
+        var crouching = _playerMovementStateMachine.CurrentStateType == typeof(Crouching);
+        var sliding = _playerMovementStateMachine.CurrentStateType == typeof(Sliding);
+        var sprinting = _playerMovementStateMachine.CurrentStateType == typeof(Sprinting);
+        
+        anim.SetBool("Crouching", crouching || sliding);
+        anim.SetBool("Sprinting", sprinting);
+        anim.SetBool("Jumping", !_playerMovementStateMachine.IsGrounded);
+        anim.SetFloat("JumpSpeed", _playerMovementStateMachine.PlayerVelocity.y);
+        anim.SetBool("JumpStart", JumpStart);
+        anim.SetFloat("ForwardSpeed", fwdSpeed);
+        anim.SetFloat("SideSpeed", sideSpeed);
+        
+        // TODO: REMOVE INPUT STATE
+        anim.SetBool("Aiming", inputState.playerIsAiming);
+        anim.SetFloat("LookAngle", inputState.playerLookAngle);
+        
+        if (inputState.playerIsShooting)
+        {
+            anim.SetTrigger("ShootTrig");
         }
 
         if (inputState.playerIsReloading)
         {
-            bodyAnim.SetTrigger("ReloadTrig");
-            thirdPersonAnim.SetTrigger("ReloadTrig");
+            anim.SetTrigger("ReloadTrig");
         }
         else {
-            bodyAnim.ResetTrigger("ReloadTrig");
-            thirdPersonAnim.ResetTrigger("ReloadTrig");
+            anim.ResetTrigger("ReloadTrig");
         }
-
-        HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
-
-        bodyAnim.SetBool("Jumping", !inputState.playerIsGrounded);
-        bodyAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
-        bodyAnim.SetBool("JumpStart", inputState.playerIsJumping);
-        thirdPersonAnim.SetBool("Jumping", !inputState.playerIsGrounded);
-        thirdPersonAnim.SetFloat("JumpSpeed", inputState.playerVelocity.y);
-        thirdPersonAnim.SetBool("JumpStart", inputState.playerIsJumping);
-
-        var fwdSpeed = Vector3.Dot(inputState.playerVelocity, transform.forward);
-        var sideSpeed = Vector3.Dot(inputState.playerVelocity, transform.right);
-        bodyAnim.SetFloat("ForwardSpeed", fwdSpeed);
-        bodyAnim.SetFloat("SideSpeed", sideSpeed);
-        thirdPersonAnim.SetFloat("ForwardSpeed", fwdSpeed);
-        thirdPersonAnim.SetFloat("SideSpeed", sideSpeed);
-
-        bodyAnim.SetFloat("LookAngle", inputState.playerLookAngle);
-        thirdPersonAnim.SetFloat("LookAngle", inputState.playerLookAngle);
     }
 
     void HandleWallRunningAnimations(Animator bodyAnim, Animator thirdPersonAnim, bool wrLeft, bool wrRight)

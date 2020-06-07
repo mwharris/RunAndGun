@@ -6,6 +6,7 @@ public class Jumping : IState
     private readonly Player _player;
     private readonly CharacterController _characterController;
     private CameraController _cameraController;
+    private ControlAnimations _animationController;
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
 
@@ -20,11 +21,12 @@ public class Jumping : IState
 
     public bool ToSlide { get; private set; } = false;
 
-    public Jumping(Player player, CameraController cameraController)
+    public Jumping(Player player, CameraController cameraController, ControlAnimations animationController)
     {
         _player = player;
         _characterController = player.GetComponent<CharacterController>();
         _cameraController = cameraController;
+        _animationController = animationController;
     }
 
     public IStateParams Tick(IStateParams stateParams)
@@ -87,17 +89,24 @@ public class Jumping : IState
         {
             velocity.y = JumpSpeed;
             _doJump = false;
+            _animationController.JumpStart = true;
         }
         // Jump when we hit the ground if we're holding the jump button
         else if (_characterController.isGrounded && JumpHeld)
         {
             velocity.y = JumpSpeed;
             _doubleJumpAvailable = true;
+            _animationController.JumpStart = true;
         }
         // Jump if we have a double jump and we hit Jump button
         else if (_doubleJumpAvailable && JumpDown)
         {
             velocity = DoubleJump(velocity, inputVelocity);
+            _animationController.JumpStart = true;
+        }
+        else
+        {
+            _animationController.JumpStart = false;
         }
         return velocity; 
     }
@@ -142,6 +151,7 @@ public class Jumping : IState
         _doubleJumpAvailable = true;
         ToSlide = false;
         _cameraController.PlayerIsAirborneFast = false;
+        _animationController.JumpStart = false;
         return stateParams;
     }
 

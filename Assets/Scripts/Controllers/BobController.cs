@@ -3,14 +3,15 @@ using System.Collections;
 
 public class BobController : AbstractBehavior
 {
+    [SerializeField] private Transform bobTarget;
     public bool isCamera = false;
 
-    private AnimationPosInfo origRestPosInfo;
     [SerializeField] private AnimationPosInfo restPosInfo;
     [SerializeField] private AnimationPosInfo sprintPosInfo;
     [SerializeField] private AnimationPosInfo shAimPosInfo;
     [SerializeField] private AnimationPosInfo dhAimPosInfo;
     [SerializeField] private AnimationPosInfo crouchPosInfo;
+    private AnimationPosInfo _origRestPosInfo;
 
     [HideInInspector] public float transitionSpeed = 20f;
     [HideInInspector] public float walkBobSpeed = 7.8f;
@@ -18,23 +19,40 @@ public class BobController : AbstractBehavior
     [HideInInspector] public float sprintBobSpeed = 12f;
     [HideInInspector] public float sprintBobAmount = 0.03f;
 
+    private PlayerMovementStateMachine _playerMovementStateMachine;
+    private bool _aiming = false;
+    private bool _sprinting = false;
+    private Vector3 _lerpToPos;
+    private Quaternion _lerpToRot;
+
+    // TODO: REMOVE INPUT STATE
+    private bool PlayerIsAiming => inputState.playerIsAiming; 
+    private bool PlayerIsGrounded => _playerMovementStateMachine.IsGrounded;
+    private bool PlayerIsSprinting => _playerMovementStateMachine.CurrentStateType == typeof(Sprinting);
+    private bool PlayerIsCrouching => _playerMovementStateMachine.CurrentStateType == typeof(Crouching);
+
+    private float HorizontalRaw => PlayerInput.Instance.HorizontalRaw;
+    private float VerticalRaw => PlayerInput.Instance.VerticalRaw;
+
     //Initialized as this value because this is where sin = 1. 
     //So, this will make the camera always start at the crest of the sin wave, simulating someone picking up their foot and starting to walk.
     //You experience a bob upwards when you start walking as your foot pushes off the ground, the left and right bobs come as you walk.
-    private float timer = Mathf.PI / 2;
-
-    private bool aiming = false;
-    private bool sprinting = false;
-    private Vector3 lerpToPos;
-    private Quaternion lerpToRot; 
+    private float _timer = Mathf.PI / 2;
 
     void Start()
     {
-        restPosInfo.localPos = transform.localPosition;
-        restPosInfo.rotation = transform.localRotation;
-        origRestPosInfo = new AnimationPosInfo();
-        origRestPosInfo.localPos = restPosInfo.localPos;
-        origRestPosInfo.rotation = restPosInfo.rotation;
+        _playerMovementStateMachine = GetComponent<PlayerMovementStateMachine>();
+        if (bobTarget == null)
+        {
+            bobTarget = transform;
+        }
+
+        restPosInfo.localPos = bobTarget.localPosition;
+        restPosInfo.rotation = bobTarget.localRotation;
+        
+        _origRestPosInfo = new AnimationPosInfo();
+        _origRestPosInfo.localPos = restPosInfo.localPos;
+        _origRestPosInfo.rotation = restPosInfo.rotation;
     }
 
     private bool reset = false;
@@ -56,9 +74,9 @@ public class BobController : AbstractBehavior
             HandleTilt(doubleHanded);
         }
         //Completed a full cycle. Reset to 0 to avoid bloated values.
-        if (timer > Mathf.PI * 2)
+        if (_timer > Mathf.PI * 2)
         {
-            timer = 0;
+            _timer = 0;
         }
 	}
 
@@ -66,58 +84,56 @@ public class BobController : AbstractBehavior
     private void SetRestPositionAndRotation(bool singleHanded, bool doubleHanded)
     {
         //Only change positions if we're controlling the body
-        if (!isCamera)
+        if (isCamera) return;
+        //When aiming change the resting position according to our current weapon
+        if (PlayerIsAiming)
         {
-            //When aiming change the resting position according to our current weapon
-            if (inputState.playerIsAiming)
+            AnimationPosInfo posInfo = null;
+            if (singleHanded)
             {
-                AnimationPosInfo posInfo = null;
-                if (singleHanded)
-                {
-                    posInfo = shAimPosInfo;
-                }
-                else if (doubleHanded) 
-                {
-                    posInfo = dhAimPosInfo;
-                }
-                restPosInfo.localPos = posInfo.localPos;
-                restPosInfo.rotation = Quaternion.Euler(posInfo.localRot);
-                if (!aiming)
-                {
-                    aiming = true;
-                    sprinting = false;
-                    reset = true;
-                    lerpToPos = posInfo.localPos;
-                    lerpToRot = Quaternion.Euler(posInfo.localRot);
-                }
+                posInfo = shAimPosInfo;
             }
-            //Sprinting bob camera resting position
-            else if (inputState.playerIsSprinting && inputState.playerIsGrounded)
+            else if (doubleHanded) 
             {
-                restPosInfo.localPos = sprintPosInfo.localPos;
-                restPosInfo.rotation = origRestPosInfo.rotation;
-                if (!sprinting)
-                {
-                    sprinting = true;
-                    aiming = false;
-                    reset = true;
-                    lerpToPos = sprintPosInfo.localPos;
-                    lerpToRot = origRestPosInfo.rotation;
-                }
+                posInfo = dhAimPosInfo;
             }
-            //Hip-aimed bob camera resting position
-            else
+            restPosInfo.localPos = posInfo.localPos;
+            restPosInfo.rotation = Quaternion.Euler(posInfo.localRot);
+            if (!_aiming)
             {
-                restPosInfo.localPos = origRestPosInfo.localPos;
-                restPosInfo.rotation = origRestPosInfo.rotation;
-                if (aiming || sprinting)
-                {
-                    aiming = false;
-                    sprinting = false;
-                    reset = true;
-                    lerpToPos = origRestPosInfo.localPos;
-                    lerpToRot = origRestPosInfo.rotation;
-                }
+                _aiming = true;
+                _sprinting = false;
+                reset = true;
+                _lerpToPos = posInfo.localPos;
+                _lerpToRot = Quaternion.Euler(posInfo.localRot);
+            }
+        }
+        //Sprinting bob camera resting position
+        else if (PlayerIsSprinting && PlayerIsGrounded)
+        {
+            restPosInfo.localPos = sprintPosInfo.localPos;
+            restPosInfo.rotation = _origRestPosInfo.rotation;
+            if (!_sprinting)
+            {
+                _sprinting = true;
+                _aiming = false;
+                reset = true;
+                _lerpToPos = sprintPosInfo.localPos;
+                _lerpToRot = _origRestPosInfo.rotation;
+            }
+        }
+        //Hip-aimed bob camera resting position
+        else
+        {
+            restPosInfo.localPos = _origRestPosInfo.localPos;
+            restPosInfo.rotation = _origRestPosInfo.rotation;
+            if (_aiming || _sprinting)
+            {
+                _aiming = false;
+                _sprinting = false;
+                reset = true;
+                _lerpToPos = _origRestPosInfo.localPos;
+                _lerpToRot = _origRestPosInfo.rotation;
             }
         }
     }
@@ -126,16 +142,16 @@ public class BobController : AbstractBehavior
     private void HandleResetting()
     {
         //Lerp to the new resting position
-        transform.localPosition = Vector3.Lerp(transform.localPosition, lerpToPos, 20f * Time.deltaTime);
-        transform.localRotation = Quaternion.Lerp(transform.localRotation, lerpToRot, 20f * Time.deltaTime);
+        bobTarget.localPosition = Vector3.Lerp(bobTarget.localPosition, _lerpToPos, 20f * Time.deltaTime);
+        bobTarget.localRotation = Quaternion.Lerp(bobTarget.localRotation, _lerpToRot, 20f * Time.deltaTime);
         //Snap to the new value once we get within a certain range
-        if (LerpComplete(transform.localPosition, lerpToPos))
+        if (LerpComplete(bobTarget.localPosition, _lerpToPos))
         {
             reset = false;
-            transform.localPosition = lerpToPos;
-            transform.localRotation = lerpToRot;
+            bobTarget.localPosition = _lerpToPos;
+            bobTarget.localRotation = _lerpToRot;
             //Reset our bob cycle
-            timer = Mathf.PI / 2;
+            _timer = Mathf.PI / 2;
         }
     }
 
@@ -143,46 +159,46 @@ public class BobController : AbstractBehavior
     private void HandleBob(bool doubleHanded)
     {
         //While we are moving apply a head/body bob
-        if (inputState.playerIsGrounded 
-            && (Input.GetAxisRaw("Horizontal") != 0 || Input.GetAxisRaw("Vertical") != 0))
+        if (PlayerIsGrounded 
+            && (HorizontalRaw != 0 || VerticalRaw != 0))
         {
             //Determine bob speed + amount depending on player movement state
             float bobSpeed = walkBobSpeed;
             float bobAmount = walkBobAmount;
-            if (inputState.playerIsSprinting)
+            if (PlayerIsSprinting)
             {
                 bobSpeed = sprintBobSpeed;
                 bobAmount = sprintBobAmount;
             }
-            else if (inputState.playerIsCrouching)
+            else if (PlayerIsCrouching)
             {
                 bobSpeed = walkBobSpeed / 1.5f;
                 bobAmount = walkBobAmount / 1.5f;
             }
-            else if (inputState.playerIsAiming)
+            else if (PlayerIsAiming)
             {
                 bobSpeed = walkBobSpeed / 1.5f;
                 bobAmount = doubleHanded ? (walkBobAmount / 8f) : (walkBobAmount / 1.5f);
             }
             //Increase / decrease bobSpeed based on our controller input
-            float inputSpeed = Mathf.Abs(Input.GetAxisRaw("Horizontal")) + Mathf.Abs(Input.GetAxisRaw("Vertical"));
+            float inputSpeed = Mathf.Abs(HorizontalRaw) + Mathf.Abs(VerticalRaw);
             float inputSpeedClamped = Mathf.Clamp(inputSpeed, -1f, 1f);
-            timer += bobSpeed * Time.deltaTime * inputSpeedClamped;
+            _timer += bobSpeed * Time.deltaTime * inputSpeedClamped;
             //Bounce the position left/right in a cycle according to the timer
-            transform.localPosition = new Vector3(restPosInfo.localPos.x + Mathf.Cos(timer) * bobAmount, restPosInfo.localPos.y + Mathf.Abs((Mathf.Sin(timer) * bobAmount)), restPosInfo.localPos.z);
+            bobTarget.localPosition = new Vector3(restPosInfo.localPos.x + Mathf.Cos(_timer) * bobAmount, restPosInfo.localPos.y + Mathf.Abs((Mathf.Sin(_timer) * bobAmount)), restPosInfo.localPos.z);
         }
         else
         {
             //Reset the bob cycle
-            timer = Mathf.PI / 2;
-            if (restPosInfo.localPos != transform.localPosition && crouchPosInfo.localPos != transform.localPosition)
+            _timer = Mathf.PI / 2;
+            if (restPosInfo.localPos != bobTarget.localPosition && crouchPosInfo.localPos != bobTarget.localPosition)
             {
                 Vector3 newPosition = new Vector3(
-                    Mathf.Lerp(transform.localPosition.x, restPosInfo.localPos.x, transitionSpeed * Time.deltaTime),
-                    Mathf.Lerp(transform.localPosition.y, restPosInfo.localPos.y, transitionSpeed * Time.deltaTime),
-                    Mathf.Lerp(transform.localPosition.z, restPosInfo.localPos.z, transitionSpeed * Time.deltaTime)
+                    Mathf.Lerp(bobTarget.localPosition.x, restPosInfo.localPos.x, transitionSpeed * Time.deltaTime),
+                    Mathf.Lerp(bobTarget.localPosition.y, restPosInfo.localPos.y, transitionSpeed * Time.deltaTime),
+                    Mathf.Lerp(bobTarget.localPosition.z, restPosInfo.localPos.z, transitionSpeed * Time.deltaTime)
                 );
-                transform.localPosition = newPosition;
+                bobTarget.localPosition = newPosition;
             }
         }
     }
@@ -190,39 +206,37 @@ public class BobController : AbstractBehavior
     //Handle tilting the body when moving horizontally
     private void HandleTilt(bool doubleHanded)
     {
-        if (!isCamera)
+        if (isCamera) return;
+        //If we're moving Horizontally at all, apply a tilt to the hands
+        if (HorizontalRaw != 0f)
         {
-            //If we're moving Horizontally at all, apply a tilt to the hands
-            if (Input.GetAxisRaw("Horizontal") != 0f)
+            Quaternion q = Quaternion.identity;
+            if (inputState.playerIsAiming)
             {
-                Quaternion q = Quaternion.identity;
-                if (inputState.playerIsAiming)
+                if (doubleHanded)
                 {
-                    if (doubleHanded)
-                    {
-                        Vector3 bueler = dhAimPosInfo.localRot;
-                        float tiltAngle = Input.GetAxisRaw("Horizontal") * 1f;
-                        q = Quaternion.Euler(bueler.x, bueler.y + tiltAngle, bueler.z);
-                    }
-                    else
-                    {
-                        Vector3 bueler = shAimPosInfo.localRot;
-                        float tiltAngle = Input.GetAxisRaw("Horizontal") * -6f;
-                        q = Quaternion.Euler(bueler.x, bueler.y, bueler.z + tiltAngle);
-                    }
+                    Vector3 bueler = dhAimPosInfo.localRot;
+                    float tiltAngle = HorizontalRaw * 1f;
+                    q = Quaternion.Euler(bueler.x, bueler.y + tiltAngle, bueler.z);
                 }
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, q, 4f * Time.deltaTime);
+                else
+                {
+                    Vector3 bueler = shAimPosInfo.localRot;
+                    float tiltAngle = HorizontalRaw * -6f;
+                    q = Quaternion.Euler(bueler.x, bueler.y, bueler.z + tiltAngle);
+                }
             }
-            //Otherwise keep us in the resting position
-            else if (restPosInfo.rotation != transform.localRotation)
+            bobTarget.localRotation = Quaternion.Lerp(bobTarget.localRotation, q, 4f * Time.deltaTime);
+        }
+        //Otherwise keep us in the resting position
+        else if (restPosInfo.rotation != bobTarget.localRotation)
+        {
+            float rotLerpSpeed = 4f * Time.deltaTime;
+            if (inputState.playerIsAiming)
             {
-                float rotLerpSpeed = 4f * Time.deltaTime;
-                if (inputState.playerIsAiming)
-                {
-                    rotLerpSpeed = 20f * Time.deltaTime;
-                }
-                transform.localRotation = Quaternion.Lerp(transform.localRotation, restPosInfo.rotation, rotLerpSpeed);
+                rotLerpSpeed = 20f * Time.deltaTime;
             }
+            bobTarget.localRotation = Quaternion.Lerp(bobTarget.localRotation, restPosInfo.rotation, rotLerpSpeed);
         }
     }
 
