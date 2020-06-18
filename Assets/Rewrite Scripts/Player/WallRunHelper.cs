@@ -130,14 +130,12 @@ public class WallRunHelper
         // If the result is negative then it's pointing down
         if (dot < 0)
         {
-            Debug.Log("LEFT!");
             stateParams.WallRunningLeft = true;
             stateParams.WallRunningRight = false;
         }
         // If the result is positive then it's pointing up
         else if (dot > 0)
         {
-            Debug.Log("RIGHT!");
             stateParams.WallRunningLeft = false;
             stateParams.WallRunningRight = true;
         }

@@ -5,7 +5,7 @@ public class Sliding : IState
 {
     public bool IsSliding { get; private set; } = false;
     public bool NoIdle { get; private set; } = false;
-    public bool NoStand { get; private set; } = false;
+    private bool NoStand { get; set; } = false;
 
     private readonly Player _player;
     private readonly Transform _playerCamera;
@@ -136,8 +136,11 @@ public class Sliding : IState
         // Don't stand up if we're moving to crouched
         if (!NoStand)
         {
-            NoStand = false;
             Stand();
+        }
+        else
+        {
+            NoStand = false;
         }
         return stateParams;
     }
