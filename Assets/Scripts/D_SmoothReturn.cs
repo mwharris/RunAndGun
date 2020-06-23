@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class SmoothReturn : AbstractBehavior
+public class D_SmoothReturn : AbstractBehavior
 {
     [SerializeField] private BodyController bodyController;
     //[SerializeField] private float dhLerpReturnSpeed = 0f;

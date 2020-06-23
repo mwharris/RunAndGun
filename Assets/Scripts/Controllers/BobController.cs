@@ -26,10 +26,7 @@ public class BobController : AbstractBehavior
     private Quaternion _lerpToRot;
 
     // TODO: REMOVE INPUT STATE
-    private bool PlayerIsAiming => inputState.playerIsAiming; 
-    private bool PlayerIsGrounded => _playerMovementStateMachine.IsGrounded;
-    private bool PlayerIsSprinting => _playerMovementStateMachine.CurrentStateType == typeof(Sprinting);
-    private bool PlayerIsCrouching => _playerMovementStateMachine.CurrentStateType == typeof(Crouching);
+    private bool PlayerIsAiming => inputState.playerIsAiming;
 
     private float HorizontalRaw => PlayerInput.Instance.HorizontalRaw;
     private float VerticalRaw => PlayerInput.Instance.VerticalRaw;
@@ -109,7 +106,7 @@ public class BobController : AbstractBehavior
             }
         }
         //Sprinting bob camera resting position
-        else if (PlayerIsSprinting && PlayerIsGrounded)
+        else if (_playerMovementStateMachine.PlayerIsSprinting && _playerMovementStateMachine.PlayerIsGrounded)
         {
             restPosInfo.localPos = sprintPosInfo.localPos;
             restPosInfo.rotation = _origRestPosInfo.rotation;
@@ -159,18 +156,18 @@ public class BobController : AbstractBehavior
     private void HandleBob(bool doubleHanded)
     {
         //While we are moving apply a head/body bob
-        if (PlayerIsGrounded 
+        if (_playerMovementStateMachine.PlayerIsGrounded 
             && (HorizontalRaw != 0 || VerticalRaw != 0))
         {
             //Determine bob speed + amount depending on player movement state
             float bobSpeed = walkBobSpeed;
             float bobAmount = walkBobAmount;
-            if (PlayerIsSprinting)
+            if (_playerMovementStateMachine.PlayerIsSprinting)
             {
                 bobSpeed = sprintBobSpeed;
                 bobAmount = sprintBobAmount;
             }
-            else if (PlayerIsCrouching)
+            else if (_playerMovementStateMachine.PlayerIsCrouching)
             {
                 bobSpeed = walkBobSpeed / 1.5f;
                 bobAmount = walkBobAmount / 1.5f;

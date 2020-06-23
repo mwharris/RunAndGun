@@ -34,11 +34,9 @@ public class ControlAnimations : AbstractBehavior
         SetAnimatorParams(bodyAnim);
         SetAnimatorParams(thirdPersonAnim);
 
+        // TODO: clean everything underneath this up
         bodyAnim.SetBool("SingleHanded", inputState.playerWeaponStyle == WeaponStyles.SingleHanded);
         bodyAnim.SetBool("DoubleHanded", inputState.playerWeaponStyle == WeaponStyles.DoubleHanded);
-
-        // TODO: clean this up
-        HandleWallRunningAnimations(bodyAnim, thirdPersonAnim, inputState.playerIsWallRunningLeft, inputState.playerIsWallRunningRight);
         if (inputState.playerIsShooting)
         {
             weaponAnim.SetTrigger("ShootTrig");
@@ -49,17 +47,19 @@ public class ControlAnimations : AbstractBehavior
     {
         var fwdSpeed = Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.forward);
         var sideSpeed = Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.right);
-        var crouching = _playerMovementStateMachine.CurrentStateType == typeof(Crouching);
-        var sliding = _playerMovementStateMachine.CurrentStateType == typeof(Sliding);
-        var sprinting = _playerMovementStateMachine.CurrentStateType == typeof(Sprinting);
+        var crouching = _playerMovementStateMachine.PlayerIsCrouching;
+        var sliding = _playerMovementStateMachine.PlayerIsSliding;
+        var sprinting = _playerMovementStateMachine.PlayerIsSprinting;
         
         anim.SetBool("Crouching", crouching || sliding);
         anim.SetBool("Sprinting", sprinting);
-        anim.SetBool("Jumping", !_playerMovementStateMachine.IsGrounded);
+        anim.SetBool("Jumping", !_playerMovementStateMachine.PlayerIsGrounded);
         anim.SetFloat("JumpSpeed", _playerMovementStateMachine.PlayerVelocity.y);
         anim.SetBool("JumpStart", JumpStart);
         anim.SetFloat("ForwardSpeed", fwdSpeed);
         anim.SetFloat("SideSpeed", sideSpeed);
+        anim.SetBool("WallRunningLeft", _playerMovementStateMachine.WallRunningLeft);
+        anim.SetBool("WallRunningRight", _playerMovementStateMachine.WallRunningRight);
         
         // TODO: REMOVE INPUT STATE
         anim.SetBool("Aiming", inputState.playerIsAiming);
@@ -77,14 +77,5 @@ public class ControlAnimations : AbstractBehavior
         else {
             anim.ResetTrigger("ReloadTrig");
         }
-    }
-
-    void HandleWallRunningAnimations(Animator bodyAnim, Animator thirdPersonAnim, bool wrLeft, bool wrRight)
-    {
-        //Tell both animators that we are wall-running
-        bodyAnim.SetBool("WallRunningLeft", inputState.playerIsWallRunningLeft);
-        bodyAnim.SetBool("WallRunningRight", inputState.playerIsWallRunningRight);
-        thirdPersonAnim.SetBool("WallRunningLeft", inputState.playerIsWallRunningLeft);
-        thirdPersonAnim.SetBool("WallRunningRight", inputState.playerIsWallRunningRight);
     }
 }

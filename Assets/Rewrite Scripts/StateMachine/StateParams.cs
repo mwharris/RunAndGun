@@ -13,4 +13,5 @@ public class StateParams : IStateParams
     public bool WallRunningLeft { get; set; } = false;
     public bool WallRunningRight { get; set; } = false;
     public AbstractBehavior inputBehavior { get; set; }
+    public bool SlideJump { get; set; }
 }

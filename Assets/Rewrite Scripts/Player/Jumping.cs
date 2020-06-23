@@ -18,9 +18,7 @@ public class Jumping : IState
     
     private bool JumpDown => PlayerInput.Instance.SpaceDown;
     private bool JumpHeld => PlayerInput.Instance.SpaceHeld;
-
-    public bool ToSlide { get; private set; } = false;
-
+    
     public Jumping(Player player, CameraController cameraController, ControlAnimations animationController)
     {
         _player = player;
@@ -42,7 +40,7 @@ public class Jumping : IState
         // If we hit Crouch while Jumping, we want to land in a slide
         if (PlayerInput.Instance.CrouchDown)
         {
-            ToSlide = true;
+            stateParams.SlideJump = true;
         }
 
         // Handle aerial movement and wall jumping
@@ -149,7 +147,7 @@ public class Jumping : IState
     public IStateParams OnExit(IStateParams stateParams)
     {
         _doubleJumpAvailable = true;
-        ToSlide = false;
+        stateParams.SlideJump = false;
         _cameraController.PlayerIsAirborneFast = false;
         _animationController.JumpStart = false;
         return stateParams;

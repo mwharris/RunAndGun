@@ -11,4 +11,5 @@ public interface IStateParams
     bool WallRunningLeft { get; set; }
     bool WallRunningRight { get; set; }
     AbstractBehavior inputBehavior { get; set;  }
+    bool SlideJump { get; set; }
 }

@@ -6,10 +6,10 @@ public class PlayerMovementStateMachineHelper
 {
     private bool _fixInitialNotGrounded = true;
 
-    public bool ToIdle(Idle idle, Jumping jumping, Crouching crouching, Sliding sliding)
+    public bool ToIdle(Idle idle, Jumping jumping, Crouching crouching, Sliding sliding, bool slideJumping)
     {
         return idle.IsIdle()
-               && (!jumping.IsJumping() && !jumping.ToSlide)
+               && (!jumping.IsJumping() && !slideJumping)
                && (!crouching.IsCrouching && !crouching.Rising)
                && (!sliding.IsSliding && !sliding.NoIdle);
     }
@@ -32,19 +32,19 @@ public class PlayerMovementStateMachineHelper
         return false;
     }
 
-    public bool JumpToSlide(Jumping jumping)
+    public bool JumpToSlide(Jumping jumping, bool slideJumping)
     {
-        return !jumping.IsJumping() && jumping.ToSlide;
+        return !jumping.IsJumping() && slideJumping;
     }
     
-    public bool JumpToSprint(Jumping jumping, bool preserveSprint)
+    public bool JumpToSprint(Jumping jumping, bool preserveSprint, bool slideJumping)
     {
-        return !jumping.IsJumping() && !jumping.ToSlide && preserveSprint;
+        return !jumping.IsJumping() && !slideJumping && preserveSprint;
     }
 
-    public bool JumpToWalk(Jumping jumping, Walking walking, bool preserveSprint)
+    public bool JumpToWalk(Jumping jumping, Walking walking, bool preserveSprint, bool slideJumping)
     {
-        return !jumping.IsJumping() && !jumping.ToSlide && !preserveSprint && walking.IsWalking();
+        return !jumping.IsJumping() && !slideJumping && !preserveSprint && walking.IsWalking();
     }
 
     public bool WallRunToSprint(Jumping jumping, bool isWallRunning, bool preserveSprint)

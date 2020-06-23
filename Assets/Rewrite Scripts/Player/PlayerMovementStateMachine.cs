@@ -11,6 +11,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private CameraController _cameraController;
     private ControlAnimations _animationController;
     private PlayerLookVars _playerLookVars;
+    private GameManager _gameManager;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
@@ -18,13 +19,21 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private bool _isWallRunning = false;
     
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
-    public bool IsGrounded => _characterController.isGrounded;
+    public bool PlayerIsGrounded => _characterController.isGrounded;
     public Vector3 PlayerVelocity => _stateParams.Velocity;
+    public bool WallRunningLeft => _stateParams.WallRunningLeft;
+    public bool WallRunningRight => _stateParams.WallRunningRight;
+    public bool PlayerIsCrouching => _stateMachine.CurrentState.GetType() == typeof(Crouching);
+    public bool PlayerIsSliding => _stateMachine.CurrentState.GetType() == typeof(Sliding);
+    public bool PlayerIsJumping => _stateMachine.CurrentState.GetType() == typeof(Jumping);
+    public bool PlayerIsSprinting => _stateMachine.CurrentState.GetType() == typeof(Sprinting);
+    public bool PlayerIsSlideJumping => PlayerIsJumping && _stateParams.SlideJump;
 
     [SerializeField] private bool playerIsGrounded;
 
     private void Awake()
     {
+        _gameManager = FindObjectOfType<GameManager>();
         Player player = FindObjectOfType<Player>();
         _characterController = GetComponent<CharacterController>();
         _cameraController = GetComponent<CameraController>();
@@ -53,7 +62,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
 
         // Create our state transitions
         // Any -> Idle
-        _stateMachine.AddAnyTransition(idle, () => _stateHelper.ToIdle(idle, jumping, crouching, sliding));
+        _stateMachine.AddAnyTransition(idle, 
+            () => _stateHelper.ToIdle(idle, jumping, crouching, sliding, _stateParams.SlideJump));
         // Any -> Jumping
         _stateMachine.AddAnyTransition(jumping,
             () => _stateHelper.ToJump(jumping, _isWallRunning, _stateParams.WallJumped));
@@ -80,13 +90,14 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateMachine.AddTransition(sliding, crouching, () => !sliding.IsSliding);
         
         // Jumping -> Sliding
-        _stateMachine.AddTransition(jumping, sliding, () => _stateHelper.JumpToSlide(jumping));
+        _stateMachine.AddTransition(jumping, sliding, 
+            () => _stateHelper.JumpToSlide(jumping, _stateParams.SlideJump));
         // Jumping -> Sprinting
         _stateMachine.AddTransition(jumping, sprinting,
-            () => _stateHelper.JumpToSprint(jumping, _stateParams.PreserveSprint));
+            () => _stateHelper.JumpToSprint(jumping, _stateParams.PreserveSprint, _stateParams.SlideJump));
         // Jumping -> Walking
         _stateMachine.AddTransition(jumping, walking,
-            () => _stateHelper.JumpToWalk(jumping, walking, _stateParams.PreserveSprint));
+            () => _stateHelper.JumpToWalk(jumping, walking, _stateParams.PreserveSprint, _stateParams.SlideJump));
         // Jumping -> Wall Running
         _stateMachine.AddTransition(jumping, wallRunning, () => _isWallRunning);
 
@@ -109,7 +120,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         }
 
         playerIsGrounded = _characterController.isGrounded;
-        
+
         // Wall-running raycast and hit info checks
         _isWallRunning = _wallRunHelper.DoWallRunCheck(_stateParams, transform, _velocity, _isWallRunning,
             _characterController.isGrounded);
@@ -118,19 +129,19 @@ public class PlayerMovementStateMachine : MonoBehaviour
         _stateParams.Velocity = _velocity;
         _stateParams = _stateMachine.Tick(_stateParams);
         _velocity = _stateParams.Velocity;
-        
+
         // Update our horizontal velocity variable
         _horizontalVelocity.x = _velocity.x;
         _horizontalVelocity.z = _velocity.z;
 
         // Handle our horizontal movement
         _characterController.Move(_velocity * Time.deltaTime);
-        
+
         // Apply gravity (call move twice because t-squared)
         HandleGravity();
 
         // DebugPrintVelocity();
-        DebugWallRunRaycast();
+        DebugWallRunRaycast();   
     }
 
     private void HandleGravity()

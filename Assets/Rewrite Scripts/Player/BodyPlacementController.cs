@@ -17,9 +17,6 @@ public class BodyPlacementController : AbstractBehavior
     private float _defaultLerpSpeed;
     private float _defaultCrouchLerpSpeed;
 
-    private bool PlayerIsCrouching => _playerMovementStateMachine.CurrentStateType == typeof(Crouching);
-    private bool PlayerIsSliding => _playerMovementStateMachine.CurrentStateType == typeof(Sliding);
-    
     void Start()
     {
         _bodyController = GetComponent<BodyController>();
@@ -49,7 +46,7 @@ public class BodyPlacementController : AbstractBehavior
             {
                 _currWeaponLerpSpeed = currWeaponData.KickReturnSpeed;
             }
-            else if (PlayerIsCrouching && !isAiming)
+            else if (_playerMovementStateMachine.PlayerIsCrouching && !isAiming)
             {
                 _currWeaponLerpSpeed = _defaultCrouchLerpSpeed;
             }
@@ -66,7 +63,10 @@ public class BodyPlacementController : AbstractBehavior
         Vector3 currPos = bodyTransform.transform.localPosition;
         Quaternion currRot = bodyTransform.transform.localRotation;
 
-        if (PlayerIsCrouching || PlayerIsSliding)
+        bool slideJumping = _playerMovementStateMachine.PlayerIsJumping &&
+                         _playerMovementStateMachine.PlayerIsSlideJumping;  
+        if (_playerMovementStateMachine.PlayerIsCrouching || _playerMovementStateMachine.PlayerIsSliding ||
+            slideJumping)
         {
             //If both Aiming and Crouching, return to normal position.
             //BobController will handle the aiming.
