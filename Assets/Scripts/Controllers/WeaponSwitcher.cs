@@ -11,8 +11,8 @@ public class WeaponSwitcher : AbstractBehavior
     [SerializeField] private Transform weaponHolder;
 
     private RPCManager rpcManager;
-    private PhotonView rpcPView;
-    private PhotonView playerPView;
+    // private PhotonView rpcPView;
+    // private PhotonView playerPView;
 
     void Start()
     {
@@ -34,6 +34,7 @@ public class WeaponSwitcher : AbstractBehavior
 
     private void GetPhotonViews()
     {
+        /*
         //Get a reference to this player's photon view
         playerPView = bodyController.gameObject.GetComponent<PhotonView>();
         //Get a reference to the RPCManager's photon view for weapon swapping RPCs
@@ -42,6 +43,7 @@ public class WeaponSwitcher : AbstractBehavior
         {
             rpcPView = rpcManager.GetComponent<PhotonView>();
         }
+        */
     }
     
     void Update()

@@ -11,7 +11,7 @@ public class RPCManager : MonoBehaviour {
         playerFinder = new PlayerFinder();
     }
 
-    [PunRPC]
+    //[PunRPC]
     void PlayerShot(int punId)
     {
         //Mark their animator has having shot
@@ -22,7 +22,7 @@ public class RPCManager : MonoBehaviour {
         }
     }
 
-    [PunRPC]
+    //[PunRPC]
     void PlayerReloaded(int punId)
     {
         //Mark their animator has having shot
@@ -34,7 +34,7 @@ public class RPCManager : MonoBehaviour {
     }
 
 
-    [PunRPC]
+    //[PunRPC]
     void PlayerWeaponChange(int punId, int itemId)
     {
         //Get the player we are controlling

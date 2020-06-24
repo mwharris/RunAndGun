@@ -49,6 +49,7 @@ public class FXManager : MonoBehaviour {
 		}
 	}
 
+    /*
 	[PunRPC]
 	void KillNotification(string deadPlayerName, string killerName, bool headshot)
 	{
@@ -78,7 +79,9 @@ public class FXManager : MonoBehaviour {
             overlayTimer = 3.0f;
 		}
 	}
+	*/
 
+    /*
 	[PunRPC]
 	void BulletFX(int photonID, Vector3 endPos, bool hitEnemy, bool hitRed)
 	{
@@ -125,7 +128,9 @@ public class FXManager : MonoBehaviour {
             }
         }
 	}
+	*/
 
+    /*
 	[PunRPC]
 	void DeathFX(Vector3 pos)
 	{
@@ -137,6 +142,7 @@ public class FXManager : MonoBehaviour {
 			PlayDeathSound(pos);
 		}
 	}
+	*/
 
 	void PlayDeathSound(Vector3 pos)
 	{
@@ -154,6 +160,7 @@ public class FXManager : MonoBehaviour {
 		deathSounds[0] = clipToPlay;
 	}
 
+	/*
 	[PunRPC]
 	void FootstepFX(Vector3 pos)
 	{
@@ -171,7 +178,9 @@ public class FXManager : MonoBehaviour {
 			footstepSounds[0] = clipToPlay;
 		}
 	}
+	*/
 
+	/*
 	[PunRPC]
 	void LandingFX(Vector3 pos)
 	{
@@ -180,7 +189,9 @@ public class FXManager : MonoBehaviour {
 			AudioSource.PlayClipAtPoint(landingSound, pos);
 		}
 	}
+	*/
 
+	/*
 	[PunRPC]
 	void DoubleJumpFX(Vector3 pos)
 	{
@@ -189,4 +200,5 @@ public class FXManager : MonoBehaviour {
 			AudioSource.PlayClipAtPoint(doubleJumpSound, pos);
 		}
 	}
+	*/
 }

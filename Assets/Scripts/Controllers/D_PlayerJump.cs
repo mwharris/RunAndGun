@@ -113,13 +113,15 @@ public class D_PlayerJump : AbstractBehavior
                 justJumped = false;
                 inputState.playerIsJumping = false;
             }
-
+            
+            /*
             //Update our hitboxes
             if (!GetComponent<PhotonView>().isMine)
             {
                 bool hitboxJumping = inputState.playerIsJumping || justJumped || !inputState.playerIsGrounded;
                 HandleHitboxes(gameObject, hitboxJumping, inputState.playerIsCrouching, jumpResetting);
             }
+            */
         }
     }
 
@@ -224,7 +226,7 @@ public class D_PlayerJump : AbstractBehavior
 		if(isDoubleJump)
 		{
 			//Play a networked double jump sound
-			fxManager.GetComponent<PhotonView>().RPC("DoubleJumpFX", PhotonTargets.All, this.transform.position);
+			// fxManager.GetComponent<PhotonView>().RPC("DoubleJumpFX", PhotonTargets.All, this.transform.position);
 		}
 		else
 		{

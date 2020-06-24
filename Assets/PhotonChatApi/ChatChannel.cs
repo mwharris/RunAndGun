@@ -5,15 +5,15 @@
 // ----------------------------------------------------------------------------------------------------------------------
 
 #if UNITY_4_7 || UNITY_5 || UNITY_5_3_OR_NEWER
-#define UNITY
+#define SUPPORTED_UNITY
 #endif
 
-namespace ExitGames.Client.Photon.Chat
+namespace Photon.Chat
 {
     using System.Collections.Generic;
     using System.Text;
 
-    #if UNITY || NETFX_CORE
+    #if SUPPORTED_UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
     #endif
@@ -47,7 +47,7 @@ namespace ExitGames.Client.Photon.Chat
 
         /// <summary>Count of messages this client still buffers/knows for this channel.</summary>
         public int MessageCount { get { return this.Messages.Count; } }
-        
+
         /// <summary>
         /// ID of the last message received.
         /// </summary>
@@ -153,7 +153,7 @@ namespace ExitGames.Client.Photon.Chat
                 }
             }
         }
-        
+
         internal void AddSubscribers(string[] users)
         {
             if (users == null)

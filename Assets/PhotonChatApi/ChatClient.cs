@@ -5,16 +5,16 @@
 // ----------------------------------------------------------------------------------------------------------------------
 
 #if UNITY_4_7 || UNITY_5 || UNITY_5_3_OR_NEWER
-#define UNITY
+#define SUPPORTED_UNITY
 #endif
 
-namespace ExitGames.Client.Photon.Chat
+namespace Photon.Chat
 {
     using System;
     using System.Collections.Generic;
     using ExitGames.Client.Photon;
 
-    #if UNITY || NETFX_CORE
+    #if SUPPORTED_UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
     #endif
@@ -41,6 +41,7 @@ namespace ExitGames.Client.Photon.Chat
     {
         const int FriendRequestListMax = 1024;
 
+        /// <summary> Default maximum value possible for <see cref="ChatChannel.MaxSubscribers"/> when <see cref="ChatChannel.PublishSubscribers"/> is enabled</summary>
         public const int DefaultMaxSubscribers = 100;
 
         /// <summary>The address of last connected Name Server.</summary>
@@ -62,13 +63,20 @@ namespace ExitGames.Client.Photon.Chat
         /// <summary>Current state of the ChatClient. Also use CanChat.</summary>
         public ChatState State { get; private set; }
 
+        /// <summary> Disconnection cause. Check this inside <see cref="IChatClientListener.OnDisconnected"/>. </summary>
         public ChatDisconnectCause DisconnectedCause { get; private set; }
-
+        /// <summary>
+        /// Checks if this client is ready to send messages.
+        /// </summary>
         public bool CanChat
         {
             get { return this.State == ChatState.ConnectedToFrontEnd && this.HasPeer; }
         }
-
+        /// <summary>
+        /// Checks if this client is ready to publish messages inside a public channel.
+        /// </summary>
+        /// <param name="channelName">The channel to do the check with.</param>
+        /// <returns>Whether or not this client is ready to publish messages inside the public channel with the specified channelName.</returns>
         public bool CanChatInChannel(string channelName)
         {
             return this.CanChat && this.PublicChannels.ContainsKey(channelName) && !this.PublicChannelsUnsubscribing.Contains(channelName);
@@ -82,7 +90,7 @@ namespace ExitGames.Client.Photon.Chat
         /// <summary>The version of your client. A new version also creates a new "virtual app" to separate players from older client versions.</summary>
         public string AppVersion { get; private set; }
 
-        /// <summary>The AppID as assigned from the Photon Cloud. If you host yourself, this is the "regular" Photon Server Application Name (most likely: "LoadBalancing").</summary>
+        /// <summary>The AppID as assigned from the Photon Cloud.</summary>
         public string AppId { get; private set; }
 
 
@@ -118,8 +126,9 @@ namespace ExitGames.Client.Photon.Chat
         /// Changing this value, does not affect ChatChannels that are already in use!
         /// </remarks>
         public int MessageLimit;
-
+        /// <summary> Public channels this client is subscribed to. </summary>
         public readonly Dictionary<string, ChatChannel> PublicChannels;
+        /// <summary> Private channels in which this client has exchanged messages. </summary>
         public readonly Dictionary<string, ChatChannel> PrivateChannels;
 
         // channels being in unsubscribing process
@@ -127,9 +136,13 @@ namespace ExitGames.Client.Photon.Chat
         private readonly HashSet<string> PublicChannelsUnsubscribing;
 
         private readonly IChatClientListener listener = null;
+        /// <summary> The Chat Peer used by this client. </summary>
         public ChatPeer chatPeer = null;
         private const string ChatAppName = "chat";
         private bool didAuthenticate;
+
+        private int? statusToSetWhenConnected;
+        private object messageToSetWhenConnected;
 
         private int msDeltaForServiceCalls = 50;
         private int msTimestampOfLastServiceCall;
@@ -139,7 +152,7 @@ namespace ExitGames.Client.Photon.Chat
         /// The benefit of using a background thread to call SendOutgoingCommands is this:
         ///
         /// Even if your game logic is being paused, the background thread will keep the connection to the server up.
-        /// On a lower level, acknowledgments and pings will prevent a server-side timeout while (e.g.) Unity loads assets.
+        /// On a lower level, acknowledgements and pings will prevent a server-side timeout while (e.g.) Unity loads assets.
         ///
         /// Your game logic still has to call Service regularly, or else incoming messages are not dispatched.
         /// As this typically triggers UI updates, it's easier to call Service from the main/UI thread.
@@ -175,13 +188,18 @@ namespace ExitGames.Client.Photon.Chat
             get { return this.chatPeer.SocketImplementationConfig; }
         }
 
-
+        /// <summary>
+        /// Chat client constructor.
+        /// </summary>
+        /// <param name="listener">The chat listener implementation.</param>
+        /// <param name="protocol">Connection protocol to be used by this client. Default is <see cref="ConnectionProtocol.Udp"/>.</param>
         public ChatClient(IChatClientListener listener, ConnectionProtocol protocol = ConnectionProtocol.Udp)
         {
             this.listener = listener;
             this.State = ChatState.Uninitialized;
 
             this.chatPeer = new ChatPeer(this, protocol);
+            this.chatPeer.SerializationProtocolType = SerializationProtocol.GpBinaryV18;
 
             this.PublicChannels = new Dictionary<string, ChatChannel>();
             this.PrivateChannels = new Dictionary<string, ChatChannel>();
@@ -189,10 +207,35 @@ namespace ExitGames.Client.Photon.Chat
             this.PublicChannelsUnsubscribing = new HashSet<string>();
         }
 
+        public bool ConnectUsingSettings(ChatAppSettings appSettings)
+        {
+            if (appSettings == null)
+            {
+                this.listener.DebugReturn(DebugLevel.ERROR, "ConnectUsingSettings failed. The appSettings can't be null.'");
+                return false;
+            }
+
+            if (!string.IsNullOrEmpty(appSettings.FixedRegion))
+            {
+                this.ChatRegion = appSettings.FixedRegion;
+            }
+
+            this.DebugOut = appSettings.NetworkLogging;
+
+            this.TransportProtocol = appSettings.Protocol;
+
+            if (!appSettings.IsDefaultNameServer)
+            {
+                this.chatPeer.NameServerHost = appSettings.Server;
+            }
+
+            return this.Connect(appSettings.AppId, appSettings.AppVersion, this.AuthValues);
+        }
+
         /// <summary>
         /// Connects this client to the Photon Chat Cloud service, which will also authenticate the user (and set a UserId).
         /// </summary>
-        /// <param name="appId">Get your Photon Chat AppId from the <a href="https://www.photonengine.com/en/Chat/Dashboard">Dashboard</a>.</param>
+        /// <param name="appId">Get your Photon Chat AppId from the <a href="https://dashboard.photonengine.com">Dashboard</a>.</param>
         /// <param name="appVersion">Any version string you make up. Used to separate users and variants of your clients, which might be incompatible.</param>
         /// <param name="authValues">Values for authentication. You can leave this null, if you set a UserId before. If you set authValues, they will override any UserId set before.</param>
         /// <returns></returns>
@@ -201,38 +244,18 @@ namespace ExitGames.Client.Photon.Chat
             this.chatPeer.TimePingInterval = 3000;
             this.DisconnectedCause = ChatDisconnectCause.None;
 
-            if (authValues != null)
-            {
-                this.AuthValues = authValues;
-                if (string.IsNullOrEmpty(this.AuthValues.UserId))
-                {
-                    if (this.DebugOut >= DebugLevel.ERROR)
-                    {
-                        this.listener.DebugReturn(DebugLevel.ERROR, "Connect failed: no UserId specified in authentication values.");
-                    }
-                    return false;
-                }
-            }
-            else
-            {
-                if (this.DebugOut >= DebugLevel.ERROR)
-                {
-                    this.listener.DebugReturn(DebugLevel.ERROR, "Connect failed: no authentication values specified");
-                }
-                return false;
-            }
+            this.AuthValues = authValues;
+
             this.AppId = appId;
             this.AppVersion = appVersion;
             this.didAuthenticate = false;
             this.chatPeer.QuickResendAttempts = 2;
             this.chatPeer.SentCountAllowance = 7;
 
-
             // clean all channels
             this.PublicChannels.Clear();
             this.PrivateChannels.Clear();
             this.PublicChannelsUnsubscribing.Clear();
-
 
             #if UNITY_WEBGL
             if (this.TransportProtocol == ConnectionProtocol.Tcp || this.TransportProtocol == ConnectionProtocol.Udp)
@@ -241,7 +264,6 @@ namespace ExitGames.Client.Photon.Chat
                 this.TransportProtocol = ConnectionProtocol.WebSocketSecure;
             }
             #endif
-
 
             this.NameServerAddress = this.chatPeer.NameServerAddress;
             bool isConnecting = this.chatPeer.Connect();
@@ -260,6 +282,25 @@ namespace ExitGames.Client.Photon.Chat
             }
 
             return isConnecting;
+        }
+
+        /// <summary>
+        /// Connects this client to the Photon Chat Cloud service, which will also authenticate the user (and set a UserId).
+        /// This also sets an online status once connected. By default it will set user status to <see cref="ChatUserStatus.Online"/>.
+        /// See <see cref="SetOnlineStatus(int,object)"/> for more information.
+        /// </summary>
+        /// <param name="appId">Get your Photon Chat AppId from the <a href="https://dashboard.photonengine.com">Dashboard</a>.</param>
+        /// <param name="appVersion">Any version string you make up. Used to separate users and variants of your clients, which might be incompatible.</param>
+        /// <param name="authValues">Values for authentication. You can leave this null, if you set a UserId before. If you set authValues, they will override any UserId set before.</param>
+        /// <param name="status">User status to set when connected. Predefined states are in class <see cref="ChatUserStatus"/>. Other values can be used at will.</param>
+        /// <param name="message">Optional status Also sets a status-message which your friends can get.</param>
+        /// <returns>If the connection attempt could be sent at all.</returns>
+        public bool ConnectAndSetStatus(string appId, string appVersion, AuthenticationValues authValues,
+            int status = ChatUserStatus.Online, object message = null)
+        {
+            statusToSetWhenConnected = status;
+            messageToSetWhenConnected = message;
+            return Connect(appId, appVersion, authValues);
         }
 
         /// <summary>
@@ -303,7 +344,7 @@ namespace ExitGames.Client.Photon.Chat
             return this.State != ChatState.Disconnected;
         }
 
-
+        /// <summary> Obsolete: Better use UseBackgroundWorkerForSending and Service(). </summary>
         [Obsolete("Better use UseBackgroundWorkerForSending and Service().")]
         public void SendAcksOnly()
         {
@@ -314,10 +355,12 @@ namespace ExitGames.Client.Photon.Chat
         /// <summary>
         /// Disconnects from the Chat Server by sending a "disconnect command", which prevents a timeout server-side.
         /// </summary>
-        public void Disconnect()
+        public void Disconnect(ChatDisconnectCause cause = ChatDisconnectCause.DisconnectByClientLogic)
         {
             if (this.HasPeer && this.chatPeer.PeerState != PeerStateValue.Disconnected)
             {
+                this.State = ChatState.Disconnecting;
+                this.DisconnectedCause = cause;
                 this.chatPeer.Disconnect();
             }
         }
@@ -341,39 +384,6 @@ namespace ExitGames.Client.Photon.Chat
             return this.Subscribe(channels, 0);
         }
 
-        /// <summary>
-        /// Sends operation to subscribe client to channels, optionally fetching a number of messages from the cache.
-        /// </summary>
-        /// <remarks>
-        /// Subscribes channels will forward new messages to this user. Use PublishMessage to do so.
-        /// The messages cache is limited but can be useful to get into ongoing conversations, if that's needed.
-        /// </remarks>
-        /// <param name="channels">List of channels to subscribe to. Avoid null or empty values.</param>
-        /// <param name="messagesFromHistory">0: no history. 1 and higher: number of messages in history. -1: all available history.</param>
-        /// <returns>If the operation could be sent at all (Example: Fails if not connected to Chat Server).</returns>
-        public bool Subscribe(string[] channels, int messagesFromHistory)
-        {
-            if (!this.CanChat)
-            {
-                if (this.DebugOut >= DebugLevel.ERROR)
-                {
-                    this.listener.DebugReturn(DebugLevel.ERROR, "Subscribe called while not connected to front end server.");
-                }
-                return false;
-            }
-
-            if (channels == null || channels.Length == 0)
-            {
-                if (this.DebugOut >= DebugLevel.WARNING)
-                {
-                    this.listener.DebugReturn(DebugLevel.WARNING, "Subscribe can't be called for empty or null channels-list.");
-                }
-                return false;
-            }
-
-            return this.SendChannelOperation(channels, (byte)ChatOperationCode.Subscribe, messagesFromHistory);
-        }
-        
         /// <summary>
         /// Sends operation to subscribe to a list of channels by name and possibly retrieve messages we did not receive while unsubscribed.
         /// </summary>
@@ -429,6 +439,39 @@ namespace ExitGames.Client.Photon.Chat
             };
 
             return this.chatPeer.SendOperation(ChatOperationCode.Subscribe, opParameters, SendOptions.SendReliable);
+        }
+
+        /// <summary>
+        /// Sends operation to subscribe client to channels, optionally fetching a number of messages from the cache.
+        /// </summary>
+        /// <remarks>
+        /// Subscribes channels will forward new messages to this user. Use PublishMessage to do so.
+        /// The messages cache is limited but can be useful to get into ongoing conversations, if that's needed.
+        /// </remarks>
+        /// <param name="channels">List of channels to subscribe to. Avoid null or empty values.</param>
+        /// <param name="messagesFromHistory">0: no history. 1 and higher: number of messages in history. -1: all available history.</param>
+        /// <returns>If the operation could be sent at all (Example: Fails if not connected to Chat Server).</returns>
+        public bool Subscribe(string[] channels, int messagesFromHistory)
+        {
+            if (!this.CanChat)
+            {
+                if (this.DebugOut >= DebugLevel.ERROR)
+                {
+                    this.listener.DebugReturn(DebugLevel.ERROR, "Subscribe called while not connected to front end server.");
+                }
+                return false;
+            }
+
+            if (channels == null || channels.Length == 0)
+            {
+                if (this.DebugOut >= DebugLevel.WARNING)
+                {
+                    this.listener.DebugReturn(DebugLevel.WARNING, "Subscribe can't be called for empty or null channels-list.");
+                }
+                return false;
+            }
+
+            return this.SendChannelOperation(channels, (byte)ChatOperationCode.Subscribe, messagesFromHistory);
         }
 
         /// <summary>Unsubscribes from a list of channels, which stops getting messages from those.</summary>
@@ -517,7 +560,8 @@ namespace ExitGames.Client.Photon.Chat
             {
                 parameters.Add(ChatParameterCode.WebFlags, (byte)0x1);
             }
-            return this.chatPeer.SendOperation(ChatOperationCode.Publish, parameters, new SendOptions { Reliability = reliable });
+
+            return this.chatPeer.SendOperation(ChatOperationCode.Publish, parameters, new SendOptions() { Reliability = reliable });
         }
 
         /// <summary>
@@ -580,14 +624,7 @@ namespace ExitGames.Client.Photon.Chat
                 parameters.Add(ChatParameterCode.WebFlags, (byte)0x1);
             }
 
-            SendOptions sendOptions = new SendOptions
-            {
-                Reliability = reliable,
-                Channel = 0,
-                Encrypt = encrypt
-            };
-
-            return this.chatPeer.SendOperation(ChatOperationCode.SendPrivate, parameters, sendOptions);
+            return this.chatPeer.SendOperation(ChatOperationCode.SendPrivate, parameters, new SendOptions() { Reliability = reliable, Encrypt = encrypt });
         }
 
         /// <summary>Sets the user's status (pre-defined or custom) and an optional message.</summary>
@@ -629,6 +666,7 @@ namespace ExitGames.Client.Photon.Chat
             {
                 parameters[ChatParameterCode.Message] = message;
             }
+
             return this.chatPeer.SendOperation(ChatOperationCode.UpdateStatus, parameters, SendOptions.SendReliable);
         }
 
@@ -724,6 +762,7 @@ namespace ExitGames.Client.Photon.Chat
                 {
                     { ChatParameterCode.Friends, friends },
                 };
+
             return this.chatPeer.SendOperation(ChatOperationCode.AddFriends, parameters, SendOptions.SendReliable);
         }
 
@@ -731,21 +770,38 @@ namespace ExitGames.Client.Photon.Chat
         /// Removes the provided entries from the list on the Chat Server and stops their status updates.
         /// </summary>
         /// <remarks>
-        /// Photon flushes friends-list when a chat client disconnects, so it has to be
-        /// set each time. If your community API gives you access to online status already,
-        /// you could filter and set online friends in AddFriends. Unless you want to
+        /// Photon flushes friends-list when a chat client disconnects. Unless you want to
         /// remove individual entries, you don't have to RemoveFriends.
         ///
         /// AddFriends and RemoveFriends enable clients to handle their friend list
         /// in the Photon Chat server. Having users on your friends list gives you access
         /// to their current online status (and whatever info your client sets in it).
         ///
-        /// Each user can set an online status consisting of an integer and an arbitrary
+        /// Each user can set an online status consisting of an integer and an arbitratry
         /// (serializable) object. The object can be null, Hashtable, object[] or anything
         /// else Photon can serialize.
         ///
         /// The status is published automatically to friends (anyone who set your user ID
         /// with AddFriends).
+        ///
+        /// Photon flushes friends-list when a chat client disconnects, so it has to be
+        /// set each time. If your community API gives you access to online status already,
+        /// you could filter and set online friends in AddFriends.
+        ///
+        /// Actual friend relations are not persistent and have to be stored outside
+        /// of Photon.
+        ///
+        /// AddFriends and RemoveFriends enable clients to handle their friend list
+        /// in the Photon Chat server. Having users on your friends list gives you access
+        /// to their current online status (and whatever info your client sets in it).
+        ///
+        /// Each user can set an online status consisting of an integer and an arbitratry
+        /// (serializable) object. The object can be null, Hashtable, object[] or anything
+        /// else Photon can serialize.
+        ///
+        /// The status is published automatically to friends (anyone who set your user ID
+        /// with AddFriends).
+        ///
         ///
         /// Actual friend relations are not persistent and have to be stored outside
         /// of Photon.
@@ -784,6 +840,7 @@ namespace ExitGames.Client.Photon.Chat
                 {
                     { ChatParameterCode.Friends, friends },
                 };
+
             return this.chatPeer.SendOperation(ChatOperationCode.RemoveFriends, parameters, SendOptions.SendReliable);
         }
 
@@ -792,6 +849,9 @@ namespace ExitGames.Client.Photon.Chat
         /// </summary>
         /// <param name="userName">Remote user's name or UserId.</param>
         /// <returns>The (locally used) channel name for a private channel.</returns>
+        /// <remarks>Do not subscribe to this channel.
+        /// Private channels do not need to be explicitly subscribed to.
+        /// Use this for debugging purposes mainly.</remarks>
         public string GetPrivateChannelNameByUser(string userName)
         {
             return string.Format("{0}:{1}", this.UserId, userName);
@@ -804,6 +864,8 @@ namespace ExitGames.Client.Photon.Chat
         /// <param name="isPrivate">Define if you expect a private or public channel.</param>
         /// <param name="channel">Out parameter gives you the found channel, if any.</param>
         /// <returns>True if the channel was found.</returns>
+        /// <remarks>Public channels exist only when subscribed to them.
+        /// Private channels exist only when at least one message is exchanged with the target user privately.</remarks>
         public bool TryGetChannel(string channelName, bool isPrivate, out ChatChannel channel)
         {
             if (!isPrivate)
@@ -822,6 +884,8 @@ namespace ExitGames.Client.Photon.Chat
         /// <param name="channelName">Name of the channel to get.</param>
         /// <param name="channel">Out parameter gives you the found channel, if any.</param>
         /// <returns>True if the channel was found.</returns>
+        /// <remarks>Public channels exist only when subscribed to them.
+        /// Private channels exist only when at least one message is exchanged with the target user privately.</remarks>
         public bool TryGetChannel(string channelName, out ChatChannel channel)
         {
             bool found = false;
@@ -830,6 +894,23 @@ namespace ExitGames.Client.Photon.Chat
 
             found = this.PrivateChannels.TryGetValue(channelName, out channel);
             return found;
+        }
+
+        /// <summary>
+        /// Simplified access to private channels by target user.
+        /// </summary>
+        /// <param name="userId">UserId of the target user in the private channel.</param>
+        /// <param name="channel">Out parameter gives you the found channel, if any.</param>
+        /// <returns>True if the channel was found.</returns>
+        public bool TryGetPrivateChannelByUser(string userId, out ChatChannel channel)
+        {
+            channel = null;
+            if (string.IsNullOrEmpty(userId))
+            {
+                return false;
+            }
+            string channelName = this.GetPrivateChannelNameByUser(userId);
+            return this.TryGetChannel(channelName, true, out channel);
         }
 
         /// <summary>
@@ -918,21 +999,17 @@ namespace ExitGames.Client.Photon.Chat
                 case StatusCode.Connect:
                     if (!this.chatPeer.IsProtocolSecure)
                     {
-                        this.chatPeer.EstablishEncryption();
+                        if (!this.chatPeer.EstablishEncryption())
+                        {
+                            if (this.DebugOut >= DebugLevel.ERROR)
+                            {
+                                this.listener.DebugReturn(DebugLevel.ERROR, "Error establishing encryption");
+                            }
+                        }
                     }
                     else
                     {
-                        if (!this.didAuthenticate)
-                        {
-                            this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
-                            if (!this.didAuthenticate)
-                            {
-                                if (this.DebugOut >= DebugLevel.ERROR)
-                                {
-                                    ((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
-                                }
-                            }
-                        }
+                        this.TryAuthenticateOnNameServer();
                     }
 
                     if (this.State == ChatState.ConnectingToNameServer)
@@ -942,38 +1019,71 @@ namespace ExitGames.Client.Photon.Chat
                     }
                     else if (this.State == ChatState.ConnectingToFrontEnd)
                     {
-                        this.AuthenticateOnFrontEnd();
-                    }
-                    break;
-                case StatusCode.EncryptionEstablished:
-                    // once encryption is available, the client should send one (secure) authenticate. it includes the AppId (which identifies your app on the Photon Cloud)
-                    if (!this.didAuthenticate)
-                    {
-                        this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
-                        if (!this.didAuthenticate)
+                        if (!this.AuthenticateOnFrontEnd())
                         {
                             if (this.DebugOut >= DebugLevel.ERROR)
                             {
-                                ((IPhotonPeerListener)this).DebugReturn(DebugLevel.ERROR, "Error calling OpAuthenticate! Did not work. Check log output, AuthValues and if you're connected. State: " + this.State);
+                                this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Error authenticating on frontend! Check log output, AuthValues and if you're connected. State: {0}", this.State));
                             }
                         }
                     }
                     break;
-                case StatusCode.EncryptionFailedToEstablish:
-                    this.State = ChatState.Disconnecting;
-                    this.chatPeer.Disconnect();
+                case StatusCode.EncryptionEstablished:
+                    // once encryption is available, the client should send one (secure) authenticate. it includes the AppId (which identifies your app on the Photon Cloud)
+                    this.TryAuthenticateOnNameServer();
                     break;
                 case StatusCode.Disconnect:
-                    if (this.State == ChatState.Authenticated)
+                    switch (this.State)
                     {
-                        this.ConnectToFrontEnd();
+                        case ChatState.Authenticated:
+                            this.ConnectToFrontEnd();
+                            // client disconnected from nameserver after authentication
+                            // to switch to frontend
+                            return;
+                        case ChatState.Disconnecting:
+                            // expected disconnect
+                            break;
+                        default:
+                            // unexpected disconnect, we log warning and stacktrace
+                            string stacktrace = string.Empty;
+                            #if DEBUG && !NETFX_CORE
+                            stacktrace = new System.Diagnostics.StackTrace(true).ToString();
+                            #endif
+                            this.listener.DebugReturn(DebugLevel.WARNING, string.Format("Got a unexpected Disconnect in ChatState: {0}. Server: {1} Trace: {2}", this.State, this.chatPeer.ServerAddress, stacktrace));
+                            break;
                     }
-                    else
+                    if (this.AuthValues != null)
                     {
-                        this.State = ChatState.Disconnected;
-                        this.listener.OnChatStateChange(ChatState.Disconnected);
-                        this.listener.OnDisconnected();
+                        this.AuthValues.Token = null; // when leaving the server, invalidate the secret (but not the auth values)
                     }
+                    this.State = ChatState.Disconnected;
+                    this.listener.OnChatStateChange(ChatState.Disconnected);
+                    this.listener.OnDisconnected();
+                    break;
+                case StatusCode.DisconnectByServerUserLimit:
+                    this.listener.DebugReturn(DebugLevel.ERROR, "This connection was rejected due to the apps CCU limit.");
+                    this.Disconnect(ChatDisconnectCause.MaxCcuReached);
+                    break;
+                case StatusCode.ExceptionOnConnect:
+                case StatusCode.SecurityExceptionOnConnect:
+                case StatusCode.EncryptionFailedToEstablish:
+                    this.Disconnect(ChatDisconnectCause.ExceptionOnConnect);
+                    break;
+                case StatusCode.Exception:
+                case StatusCode.ExceptionOnReceive:
+                    this.Disconnect(ChatDisconnectCause.Exception);
+                    break;
+                case StatusCode.DisconnectByServerTimeout:
+                    this.Disconnect(ChatDisconnectCause.ServerTimeout);
+                    break;
+                case StatusCode.DisconnectByServerLogic:
+                    this.Disconnect(ChatDisconnectCause.DisconnectByServerLogic);
+                    break;
+                case StatusCode.DisconnectByServerReasonUnknown:
+                    this.Disconnect(ChatDisconnectCause.DisconnectByServerReasonUnknown);
+                    break;
+                case StatusCode.TimeoutDisconnect:
+                    this.Disconnect(ChatDisconnectCause.ClientTimeout);
                     break;
             }
         }
@@ -987,6 +1097,21 @@ namespace ExitGames.Client.Photon.Chat
         #endif
 
         #endregion
+
+        private void TryAuthenticateOnNameServer()
+        {
+            if (!this.didAuthenticate)
+            {
+                this.didAuthenticate = this.chatPeer.AuthenticateOnNameServer(this.AppId, this.AppVersion, this.chatRegion, this.AuthValues);
+                if (!this.didAuthenticate)
+                {
+                    if (this.DebugOut >= DebugLevel.ERROR)
+                    {
+                        this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Error calling OpAuthenticate! Did not work on NameServer. Check log output, AuthValues and if you're connected. State: {0}", this.State));
+                    }
+                }
+            }
+        }
 
         private bool SendChannelOperation(string[] channels, byte operation, int historyLength)
         {
@@ -1079,11 +1204,14 @@ namespace ExitGames.Client.Photon.Chat
                             this.PublicChannels.Add(channel.Name, channel);
                         }
                         channel.ReadProperties(channelProperties);
-                        if (eventData.Parameters.TryGetValue(ChatParameterCode.ChannelSubscribers, out temp))
+                        if (channel.PublishSubscribers)
                         {
-                            string[] subscribers = temp as string[];
                             channel.Subscribers.Add(this.UserId);
-                            channel.AddSubscribers(subscribers);
+                            if (eventData.Parameters.TryGetValue(ChatParameterCode.ChannelSubscribers, out temp))
+                            {
+                                string[] subscribers = temp as string[];
+                                channel.AddSubscribers(subscribers);
+                            }
                         }
                     }
                     this.listener.OnSubscribed(channelsInResponse, results);
@@ -1142,6 +1270,7 @@ namespace ExitGames.Client.Photon.Chat
                             this.AuthValues = new AuthenticationValues();
                         }
                         this.AuthValues.Token = operationResponse[ParameterCode.Secret] as string;
+
                         this.FrontendAddress = (string)operationResponse[ParameterCode.Address];
 
                         // we disconnect and status handler starts to connect to front end
@@ -1154,12 +1283,26 @@ namespace ExitGames.Client.Photon.Chat
                             this.listener.DebugReturn(DebugLevel.ERROR, "No secret in authentication response.");
                         }
                     }
+                    if (operationResponse.Parameters.ContainsKey(ParameterCode.UserId))
+                    {
+                        string incomingId = operationResponse.Parameters[ParameterCode.UserId] as string;
+                        if (!string.IsNullOrEmpty(incomingId))
+                        {
+                            this.UserId = incomingId;
+                            this.listener.DebugReturn(DebugLevel.INFO, string.Format("Received your UserID from server. Updating local value to: {0}", this.UserId));
+                        }
+                    }
                 }
                 else if (this.State == ChatState.ConnectingToFrontEnd)
                 {
                     this.State = ChatState.ConnectedToFrontEnd;
                     this.listener.OnChatStateChange(this.State);
                     this.listener.OnConnected();
+                    if (statusToSetWhenConnected.HasValue)
+                    {
+                        SetOnlineStatus(statusToSetWhenConnected.Value, messageToSetWhenConnected);
+                        statusToSetWhenConnected = null;
+                    }
                 }
             }
             else
@@ -1183,16 +1326,18 @@ namespace ExitGames.Client.Photon.Chat
                     case ErrorCode.OperationNotAllowedInCurrentState:
                         this.DisconnectedCause = ChatDisconnectCause.OperationNotAllowedInCurrentState;
                         break;
+                    case ErrorCode.AuthenticationTicketExpired:
+                        this.DisconnectedCause = ChatDisconnectCause.AuthenticationTicketExpired;
+                        break;
                 }
 
                 if (this.DebugOut >= DebugLevel.ERROR)
                 {
-                    this.listener.DebugReturn(DebugLevel.ERROR, "Authentication request error: " + operationResponse.ReturnCode + ". Disconnecting.");
+                    this.listener.DebugReturn(DebugLevel.ERROR, string.Format("{0} ClientState: {1} ServerAddress: {2}", operationResponse.ToStringFull(), this.State, this.chatPeer.ServerAddress));
                 }
 
 
-                this.State = ChatState.Disconnecting;
-                this.chatPeer.Disconnect();
+                this.Disconnect(this.DisconnectedCause);
             }
         }
 
@@ -1228,7 +1373,13 @@ namespace ExitGames.Client.Photon.Chat
             }
             #endif
 
-            this.chatPeer.Connect(this.FrontendAddress, ChatAppName);
+            if (!this.chatPeer.Connect(this.FrontendAddress, ChatAppName))
+            {
+                if (this.DebugOut >= DebugLevel.ERROR)
+                {
+                    this.listener.DebugReturn(DebugLevel.ERROR, string.Format("Connecting to frontend {0} failed.", this.FrontendAddress));
+                }
+            }
         }
 
         private bool AuthenticateOnFrontEnd()
@@ -1281,7 +1432,7 @@ namespace ExitGames.Client.Photon.Chat
                     }
                 }
             }
-            else 
+            else
             {
                 if (this.DebugOut >= DebugLevel.WARNING)
                 {
@@ -1310,15 +1461,13 @@ namespace ExitGames.Client.Photon.Chat
                     if (this.DebugOut >= DebugLevel.WARNING)
                     {
                         this.listener.DebugReturn(DebugLevel.WARNING, string.Format("Channel \"{0}\" already contains newly subscribed user \"{1}\".", channelName, userId));
-                    } 
+                    }
                 }
                 else if (channel.MaxSubscribers > 0 && channel.Subscribers.Count > channel.MaxSubscribers)
                 {
                     if (this.DebugOut >= DebugLevel.WARNING)
                     {
-                        this.listener.DebugReturn(DebugLevel.WARNING,
-                            string.Format("Channel \"{0}\"'s MaxSubscribers exceeded. count={1} > MaxSubscribers={2}.",
-                                channelName, channel.Subscribers.Count, channel.MaxSubscribers));
+                        this.listener.DebugReturn(DebugLevel.WARNING, string.Format("Channel \"{0}\"'s MaxSubscribers exceeded. count={1} > MaxSubscribers={2}.", channelName, channel.Subscribers.Count, channel.MaxSubscribers));
                     }
                 }
             }
@@ -1335,7 +1484,7 @@ namespace ExitGames.Client.Photon.Chat
         #endregion
 
         /// <summary>
-        /// Subscribe to a single channel and optionally sets its well-know channel properties in case the channel is created 
+        /// Subscribe to a single channel and optionally sets its well-know channel properties in case the channel is created.
         /// </summary>
         /// <param name="channel">name of the channel to subscribe to</param>
         /// <param name="lastMsgId">ID of the last received message from this channel when re subscribing to receive only missed messages, default is 0</param>

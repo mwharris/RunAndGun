@@ -19,13 +19,13 @@ public class FixWallRunningAnimation : AbstractBehavior
     //private Vector3 origLocalPos;
     //private Quaternion origLocalRot;
 
-    private PhotonView pView;
+    // private PhotonView pView;
     private BodyController bodyController;
     private PlayerBodyData playerBodyData;
 
     private void Start()
     {
-        pView = GetComponent<PhotonView>();
+        // pView = GetComponent<PhotonView>();
         bodyController = GetComponent<BodyController>();
         playerBodyData = bodyController.PlayerBodyData;
         //Store original body and weapon position / rotations for later calculations
@@ -39,11 +39,13 @@ public class FixWallRunningAnimation : AbstractBehavior
 
     public void RunFix(bool wrLeft, bool wrRight, float deltaTime)
     {
+        /*
         if (!pView.isMine)
         {
             HandleBodyRotation(wrLeft, wrRight, deltaTime);
             HandleWeaponPlacement(wrLeft, wrRight);
         }
+        */
     }
 
     //Rotate the player's body 90-degrees depending on wall-run side.

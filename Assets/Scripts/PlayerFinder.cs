@@ -12,11 +12,13 @@ public class PlayerFinder {
         //Loop through and find the player we are controlling
         foreach (GameObject currPlayer in players)
         {
+            /*
             PhotonView pView = currPlayer.GetComponent<PhotonView>();
             if (pView != null && pView.owner != null && pView.owner.ID == pId)
             {
                 return currPlayer;
             }
+            */
         }
         return null;
     }
@@ -29,11 +31,13 @@ public class PlayerFinder {
         //Loop through and find the player that isn't us with the given ID
         foreach (GameObject currPlayer in players)
         {
+            /*
             PhotonView pView = currPlayer.GetComponent<PhotonView>();
             if (pView != null && !pView.isMine && pView.owner != null && pView.owner.ID == pId)
             {
                 return currPlayer;
             }
+            */
         }
         return null;
     }

@@ -1,9 +1,10 @@
-﻿using UnityEngine;
+﻿using Photon.Pun;
+using Photon.Realtime;
+using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Collections;
 
-public class NetworkManager : AbstractBehavior {
+public class NetworkManager : MonoBehaviourPunCallbacks
+{
 
     public Camera lobbyCamera;
     public bool offlineMode;
@@ -40,7 +41,7 @@ public class NetworkManager : AbstractBehavior {
         if (respawnAvailable)
         {
             //Prompt the user to hit space
-            if (inputState.GetButtonPressed(inputs[0]))
+            if (PlayerInput.Instance.SpaceDown)
             {
                 //Reset the flag
                 respawnAvailable = false;
@@ -52,12 +53,13 @@ public class NetworkManager : AbstractBehavior {
 
     public void Connect()
     {
-        //Set the player's username
-        PhotonNetwork.playerName = username;
+	    //Set the player's username
+        PhotonNetwork.NickName = username;
         //Mark this session as online
-        PhotonNetwork.offlineMode = false;
+        PhotonNetwork.OfflineMode = false;
         //Unique string to identify our connection
-        PhotonNetwork.ConnectUsingSettings("RunNGunFPS");
+        PhotonNetwork.ConnectUsingSettings();
+        PhotonNetwork.GameVersion = "RunNGunFPS";
         //Hide the main menu
         menu.SetActive(false);
         //Mark our Game State as playing
@@ -66,9 +68,9 @@ public class NetworkManager : AbstractBehavior {
 
     public void ConnectOffline() {
         //Set the player's username
-        PhotonNetwork.playerName = username;
+        PhotonNetwork.NickName = username;
         //Mark this session as offline
-        PhotonNetwork.offlineMode = true;
+        PhotonNetwork.OfflineMode = true;
         //Unique string to identify our connection
         PhotonNetwork.CreateRoom("OfflineRoom");
         //Hide the main menu
@@ -77,34 +79,25 @@ public class NetworkManager : AbstractBehavior {
         gm.ChangeGameState(GameManager.GameState.playing);
     }
 
-    void OnGUI()
+    public override void OnConnectedToMaster()
     {
-	    if (gm.GetGameState() != GameManager.GameState.playing)
-	    {
-	        //DEBUG - Display the status of our connection on the screen
-	        GUILayout.Label(PhotonNetwork.connectionStateDetailed.ToString());
-	    }
-    }
-
-    //Callback for Lobby join success
-    void OnJoinedLobby()
-    {
-        //Immediately join a random room once we join the lobby
-        PhotonNetwork.JoinRandomRoom();
-    }
-
-    //Callback for failure of JoinRandomRoom()
-    void OnPhotonRandomJoinFailed()
-    {
-        //Create a new room since one does not exist
-        PhotonNetwork.CreateRoom(null);
+	    PhotonNetwork.JoinRandomRoom();
+	    base.OnConnectedToMaster();
     }
 
     //Callback for successfully joining a room
-    void OnJoinedRoom()
+    public override void OnJoinedRoom()
     {
-        //Spawn the local player
-        SpawnPlayer();
+	    //Spawn the local player
+	    SpawnPlayer();
+	    base.OnJoinedRoom();
+    }
+
+    //Callback for failure of JoinRandomRoom()
+    public override void OnJoinRandomFailed(short returnCode, string message)
+    {
+	    PhotonNetwork.CreateRoom("DefaultRoom");
+	    base.OnJoinRandomFailed(returnCode, message);
     }
 
     void SpawnPlayer()
@@ -181,11 +174,11 @@ public class NetworkManager : AbstractBehavior {
     public void Disconnect()
 	{
 		//Disconnect from the game if we are in Multiplayer mode
-		if(!PhotonNetwork.offlineMode && PhotonNetwork.connected)
+		if(!PhotonNetwork.OfflineMode && PhotonNetwork.IsConnected)
 		{
 			PhotonNetwork.Disconnect();
 		}
-		else if(PhotonNetwork.offlineMode)
+		else if(PhotonNetwork.OfflineMode)
 		{
 			PhotonNetwork.LeaveRoom();
             Destroy(gm.MyPlayer);
@@ -216,6 +209,15 @@ public class NetworkManager : AbstractBehavior {
 		#else
 		Application.Quit();
 		#endif
+	}
+
+	void OnGUI()
+	{
+		// if (gm.GetGameState() != GameManager.GameState.playing)
+		// {
+		//DEBUG - Display the status of our connection on the screen
+		GUILayout.Label(PhotonNetwork.NetworkClientState.ToString());
+		// }
 	}
 
 	public void SetUsername(string name)

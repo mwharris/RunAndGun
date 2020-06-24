@@ -1,7 +1,8 @@
 ﻿using UnityEngine;
 using System.Collections;
+using Photon.Pun;
 
-public class NetworkCharacter : Photon.MonoBehaviour 
+public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
 {
     private InputState inputState;
     private BodyController bodyControl;
@@ -51,14 +52,14 @@ public class NetworkCharacter : Photon.MonoBehaviour
 	/**
 	 * Handle updating non-local player's variables sent over the network
 	 */
-    void Update()
+	void Update()
     {
         //Get the body components we need to update based on if we're Third or First person
         PlayerBodyData playerBodyData = bodyControl.PlayerBodyData;
         Animator bodyAnimator = playerBodyData.GetBodyAnimator();
 
         //Only update a non-local player. Local players are updated by First Person Controller
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             float lerpSpeed = Time.deltaTime * 8f;
 
@@ -93,6 +94,11 @@ public class NetworkCharacter : Photon.MonoBehaviour
         }
 	}
 
+	void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		OnPhotonSerializeView(stream, info);
+	}
+
 	/**
 	 * Handle the actual sending / receiving of variables over the network
 	 */
@@ -100,7 +106,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
     {
         var playerBodyData = bodyControl.PlayerBodyData;
 
-        if (stream.isWriting)
+        if (stream.IsWriting)
 		{
 			//This is our local player, send our position to the network
 			stream.SendNext(transform.position);
@@ -147,7 +153,7 @@ public class NetworkCharacter : Photon.MonoBehaviour
             jumpSpeed = (float)stream.ReceiveNext();
         }
 	}
-	
+
 	private Vector3 SafeLerp(Vector3 dest, Vector3 source, float speed)
 	{
 		Vector3 v = Vector3.Lerp(dest, source, speed);

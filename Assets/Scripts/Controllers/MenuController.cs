@@ -91,7 +91,7 @@ public class MenuController : AbstractBehavior
 		if(mainMenu)
 		{
 			//Call the NetworkManager to disconnect from the server
-			nm.Disconnect();
+			// nm.Disconnect();
             //Unlock the mouse cursor
             UnlockMouseCursor();
         }

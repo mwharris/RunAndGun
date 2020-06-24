@@ -4,18 +4,18 @@
 // <copyright company="Exit Games GmbH">Photon Chat Api - Copyright (C) 2014 Exit Games GmbH</copyright>
 // ----------------------------------------------------------------------------------------------------------------------
 
-#if UNITY_4_7 || UNITY_5 || UNITY_5_0 || UNITY_5_1 || UNITY_5_3_OR_NEWER
-#define UNITY
+#if UNITY_4_7 || UNITY_5 || UNITY_5_3_OR_NEWER
+#define SUPPORTED_UNITY
 #endif
 
-namespace ExitGames.Client.Photon.Chat
+namespace Photon.Chat
 {
     using System;
     using System.Diagnostics;
     using System.Collections.Generic;
     using ExitGames.Client.Photon;
 
-    #if UNITY || NETFX_CORE
+    #if SUPPORTED_UNITY || NETFX_CORE
     using Hashtable = ExitGames.Client.Photon.Hashtable;
     using SupportClass = ExitGames.Client.Photon.SupportClass;
     #endif
@@ -27,10 +27,10 @@ namespace ExitGames.Client.Photon.Chat
     public class ChatPeer : PhotonPeer
     {
         /// <summary>Name Server Host Name for Photon Cloud. Without port and without any prefix.</summary>
-        public const string NameServerHost = "ns.exitgames.com";
+        public string NameServerHost = "ns.exitgames.com";
 
         /// <summary>Name Server for HTTP connections to the Photon Cloud. Includes prefix and port.</summary>
-        public const string NameServerHttp = "http://ns.exitgamescloud.com:80/photon/n";
+        public string NameServerHttp = "http://ns.exitgamescloud.com:80/photon/n";
 
         /// <summary>Name Server port per protocol (the UDP port is different than TCP, etc).</summary>
         private static readonly Dictionary<ConnectionProtocol, int> ProtocolToNameServerPort = new Dictionary<ConnectionProtocol, int>() { { ConnectionProtocol.Udp, 5058 }, { ConnectionProtocol.Tcp, 4533 }, { ConnectionProtocol.WebSocket, 9093 }, { ConnectionProtocol.WebSocketSecure, 19093 } }; //, { ConnectionProtocol.RHttp, 6063 } };
@@ -40,68 +40,53 @@ namespace ExitGames.Client.Photon.Chat
 
         virtual internal bool IsProtocolSecure { get { return this.UsedProtocol == ConnectionProtocol.WebSocketSecure; } }
 
-
+        /// <summary> Chat Peer constructor. </summary>
+        /// <param name="listener">Chat listener implementation.</param>
+        /// <param name="protocol">Protocol to be used by the peer.</param>
         public ChatPeer(IPhotonPeerListener listener, ConnectionProtocol protocol) : base(listener, protocol)
         {
             this.ConfigUnitySockets();
         }
 
 
-        [Conditional("UNITY")]
+
+        // Sets up the socket implementations to use, depending on platform
+        [Conditional("SUPPORTED_UNITY")]
         private void ConfigUnitySockets()
         {
-            //#pragma warning disable 0162    // the library variant defines if we should use PUN's SocketUdp variant (at all)
-            //if (PhotonPeer.NoSocket)
-            //{
-            //    #if !UNITY_EDITOR && (UNITY_PS3 || UNITY_ANDROID)
-            //    this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpNativeDynamic);
-            //    #elif !UNITY_EDITOR && UNITY_IPHONE
-            //    this.SocketImplementationConfig[ConnectionProtocol.Udp] = typeof(SocketUdpNativeStatic);
-            //    #elif !UNITY_EDITOR && (UNITY_WINRT)
-            //    // this automatically uses a separate assembly-file with Win8-style Socket usage (not possible in Editor)
-            //    #else
-            //    Type udpSocket = Type.GetType("ExitGames.Client.Photon.SocketUdp, Assembly-CSharp");
-            //    this.SocketImplementationConfig[ConnectionProtocol.Udp] = udpSocket;
-            //    if (udpSocket == null)
-            //    {
-            //        #if UNITY
-            //        UnityEngine.Debug.Log("Could not find a suitable C# socket class. This Photon3Unity3D.dll only supports native socket plugins.");
-            //        #endif
-            //    }
-            //    #endif
-            //}
-            //#pragma warning restore 0162
-
-
-            #if UNITY_WEBGL
-            if (this.TransportProtocol != ConnectionProtocol.WebSocket && this.TransportProtocol != ConnectionProtocol.WebSocketSecure)
+            Type websocketType = null;
+            #if UNITY_XBOXONE && !UNITY_EDITOR
+            websocketType = Type.GetType("ExitGames.Client.Photon.SocketNativeSource, PhotonWebSocket", false);
+            if (websocketType == null)
             {
-                UnityEngine.Debug.Log("For UNITY_WEBGL, use protocol WebSocketSecure. Overriding currently set protocol " + this.TransportProtocol + ".");
-                this.TransportProtocol = ConnectionProtocol.WebSocketSecure;
+                websocketType = Type.GetType("ExitGames.Client.Photon.SocketNativeSource, Assembly-CSharp-firstpass", false);
             }
-            #endif
-
-
-            Type socketTcp = null;
-            #if !UNITY_EDITOR && UNITY_XBOXONE
-            socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcpNativeDynamic, Assembly-CSharp", false);
-            if (socketTcp == null)
+            if (websocketType == null)
             {
-                socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcpNativeDynamic, Assembly-CSharp-firstpass", false);
+                websocketType = Type.GetType("ExitGames.Client.Photon.SocketNativeSource, Assembly-CSharp", false);
+            }
+            if (websocketType == null)
+            {
+                UnityEngine.Debug.LogError("UNITY_XBOXONE is defined but peer could not find SocketNativeSource. Check your project files to make sure the native WSS implementation is available. Won't connect.");
             }
             #else
             // to support WebGL export in Unity, we find and assign the SocketWebTcp class (if it's in the project).
             // alternatively class SocketWebTcp might be in the Photon3Unity3D.dll
-            socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp", false);
-            if (socketTcp == null)
+            websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, PhotonWebSocket", false);
+            if (websocketType == null)
             {
-                socketTcp = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp-firstpass", false);
+                websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp-firstpass", false);
+            }
+            if (websocketType == null)
+            {
+                websocketType = Type.GetType("ExitGames.Client.Photon.SocketWebTcp, Assembly-CSharp", false);
             }
             #endif
-            if (socketTcp != null)
+
+            if (websocketType != null)
             {
-                this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = socketTcp;
-                this.SocketImplementationConfig[ConnectionProtocol.WebSocketSecure] = socketTcp;
+                this.SocketImplementationConfig[ConnectionProtocol.WebSocket] = websocketType;
+                this.SocketImplementationConfig[ConnectionProtocol.WebSocketSecure] = websocketType;
             }
 
             #if NET_4_6 && (UNITY_EDITOR || !ENABLE_IL2CPP)
@@ -172,7 +157,7 @@ namespace ExitGames.Client.Photon.Chat
                     opParameters[ParameterCode.UserId] = authValues.UserId;
                 }
 
-                if (authValues != null && authValues.AuthType != CustomAuthenticationType.None)
+                if (authValues.AuthType != CustomAuthenticationType.None)
                 {
                     opParameters[ParameterCode.ClientAuthenticationType] = (byte) authValues.AuthType;
                     if (!string.IsNullOrEmpty(authValues.Token))
@@ -193,14 +178,7 @@ namespace ExitGames.Client.Photon.Chat
                 }
             }
 
-            SendOptions sendOptions = new SendOptions
-            {
-                Reliability = true,
-                Channel = 0,
-                Encrypt = this.IsEncryptionAvailable
-            };
-
-            return this.SendOperation(ChatOperationCode.Authenticate, opParameters, sendOptions);
+            return this.SendOperation(ChatOperationCode.Authenticate, opParameters, new SendOptions() { Reliability = true, Encrypt = this.IsEncryptionAvailable });
         }
     }
 
@@ -316,7 +294,10 @@ namespace ExitGames.Client.Photon.Chat
             string ampersand = string.IsNullOrEmpty(this.AuthGetParameters) ? string.Empty : "&";
             this.AuthGetParameters = string.Format("{0}{1}{2}={3}", this.AuthGetParameters, ampersand, System.Uri.EscapeDataString(key), System.Uri.EscapeDataString(value));
         }
-
+        /// <summary>
+        /// Transform this object into string.
+        /// </summary>
+        /// <returns>string representation of this object.</returns>
         public override string ToString()
         {
             return string.Format("AuthenticationValues UserId: {0}, GetParameters: {1} Token available: {2}", UserId, this.AuthGetParameters, Token != null);
@@ -361,7 +342,7 @@ namespace ExitGames.Client.Photon.Chat
         /// </summary>
         /// <remarks>
         /// Before you call any operations on the Cloud servers, the automated client workflow must complete its authorization.
-        /// In PUN, wait until State is: JoinedLobby (with AutoJoinLobby = true) or ConnectedToMaster (AutoJoinLobby = false)
+        /// In PUN, wait until State is: JoinedLobby or ConnectedToMaster
         /// </remarks>
         public const int OperationNotAllowedInCurrentState = -3;
 
@@ -426,6 +407,9 @@ namespace ExitGames.Client.Photon.Chat
         /// (32755) Custom Authentication of the user failed due to setup reasons (see Cloud Dashboard) or the provided user data (like username or token). Check error message for details.
         /// </summary>
         public const int CustomAuthenticationFailed = 0x7FFF - 12;
+
+        /// <summary>(32753) The Authentication ticket expired. Usually, this is refreshed behind the scenes. Connect (and authorize) again.</summary>
+        public const int AuthenticationTicketExpired = 0x7FF1;
     }
 
 }

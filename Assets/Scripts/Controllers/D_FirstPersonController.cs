@@ -468,7 +468,7 @@ public class D_FirstPersonController : AbstractBehavior
 		if(wasAirborne && inputState.playerIsGrounded)
 		{
 			//Play a networked landing sound
-			fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
+			// fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
 			//Reset our air movement flag
 			inputState.allowAirMovement = false;
         }
@@ -517,7 +517,7 @@ public class D_FirstPersonController : AbstractBehavior
 			runTimer = origRunTimer;
             crouchTimer = origCrouchTimer;
 			//Play a networked walking sound
-			fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
+			// fxManager.GetComponent<PhotonView>().RPC("FootstepFX", PhotonTargets.All, this.transform.position);
 		}
 	}
     /*

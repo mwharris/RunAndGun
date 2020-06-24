@@ -13,6 +13,7 @@ public class SelfDestruct : MonoBehaviour {
 		//Destroy this game object after the timer is up
 		if(selfDestructTime <= 0)
 		{
+			/*
 			//Check if we were instantiated on the network or not
 			PhotonView pv = this.transform.GetComponent<PhotonView>();
 			if(pv != null && pv.instantiationId != 0){
@@ -20,6 +21,7 @@ public class SelfDestruct : MonoBehaviour {
 			} else {
 				Destroy(this.gameObject);
 			}
+			*/
 		}
 	}
 }

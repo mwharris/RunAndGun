@@ -12,7 +12,7 @@ public class ShootController : AbstractBehavior
     private Camera playerCamera;
     private Animator reloadAnimator;
 	private float baseFOV;
-	private PhotonView pView;
+	// private PhotonView pView;
 	private float aimRecoilAmount = 0.05f;
 	private float hipRecoilAmount = 0.1f;
 
@@ -69,7 +69,7 @@ public class ShootController : AbstractBehavior
 		clipSizeText = txt.GetComponent<Text>();
 		clipSizeText.text = currWeaponData.MagazineCapacity.ToString();
 		//Get the attached PhotonView
-		pView = GetComponent<PhotonView>();
+		// pView = GetComponent<PhotonView>();
 		//Get the camera's original FOV range
 		baseFOV = playerCamera.fieldOfView;
 	}
@@ -200,7 +200,7 @@ public class ShootController : AbstractBehavior
 
         //Notify other controllers and players that we are shooting
         inputState.playerIsShooting = true;
-        rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.ID);
+        // rpcManager.GetComponent<PhotonView>().RPC("PlayerShot", PhotonTargets.AllBuffered, pView.owner.ID);
 
 		//Handle Recoil and Accuracy updates based on if we're aiming
 		if(isAimDown)
@@ -248,6 +248,7 @@ public class ShootController : AbstractBehavior
 				//Show the hit indicator
 				hitEnemy = true;
 				ShowHitIndicator();
+				/*
 				//Use an RPC to send damage over the network
 				PhotonView pv = h.GetComponent<PhotonView>();
 				if(pv != null)
@@ -262,6 +263,7 @@ public class ShootController : AbstractBehavior
                         info.headshot
                     );
 				}
+				*/
 			} 
 
 			//Show some bullet FX
@@ -317,7 +319,7 @@ public class ShootController : AbstractBehavior
 			StopAiming();
 		}
         //Notify other players that we are reloading (for animations)
-        rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.ID);
+        // rpcManager.GetComponent<PhotonView>().RPC("PlayerReloaded", PhotonTargets.AllBuffered, pView.owner.ID);
         //Start the reload timer
         reloadTimer = currWeaponData.ReloadTime;
 		//Reset the bullet count
@@ -333,7 +335,7 @@ public class ShootController : AbstractBehavior
 	void GunFX(Vector3 hitPoint, bool hitEnemy, bool hitRed)
 	{
 		//Grab the location of the gun and spawn the FX there
-		fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, pView.owner.ID, hitPoint, hitEnemy, hitRed);
+		// fxManager.GetComponent<PhotonView>().RPC("BulletFX", PhotonTargets.All, pView.owner.ID, hitPoint, hitEnemy, hitRed);
 	}
 
     //Raycast in a line and find the closest object hit
