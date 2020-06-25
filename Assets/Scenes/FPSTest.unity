@@ -9007,6 +9007,7 @@ GameObject:
   serializedVersion: 6
   m_Component:
   - component: {fileID: 387291008}
+  - component: {fileID: 387291009}
   - component: {fileID: 387291007}
   - component: {fileID: 387291010}
   - component: {fileID: 387291014}
@@ -9038,8 +9039,6 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   lobbyCamera: {fileID: 1060059712}
-  offlineMode: 0
-  respawnTimer: 0
   respawnAvailable: 0
   menu: {fileID: 1123895483}
   ammoUI: {fileID: 365222294}
@@ -9057,6 +9056,28 @@ Transform:
   m_Father: {fileID: 802695053}
   m_RootOrder: 1
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &387291009
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 387291006}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: aa584fbee541324448dd18d8409c7a41, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  ObservedComponentsFoldoutOpen: 1
+  Group: 0
+  prefixField: -1
+  Synchronization: 0
+  OwnershipTransfer: 0
+  ObservedComponents:
+  - {fileID: 0}
+  viewIdField: 2
+  InstantiationId: 0
+  isRuntimeInstantiated: 0
 --- !u!114 &387291010
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -11713,18 +11734,6 @@ Transform:
     type: 3}
   m_PrefabInstance: {fileID: 471127298}
   m_PrefabAsset: {fileID: 0}
---- !u!114 &471562943 stripped
-MonoBehaviour:
-  m_CorrespondingSourceObject: {fileID: 114224042911270550, guid: 17399df4f609bdf45a513f6bd08e37c5,
-    type: 3}
-  m_PrefabInstance: {fileID: 1199930195}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 0}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 1b3a41db2aefe914c8611e71aeb33959, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
 --- !u!1 &476230613 stripped
 GameObject:
   m_CorrespondingSourceObject: {fileID: 100000, guid: 281ebeb152e91f84780efb00fe1c1f7d,
@@ -30785,6 +30794,10 @@ PrefabInstance:
       propertyPath: m_Name
       value: RecoilPlayer
       objectReference: {fileID: 0}
+    - target: {fileID: 1886960915426844, guid: 17399df4f609bdf45a513f6bd08e37c5, type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     - target: {fileID: 4068350602258484, guid: 17399df4f609bdf45a513f6bd08e37c5, type: 3}
       propertyPath: m_LocalPosition.x
       value: -2.783
@@ -30834,11 +30847,6 @@ PrefabInstance:
       propertyPath: viewIdField
       value: 1
       objectReference: {fileID: 0}
-    - target: {fileID: 2300425400551439292, guid: 17399df4f609bdf45a513f6bd08e37c5,
-        type: 3}
-      propertyPath: ObservedComponents.Array.data[0]
-      value: 
-      objectReference: {fileID: 471562943}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 17399df4f609bdf45a513f6bd08e37c5, type: 3}
 --- !u!1 &1200084786

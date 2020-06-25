@@ -1,17 +1,16 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using Photon.Pun;
 using UnityEngine;
 
 public class RPCManager : MonoBehaviour {
 
-    private PlayerFinder playerFinder;
+    private PlayerFinder _playerFinder;
 
     private void Awake()
     {
-        playerFinder = new PlayerFinder();
+        _playerFinder = new PlayerFinder();
     }
 
-    //[PunRPC]
+    [PunRPC]
     void PlayerShot(int punId)
     {
         //Mark their animator has having shot
@@ -22,7 +21,7 @@ public class RPCManager : MonoBehaviour {
         }
     }
 
-    //[PunRPC]
+    [PunRPC]
     void PlayerReloaded(int punId)
     {
         //Mark their animator has having shot
@@ -34,7 +33,7 @@ public class RPCManager : MonoBehaviour {
     }
 
 
-    //[PunRPC]
+    [PunRPC]
     void PlayerWeaponChange(int punId, int itemId)
     {
         //Get the player we are controlling
@@ -49,7 +48,7 @@ public class RPCManager : MonoBehaviour {
 
     private GameObject GetMyPlayer(int punId)
     {
-        return playerFinder.FindOtherPlayerByPUNId(punId);
+        return _playerFinder.FindOtherPlayerByPUNId(punId);
     }
 
     private Animator GetPlayerBodyAnimatorByPunID(int punId)

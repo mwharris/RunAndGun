@@ -1,52 +1,52 @@
 ﻿using UnityEngine;
-using System.Collections;
 using Photon.Pun;
 
-public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
+public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 {
-    private InputState inputState;
-    private BodyController bodyControl;
+    private InputState _inputState;
+    private BodyController _bodyControl;
 
-    //Player postion and rotation need to be passed so preserve look rotations
-    private Vector3 realPos = Vector3.zero;
-    private Quaternion realRot = Quaternion.identity; //Maybe only the y-rotation is needed here?...
+    //Player position and rotation need to be passed so preserve look rotations
+    private Vector3 _realPos = Vector3.zero;
+    // TODO: Maybe only the y-rotation is needed here?...
+    private Quaternion _realRot = Quaternion.identity;
 
     //Camera position and rotations 
-    //POSITION MIGHT NOT BE NEEDED
-    private Vector3 camRealPos = Vector3.zero;
-    private Quaternion camRealRot = Quaternion.identity;
+    // TODO: POSITION MIGHT NOT BE NEEDED
+    private Vector3 _camRealPos = Vector3.zero;
+    private Quaternion _camRealRot = Quaternion.identity;
 
     //Animation variables
-    private bool isSprinting;
-    private bool isAiming;
-    private bool isAirborne;
-    private bool isCrouching;
-    private bool wallRunningLeft;
-    private bool wallRunningRight;
-    private float jumpSpeed;
+    private bool _isSprinting;
+    private bool _isAiming;
+    private bool _isAirborne;
+    private bool _isCrouching;
+    private bool _wallRunningLeft;
+    private bool _wallRunningRight;
+    private float _jumpSpeed;
 
-    //MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
-    private float forwardSpeed;
-    private float sideSpeed;
-    private bool crouchReset = false;
-    private bool jumpReset = false;
+    // TODO: MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
+    private float _forwardSpeed;
+    private float _sideSpeed;
+    private bool _crouchReset;
+    private bool _jumpReset;
 
     //Character Controller properties need to be passed due to Crouch animations
-    private CharacterController cc;
+    private CharacterController _characterController;
+    private CapsuleCollider _bodyCollider;
     private D_CrouchController _dCrouchController;
-    private D_PlayerJump jumpController;
-    private CapsuleCollider bodyCollider;
-    private FixWallRunningAnimation wrAnimFix;
+    private D_PlayerJump _jumpController;
+    private FixWallRunningAnimation _wrAnimFix;
 
     void Awake()
 	{
-        cc = GetComponent<CharacterController>();
-        bodyCollider = GetComponent<CapsuleCollider>();
-        bodyControl = GetComponent<BodyController>();
+        _characterController = GetComponent<CharacterController>();
+        _bodyCollider = GetComponent<CapsuleCollider>();
+        _bodyControl = GetComponent<BodyController>();
         _dCrouchController = GetComponent<D_CrouchController>();
-        jumpController = GetComponent<D_PlayerJump>();
-        inputState = GetComponent<InputState>();
-        wrAnimFix = GetComponent<FixWallRunningAnimation>();
+        _jumpController = GetComponent<D_PlayerJump>();
+        _inputState = GetComponent<InputState>();
+        _wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
 
 	/**
@@ -55,7 +55,7 @@ public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
 	void Update()
     {
         //Get the body components we need to update based on if we're Third or First person
-        PlayerBodyData playerBodyData = bodyControl.PlayerBodyData;
+        PlayerBodyData playerBodyData = _bodyControl.PlayerBodyData;
         Animator bodyAnimator = playerBodyData.GetBodyAnimator();
 
         //Only update a non-local player. Local players are updated by First Person Controller
@@ -65,32 +65,32 @@ public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
 
             //Smooth our movement from the current position to the received position
             //TODO: PREDICTION
-            transform.position = SafeLerp(transform.position, realPos, lerpSpeed);
-            transform.rotation = SafeLerp(transform.rotation, realRot, lerpSpeed);
+            transform.position = SafeLerp(transform.position, _realPos, lerpSpeed);
+            transform.rotation = SafeLerp(transform.rotation, _realRot, lerpSpeed);
 
             //Smooth our camera movement from the current position to the received position
-            playerBodyData.playerCamera.localPosition = SafeLerp(playerBodyData.playerCamera.localPosition, camRealPos, lerpSpeed);
-            playerBodyData.playerCamera.localRotation = SafeLerp(playerBodyData.playerCamera.localRotation, camRealRot, lerpSpeed);
+            playerBodyData.playerCamera.localPosition = SafeLerp(playerBodyData.playerCamera.localPosition, _camRealPos, lerpSpeed);
+            playerBodyData.playerCamera.localRotation = SafeLerp(playerBodyData.playerCamera.localRotation, _camRealRot, lerpSpeed);
 
             //Animation variables
-            bodyAnimator.SetBool("Sprinting", isSprinting);
-            bodyAnimator.SetBool("Aiming", isAiming);
-            bodyAnimator.SetBool("Jumping", isAirborne);
-            bodyAnimator.SetBool("Crouching", isCrouching);
-            bodyAnimator.SetBool("WallRunningRight", wallRunningRight);
-            bodyAnimator.SetBool("WallRunningLeft", wallRunningLeft);
-            bodyAnimator.SetFloat("ForwardSpeed", forwardSpeed);
-            bodyAnimator.SetFloat("SideSpeed", sideSpeed);
-            bodyAnimator.SetFloat("JumpSpeed", jumpSpeed);
+            bodyAnimator.SetBool("Sprinting", _isSprinting);
+            bodyAnimator.SetBool("Aiming", _isAiming);
+            bodyAnimator.SetBool("Jumping", _isAirborne);
+            bodyAnimator.SetBool("Crouching", _isCrouching);
+            bodyAnimator.SetBool("WallRunningRight", _wallRunningRight);
+            bodyAnimator.SetBool("WallRunningLeft", _wallRunningLeft);
+            bodyAnimator.SetFloat("ForwardSpeed", _forwardSpeed);
+            bodyAnimator.SetFloat("SideSpeed", _sideSpeed);
+            bodyAnimator.SetFloat("JumpSpeed", _jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, isCrouching, !isAirborne, crouchReset);
+            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, _isCrouching, !_isAirborne, _crouchReset);
 
             //Set Capsule Collider and Character Controller variables for jumping
-            jumpController.HandleHitboxes(gameObject, isAirborne, isCrouching, jumpReset);
+            _jumpController.HandleHitboxes(gameObject, _isAirborne, _isCrouching, _jumpReset);
 
             //Fix for wall-running animations being rotated incorrectly
-            wrAnimFix.RunFix(wallRunningLeft, wallRunningRight, Time.deltaTime);
+            _wrAnimFix.RunFix(_wallRunningLeft, _wallRunningRight, Time.deltaTime);
         }
 	}
 
@@ -104,7 +104,7 @@ public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
 	 */
 	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
     {
-        var playerBodyData = bodyControl.PlayerBodyData;
+        var playerBodyData = _bodyControl.PlayerBodyData;
 
         if (stream.IsWriting)
 		{
@@ -115,42 +115,42 @@ public class NetworkCharacter : Photon.Pun.MonoBehaviourPun, IPunObservable
             stream.SendNext(playerBodyData.playerCamera.localPosition);
             stream.SendNext(playerBodyData.playerCamera.localRotation);
             //Send animator variable information
-            stream.SendNext(inputState.playerIsSprinting);
-            stream.SendNext(inputState.playerIsAiming);
-            stream.SendNext(!inputState.playerIsGrounded);
-            stream.SendNext(inputState.playerIsCrouching);
-            stream.SendNext(inputState.playerIsWallRunningRight);
-            stream.SendNext(inputState.playerIsWallRunningLeft);
-            stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.forward));
-            stream.SendNext(Vector3.Dot(inputState.playerVelocity, transform.right));
-            stream.SendNext(inputState.playerVelocity.y);
+            stream.SendNext(_inputState.playerIsSprinting);
+            stream.SendNext(_inputState.playerIsAiming);
+            stream.SendNext(!_inputState.playerIsGrounded);
+            stream.SendNext(_inputState.playerIsCrouching);
+            stream.SendNext(_inputState.playerIsWallRunningRight);
+            stream.SendNext(_inputState.playerIsWallRunningLeft);
+            stream.SendNext(Vector3.Dot(_inputState.playerVelocity, transform.forward));
+            stream.SendNext(Vector3.Dot(_inputState.playerVelocity, transform.right));
+            stream.SendNext(_inputState.playerVelocity.y);
 		}
 		else
 		{
             //This is a networked player, receive their position an update the player accordingly
-            realPos = (Vector3)stream.ReceiveNext();
-            realRot = (Quaternion)stream.ReceiveNext();
+            _realPos = (Vector3)stream.ReceiveNext();
+            _realRot = (Quaternion)stream.ReceiveNext();
             //Camera position and rotation
-            camRealPos = (Vector3)stream.ReceiveNext();
-            camRealRot = (Quaternion)stream.ReceiveNext();
+            _camRealPos = (Vector3)stream.ReceiveNext();
+            _camRealRot = (Quaternion)stream.ReceiveNext();
             //Receive animator variable information
-            isSprinting = (bool)stream.ReceiveNext();
-            isAiming = (bool)stream.ReceiveNext();
+            _isSprinting = (bool)stream.ReceiveNext();
+            _isAiming = (bool)stream.ReceiveNext();
             //Jumping requires some extra logic for the reset flag
             bool nowAirborne = (bool)stream.ReceiveNext();
-            if (isAirborne && !nowAirborne) {
-                jumpReset = true;
+            if (_isAirborne && !nowAirborne) {
+                _jumpReset = true;
             }
-            isAirborne = nowAirborne;
+            _isAirborne = nowAirborne;
             //Crouching requires some extra logic for the reset flag
             bool nowCrouching = (bool)stream.ReceiveNext();
-            if (isCrouching && !nowCrouching) { crouchReset = true; }
-            isCrouching = nowCrouching;
-            wallRunningRight = (bool)stream.ReceiveNext();
-            wallRunningLeft = (bool)stream.ReceiveNext();
-            forwardSpeed = (float)stream.ReceiveNext();
-            sideSpeed = (float)stream.ReceiveNext();
-            jumpSpeed = (float)stream.ReceiveNext();
+            if (_isCrouching && !nowCrouching) { _crouchReset = true; }
+            _isCrouching = nowCrouching;
+            _wallRunningRight = (bool)stream.ReceiveNext();
+            _wallRunningLeft = (bool)stream.ReceiveNext();
+            _forwardSpeed = (float)stream.ReceiveNext();
+            _sideSpeed = (float)stream.ReceiveNext();
+            _jumpSpeed = (float)stream.ReceiveNext();
         }
 	}
 

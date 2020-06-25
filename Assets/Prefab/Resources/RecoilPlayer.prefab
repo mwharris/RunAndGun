@@ -6280,14 +6280,13 @@ GameObject:
   - component: {fileID: 114453981556085134}
   - component: {fileID: 5615678793227596208}
   - component: {fileID: 708090409}
-  - component: {fileID: 4671989003763958360}
   m_Layer: 10
   m_Name: RecoilPlayer
   m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
-  m_IsActive: 0
+  m_IsActive: 1
 --- !u!4 &4068350602258484
 Transform:
   m_ObjectHideFlags: 0
@@ -6367,7 +6366,7 @@ MonoBehaviour:
   Synchronization: 3
   OwnershipTransfer: 0
   ObservedComponents:
-  - {fileID: 4671989003763958360}
+  - {fileID: 114224042911270550}
   viewIdField: 0
   InstantiationId: 0
   isRuntimeInstantiated: 0
@@ -6775,21 +6774,6 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputs: 0b000000
   bodyTransform: {fileID: 4466883030057088}
---- !u!114 &4671989003763958360
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1886960915426844}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: 627855c7f81362d41938ffe0b1475957, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  m_SynchronizePosition: 1
-  m_SynchronizeRotation: 1
-  m_SynchronizeScale: 0
 --- !u!1 &1889116490370044
 GameObject:
   m_ObjectHideFlags: 0

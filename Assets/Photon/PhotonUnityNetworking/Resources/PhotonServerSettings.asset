@@ -36,6 +36,16 @@ MonoBehaviour:
   - DestroySpaceship
   - Fire
   - RespawnSpaceship
+  - BulletFX
+  - DeathFX
+  - DoubleJumpFX
+  - FootstepFX
+  - KillNotification
+  - LandingFX
+  - TakeDamage
+  - PlayerReloaded
+  - PlayerShot
+  - PlayerWeaponChange
   DisableAutoOpenWizard: 1
   ShowSettings: 0
   DevRegionSetOnce: 1

@@ -1,5 +1,6 @@
 ﻿using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class D_PlayerJump : AbstractBehavior
@@ -114,14 +115,12 @@ public class D_PlayerJump : AbstractBehavior
                 inputState.playerIsJumping = false;
             }
             
-            /*
             //Update our hitboxes
-            if (!GetComponent<PhotonView>().isMine)
+            if (!GetComponent<PhotonView>().IsMine)
             {
                 bool hitboxJumping = inputState.playerIsJumping || justJumped || !inputState.playerIsGrounded;
                 HandleHitboxes(gameObject, hitboxJumping, inputState.playerIsCrouching, jumpResetting);
             }
-            */
         }
     }
 
@@ -226,7 +225,7 @@ public class D_PlayerJump : AbstractBehavior
 		if(isDoubleJump)
 		{
 			//Play a networked double jump sound
-			// fxManager.GetComponent<PhotonView>().RPC("DoubleJumpFX", PhotonTargets.All, this.transform.position);
+			fxManager.GetComponent<PhotonView>().RPC("DoubleJumpFX", RpcTarget.All, transform.position);
 		}
 		else
 		{

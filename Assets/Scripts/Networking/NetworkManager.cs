@@ -1,5 +1,4 @@
 ﻿using Photon.Pun;
-using Photon.Realtime;
 using UnityEngine;
 using UnityEngine.UI;
 
@@ -7,32 +6,30 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 {
 
     public Camera lobbyCamera;
-    public bool offlineMode;
-    public float respawnTimer = 0f;
     public bool respawnAvailable;
     public GameObject menu;
     public GameObject ammoUI;
 
-    private GameObject respawnOverlay;
-    private string username;
-    private GameObject[] spawnPoints;
-    private const string glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
-    private GameManager gm;
-    private float baseFOV;
-    private InputManager inputManager;
-    private BodyController bodyController;
+    private GameObject _respawnOverlay;
+    private string _username;
+    private GameObject[] _spawnPoints;
+    private const string Glyphs = "abcdefghijklmnopqrstuvwxys1234567890";
+    private GameManager _gameManager;
+    private float _baseFov;
+    private InputManager _inputManager;
+    private BodyController _bodyController;
 
     // Use this for initialization
     void Start()
     {
         //Get the list of spawn points for the players
-        spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
+        _spawnPoints = GameObject.FindGameObjectsWithTag("SpawnPoint");
         //Get a reference to the respawn overlay
-        respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
+        _respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
         //Initialize a reference to the GameManager
-        gm = GameObject.FindObjectOfType<GameManager>();
+        _gameManager = GameObject.FindObjectOfType<GameManager>();
         //And the global input manager
-        inputManager = GameObject.FindGameObjectWithTag("Input Manager").GetComponent<InputManager>();
+        _inputManager = GameObject.FindGameObjectWithTag("Input Manager").GetComponent<InputManager>();
     }
 
     void Update()
@@ -54,7 +51,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     public void Connect()
     {
 	    //Set the player's username
-        PhotonNetwork.NickName = username;
+        PhotonNetwork.NickName = _username;
         //Mark this session as online
         PhotonNetwork.OfflineMode = false;
         //Unique string to identify our connection
@@ -63,12 +60,12 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //Hide the main menu
         menu.SetActive(false);
         //Mark our Game State as playing
-        gm.ChangeGameState(GameManager.GameState.playing);
+        _gameManager.ChangeGameState(GameManager.GameState.playing);
     }
 
     public void ConnectOffline() {
         //Set the player's username
-        PhotonNetwork.NickName = username;
+        PhotonNetwork.NickName = _username;
         //Mark this session as offline
         PhotonNetwork.OfflineMode = true;
         //Unique string to identify our connection
@@ -76,7 +73,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //Hide the main menu
         menu.SetActive(false);
         //Mark our Game State as playing
-        gm.ChangeGameState(GameManager.GameState.playing);
+        _gameManager.ChangeGameState(GameManager.GameState.playing);
     }
 
     public override void OnConnectedToMaster()
@@ -105,18 +102,18 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         //Make sure the respawn overlay is hidden
         HideRespawnOverlay();
         //Randomly choose a spawn point for the player
-        int spawnNum = Random.Range(0, spawnPoints.Length);
-        Vector3 spawnPos = spawnPoints[spawnNum].transform.position;
-        Quaternion spawnRot = spawnPoints[spawnNum].transform.rotation;
+        int spawnNum = Random.Range(0, _spawnPoints.Length);
+        Vector3 spawnPos = _spawnPoints[spawnNum].transform.position;
+        Quaternion spawnRot = _spawnPoints[spawnNum].transform.rotation;
         //Instantiate the player across all clients
         GameObject myPlayer = PhotonNetwork.Instantiate("RecoilPlayer", spawnPos, spawnRot, 0);
-        myPlayer.name = username;
+        myPlayer.name = _username;
         //Set the local player up to handle input
-        inputManager.inputState = myPlayer.GetComponent<InputState>();
+        _inputManager.inputState = myPlayer.GetComponent<InputState>();
         //Enable local player controls
         EnableLocalPlayer(myPlayer);
         //Cache our player for easy finding later
-        gm.MyPlayer = myPlayer;
+        _gameManager.MyPlayer = myPlayer;
         //Enable the displayed ammo counter
         ammoUI.SetActive(true);
         //Enable the camera reticle
@@ -181,7 +178,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 		else if(PhotonNetwork.OfflineMode)
 		{
 			PhotonNetwork.LeaveRoom();
-            Destroy(gm.MyPlayer);
+            Destroy(_gameManager.MyPlayer);
 		}
 		//Enable the lobby camera
 		lobbyCamera.gameObject.SetActive(true);
@@ -193,14 +190,14 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 		Cursor.lockState = CursorLockMode.None;
         Cursor.visible = true;
 		//Mark our Game State as none
-		gm.ChangeGameState(GameManager.GameState.none);
+		_gameManager.ChangeGameState(GameManager.GameState.none);
 	}
 
 	void HideRespawnOverlay()
 	{
 		//Show respawn overlay components
-		respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = false;
-		respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+		_respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = false;
+		_respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
 	}
 
 	public void ExitGame(){
@@ -227,16 +224,16 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 			//Generate a random string of 10 characters
 			for(int i = 0; i < 10; i++)
 			{
-				name += glyphs[Random.Range(0, glyphs.Length)]; 
+				name += Glyphs[Random.Range(0, Glyphs.Length)]; 
 			}
 		}
 		//Set the username
-		username = name;
+		_username = name;
 	}
 
 	private void EnableReticle()
 	{
-        BodyController bc = gm.MyPlayer.GetComponent<BodyController>();
+        BodyController bc = _gameManager.MyPlayer.GetComponent<BodyController>();
         WeaponData weaponData = bc.PlayerBodyData.weapon.GetComponent<WeaponData>();
 		//Loop through each image
 		Image[] images = weaponData.ReticleParent.GetComponentsInChildren<Image>();

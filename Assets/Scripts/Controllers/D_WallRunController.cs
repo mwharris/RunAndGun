@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using Photon.Pun;
 using UnityEngine;
 
 public class D_WallRunController : AbstractBehavior {
@@ -50,7 +51,7 @@ public class D_WallRunController : AbstractBehavior {
 			//Start the timer
 			wallRunTimer = wallRunMax;
             //Play a networked landing sound
-			// fxManager.GetComponent<PhotonView>().RPC("LandingFX", PhotonTargets.All, this.transform.position);
+			fxManager.GetComponent<PhotonView>().RPC("LandingFX", RpcTarget.All, transform.position);
 			//Reset the jump counter
 			jumpController.ResetJumps();
 			//Project our wall-run direction and store the hit point information

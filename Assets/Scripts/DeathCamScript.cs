@@ -1,6 +1,6 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using System.Collections;
+using Photon.Pun;
 
 public class DeathCamScript : MonoBehaviour {
 
@@ -10,9 +10,9 @@ public class DeathCamScript : MonoBehaviour {
 	public GameObject target;
 	public Camera lobbyCamera;
 
-	private GameObject deathOverlay;
-	private GameObject respawnOverlay;
-	private NetworkManager nm;
+	private GameObject _deathOverlay;
+	private GameObject _respawnOverlay;
+	private NetworkManager _networkManager;
 
 	void Start() 
 	{
@@ -21,13 +21,14 @@ public class DeathCamScript : MonoBehaviour {
 		//Initialize the death timer
 		lifeTimer = 3.0f;
 		//Get a reference to the death overlay
-		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
+		_deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
 		//Get a reference to the respawn overlay
-		respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
+		_respawnOverlay = GameObject.FindGameObjectWithTag("RespawnOverlay");
 		//Find the target we are trying to look at
 		target = FindTarget(targetId);
 		//Get a reference to our NetworkManager in order to manipulate variables
-		nm = GameObject.FindObjectOfType<NetworkManager>();
+		// TODO: Pass this in some other way
+		_networkManager = GameObject.FindObjectOfType<NetworkManager>();
 	}
 
 	void Update () 
@@ -55,7 +56,7 @@ public class DeathCamScript : MonoBehaviour {
 			//Make the Lobby Camera active
 			lobbyCamera.gameObject.SetActive(true);
 			//Set the respawn screen active
-			nm.respawnAvailable = true;
+			_networkManager.respawnAvailable = true;
 			//Destroy this camera
 			Destroy(this.gameObject);
 		}
@@ -64,15 +65,15 @@ public class DeathCamScript : MonoBehaviour {
 	void ShowRespawnOverlay()
 	{
 		//Show respawn overlay components
-		respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = true;
-		respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+		_respawnOverlay.transform.GetChild(0).GetComponent<Image>().enabled = true;
+		_respawnOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
 	}
 
 	void HideDeathOverlay()
 	{
 		//Hide death overlay components
-		deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
-		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
+		_deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = false;
+		_deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = false;
 	}
 
 	GameObject FindTarget(int targetId)
@@ -82,14 +83,12 @@ public class DeathCamScript : MonoBehaviour {
 		//Loop through each
 		foreach(GameObject player in players)
 		{
-			/*
-            PhotonView pView = player.GetComponent<PhotonView>();
+			PhotonView pView = player.GetComponent<PhotonView>();
             //Return this player object if it's the player we're looking for
-            if (pView != null && pView.owner.ID == targetId)
+            if (pView != null && pView.Owner.ActorNumber == targetId)
 			{
 				return player;
 			}
-			*/
 		}
 		//Player not found
 		return null;

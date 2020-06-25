@@ -1,8 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
 using UnityStandardAssets.ImageEffects;
-using System.Collections;
+using Photon.Pun;
 
 public class Health : MonoBehaviour {
 
@@ -22,7 +21,7 @@ public class Health : MonoBehaviour {
 	private float regenTimerMax = 5.0f;
 	private float regenRate = 4.0f;
 	private bool regenerating = false;
-	// private PhotonView pView;
+	private PhotonView pView;
 
 	private GameObject damagedArrow;
 	private RectTransform rectDamagedArrow;
@@ -45,7 +44,7 @@ public class Health : MonoBehaviour {
 		//Get a reference to the grayscale effect for when we get hit
 		gScale = this.transform.GetComponentInChildren<Grayscale>();
 		//Get the attached PhotonView
-		// pView = GetComponent<PhotonView>();
+		pView = GetComponent<PhotonView>();
 		//Get the arrow for when we are damaged
 		damagedArrow = GameObject.FindGameObjectWithTag("DamagedArrow");
 		rectDamagedArrow = damagedArrow.GetComponent<RectTransform>();
@@ -54,8 +53,8 @@ public class Health : MonoBehaviour {
 
 	void Update()
 	{
-		//if(this.transform.GetComponent<PhotonView>().isMine)
-		//{
+		if(this.transform.GetComponent<PhotonView>().IsMine)
+		{
 			//Decrement the Regen timer
 			regenTimer -= Time.deltaTime;
 			//If we aren't regenerating
@@ -73,7 +72,7 @@ public class Health : MonoBehaviour {
 			{
 				HideHitAngle(false);
 			}
-		//}
+		}
 	}
 
 	void RegenHealth()
@@ -92,29 +91,27 @@ public class Health : MonoBehaviour {
 		}	
 	}
 
-	// [PunRPC]
+	[PunRPC]
 	public void TakeDamage(float damage, string enemyPhotonName, int enemyPhotonID, Vector3 shooterPosition, bool headshot) 
 	{
         //Take the damage we received, doubled for headshot
         damage *= headshot ? 2 : 1;
         currentHitPoints -= damage;
-        /*
-		//If this is our local player
-		if(this.transform.GetComponent<PhotonView>().isMine)
+        //If this is our local player
+		if(GetComponent<PhotonView>().IsMine)
 		{
 			//Play a sound indicating we were shot
 			PlayHurtSound();
 			//Indicate where we were shot
 			ShowHitAngle(shooterPosition);
 		} 
-		*/
 		//Die if our HP is below 0
 		if(currentHitPoints <= 0)
 		{
 			Die(enemyPhotonName, enemyPhotonID, headshot);
 		}
 		//If we didn't die, we're regenerating, and we were shot
-		if(currentHitPoints > 0 && regenerating == true)
+		if(currentHitPoints > 0 && regenerating)
 		{
 			//Stop regenerating
 			regenerating = false;
@@ -173,19 +170,19 @@ public class Health : MonoBehaviour {
 	void Die(string enemyPhotonName, int enemyPhotonID, bool headshot)
 	{
 		//If we did not instantiate this object over the network
-		if (false){ //this.transform.GetComponent<PhotonView>().instantiationId == 0
+		if (GetComponent<PhotonView>().InstantiationId == 0){
 			//Simply destroy it in our scene
-			Destroy(this.gameObject);
+			Destroy(gameObject);
 		} 
 		//If we did instantiate it over the network
-		else if(true){ //this.transform.GetComponent<PhotonView>().isMine
+		else if(GetComponent<PhotonView>().IsMine){
 			//Respawn this player if it is ours
 			if(gameObject.tag == "Player"){
 				//Reset the reticles before death
-				this.GetComponent<AccuracyController>().ResetReticles();
+				GetComponent<AccuracyController>().ResetReticles();
 				//Play effects on death
 				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
-				// fxManager.GetComponent<PhotonView>().RPC("DeathFX", PhotonTargets.All, deathEffectPos);
+				fxManager.GetComponent<PhotonView>().RPC("DeathFX", RpcTarget.All, deathEffectPos);
 				//Gray out the screen and display killer
 				ShowDeathOverlay(enemyPhotonName);
 				//Handle spawning a Death Camera
@@ -194,9 +191,9 @@ public class Health : MonoBehaviour {
 				HideHitAngle(true);
 			}
 			//Send out a notification this player was killed
-			// fxManager.GetComponent<PhotonView>().RPC("KillNotification", PhotonTargets.All, pView.owner.NickName, enemyPhotonName, headshot);
+			fxManager.GetComponent<PhotonView>().RPC("KillNotification", RpcTarget.All, pView.Owner.NickName, enemyPhotonName, headshot);
 			//Delete it over the network
-			// PhotonNetwork.Destroy(this.gameObject);
+			PhotonNetwork.Destroy(gameObject);
 		}
 	}
 

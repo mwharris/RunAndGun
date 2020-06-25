@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
-using UnityEngine.UI;
-using System.Collections;
+using Photon.Pun;
 using TMPro;
 
 public class FXManager : MonoBehaviour {
@@ -20,55 +19,54 @@ public class FXManager : MonoBehaviour {
 
     [SerializeField] private GameObject killOverlay;
     [SerializeField] private GameObject headshotOverlay;
-    private GameObject displayedOverlay;
-    private float overlayTimer = 0.0f;
+    private GameObject _displayedOverlay;
+    private float _overlayTimer = 0.0f;
     
-    private GameManager gameManager;
-    private PlayerFinder playerFinder;
+    private GameManager _gameManager;
+    private PlayerFinder _playerFinder;
 
     private void Awake()
     {
-        gameManager = FindObjectOfType<GameManager>();
-        playerFinder = new PlayerFinder();
+        _gameManager = FindObjectOfType<GameManager>();
+        _playerFinder = new PlayerFinder();
     }
 
     void Update()
 	{
 		//Decrement the timer if we are showing the killer overlay
-		if(overlayTimer > 0)
+		if(_overlayTimer > 0)
 		{
-            overlayTimer -= Time.deltaTime;
+            _overlayTimer -= Time.deltaTime;
 		}
-		else if (displayedOverlay != null)
+		else if (_displayedOverlay != null)
         {
             //Hide the contents of the overlay components
-            Transform label = displayedOverlay.transform.GetChild(0);
+            Transform label = _displayedOverlay.transform.GetChild(0);
             label.gameObject.SetActive(false);
-            Transform playerName = displayedOverlay.transform.GetChild(1);
+            Transform playerName = _displayedOverlay.transform.GetChild(1);
             playerName.gameObject.SetActive(false);
 		}
 	}
 
-    /*
 	[PunRPC]
 	void KillNotification(string deadPlayerName, string killerName, bool headshot)
 	{
         //Find our player
-        GameObject ourPlayer = gameManager.MyPlayer;
+        GameObject ourPlayer = _gameManager.MyPlayer;
         PhotonView pView = ourPlayer == null ? null : ourPlayer.GetComponent<PhotonView>();
         //Only show notification for ourselves
-        if (pView != null && pView.owner != null && pView.owner.NickName == killerName) 
+        if (pView != null && pView.Owner != null && pView.Owner.NickName == killerName) 
 		{
             //Determine which overlay to display based on headshot or not
-            displayedOverlay = headshot ? headshotOverlay : killOverlay;
+            _displayedOverlay = headshot ? headshotOverlay : killOverlay;
             //Show the label of the desired overlay
-            Transform labelTransform = displayedOverlay.transform.GetChild(0);
+            Transform labelTransform = _displayedOverlay.transform.GetChild(0);
             if (labelTransform != null)
             {
                 labelTransform.gameObject.SetActive(true);
             }
             //Set the name of the person we killed and show the text
-            Transform playerNameTransform = displayedOverlay.transform.GetChild(1);
+            Transform playerNameTransform = _displayedOverlay.transform.GetChild(1);
             if (playerNameTransform != null)
             {
                 playerNameTransform.gameObject.SetActive(true);
@@ -76,17 +74,15 @@ public class FXManager : MonoBehaviour {
                 tmp.text = deadPlayerName;
             }
             //Put the overlay on a timer
-            overlayTimer = 3.0f;
+            _overlayTimer = 3.0f;
 		}
 	}
-	*/
 
-    /*
 	[PunRPC]
 	void BulletFX(int photonID, Vector3 endPos, bool hitEnemy, bool hitRed)
 	{
         //Find the player who shot
-        GameObject player = playerFinder.FindPlayerByPUNId(photonID);
+        GameObject player = _playerFinder.FindPlayerByPUNId(photonID);
         if (player != null)
         {
             BodyController bc = player.GetComponent<BodyController>();
@@ -128,9 +124,7 @@ public class FXManager : MonoBehaviour {
             }
         }
 	}
-	*/
 
-    /*
 	[PunRPC]
 	void DeathFX(Vector3 pos)
 	{
@@ -142,7 +136,6 @@ public class FXManager : MonoBehaviour {
 			PlayDeathSound(pos);
 		}
 	}
-	*/
 
 	void PlayDeathSound(Vector3 pos)
 	{
@@ -160,7 +153,6 @@ public class FXManager : MonoBehaviour {
 		deathSounds[0] = clipToPlay;
 	}
 
-	/*
 	[PunRPC]
 	void FootstepFX(Vector3 pos)
 	{
@@ -178,9 +170,7 @@ public class FXManager : MonoBehaviour {
 			footstepSounds[0] = clipToPlay;
 		}
 	}
-	*/
 
-	/*
 	[PunRPC]
 	void LandingFX(Vector3 pos)
 	{
@@ -189,9 +179,7 @@ public class FXManager : MonoBehaviour {
 			AudioSource.PlayClipAtPoint(landingSound, pos);
 		}
 	}
-	*/
 
-	/*
 	[PunRPC]
 	void DoubleJumpFX(Vector3 pos)
 	{
@@ -200,5 +188,4 @@ public class FXManager : MonoBehaviour {
 			AudioSource.PlayClipAtPoint(doubleJumpSound, pos);
 		}
 	}
-	*/
 }

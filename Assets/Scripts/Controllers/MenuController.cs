@@ -10,31 +10,31 @@ public class MenuController : AbstractBehavior
 	public bool InvertY { get; set; } = false;
 	public bool AimAssist { get; set; } = true;
 
-    private bool paused = false;
-	private bool options = false;
+    private bool _paused;
+	private bool _options;
     private bool pickupAvailable = false;
-	private GameObject eventSystem;
-	private NetworkManager nm;
-	private GameManager gm;
+	private GameObject _eventSystem;
+	private NetworkManager _networkManager;
+	private GameManager _gameManager;
 
-	private GameObject pauseMenu;
-	private GameObject optionsMenu;
-	private Transform pausePanel;
-	private Transform optionsPanel;
+	private GameObject _pauseMenu;
+	private GameObject _optionsMenu;
+	private Transform _pausePanel;
+	private Transform _optionsPanel;
 
 	void Start()
 	{
 		//Find the pause and options menu GameObjects and Panels
-		pauseMenu = GameObject.FindGameObjectWithTag("PauseMenu");
-		pausePanel = pauseMenu.transform.GetChild(0);
-		optionsMenu = GameObject.FindGameObjectWithTag("OptionsMenu");
-		optionsPanel = optionsMenu.transform.GetChild(0);
+		_pauseMenu = GameObject.FindGameObjectWithTag("PauseMenu");
+		_pausePanel = _pauseMenu.transform.GetChild(0);
+		_optionsMenu = GameObject.FindGameObjectWithTag("OptionsMenu");
+		_optionsPanel = _optionsMenu.transform.GetChild(0);
         //Initialize a reference to the NetworkManager
-        nm = GameObject.FindObjectOfType<NetworkManager>();
+        _networkManager = FindObjectOfType<NetworkManager>();
 		//Initialize a reference to the GameManager
-		gm = GameObject.FindObjectOfType<GameManager>();
+		_gameManager = FindObjectOfType<GameManager>();
 		//Find the event system
-		eventSystem = GameObject.Find("EventSystem");
+		_eventSystem = GameObject.Find("EventSystem");
     }
 
 	void Update () 
@@ -43,10 +43,10 @@ public class MenuController : AbstractBehavior
 		bool isPauseDown = inputState.GetButtonPressed(inputs[0]) && inputState.GetButtonHoldTime(inputs[0]) == 0;
 		bool isCancelDown = inputState.GetButtonPressed(inputs[1]) && inputState.GetButtonHoldTime(inputs[1]) == 0;
 		//Game state variables
-		bool isGamePlaying = gm.GetGameState() == GameManager.GameState.playing;
-		bool isGamePaused = gm.GetGameState() == GameManager.GameState.paused;
+		bool isGamePlaying = _gameManager.GetGameState() == GameManager.GameState.playing;
+		bool isGamePaused = _gameManager.GetGameState() == GameManager.GameState.paused;
 		//Toggle the pause menu when pause button is pressed while playing
-		if((isGamePlaying || isGamePaused) && (isPauseDown || isCancelDown) && !options)
+		if((isGamePlaying || isGamePaused) && (isPauseDown || isCancelDown) && !_options)
 		{
 			TogglePauseMenu(false);
 		}
@@ -54,7 +54,7 @@ public class MenuController : AbstractBehavior
 		else if (isGamePaused && isCancelDown) 
 		{
 			//Back out of Options menu
-			if (options) 
+			if (_options) 
 			{
 				ToggleOptionsMenu();				
 			}
@@ -64,34 +64,34 @@ public class MenuController : AbstractBehavior
 				TogglePauseMenu(false);
 			}
 		}
+	    // TODO: Why is this here?...
         else if (pickupAvailable)
         {
-
         }
 	}
 
 	public void TogglePauseMenu(bool mainMenu)
 	{
 		//Flip the flag
-		paused = !paused;
+		_paused = !_paused;
 		//Deselect any buttons that may have carried over
-		eventSystem.GetComponent<UnityEngine.EventSystems.EventSystem>().SetSelectedGameObject(null);
+		_eventSystem.GetComponent<UnityEngine.EventSystems.EventSystem>().SetSelectedGameObject(null);
 		//Show/Hide the Paused menu accordingly and update Game State
-		if(paused)
+		if(_paused)
 		{
 			ShowPauseMenu();
-			gm.ChangeGameState(GameManager.GameState.paused);
+			_gameManager.ChangeGameState(GameManager.GameState.paused);
 		}
 		else 
 		{
 			HidePauseMenu();
-			gm.ChangeGameState(GameManager.GameState.playing);
+			_gameManager.ChangeGameState(GameManager.GameState.playing);
 		}
 		//If we are navigating to the Main Menu
 		if(mainMenu)
 		{
 			//Call the NetworkManager to disconnect from the server
-			// nm.Disconnect();
+			_networkManager.Disconnect();
             //Unlock the mouse cursor
             UnlockMouseCursor();
         }
@@ -102,9 +102,9 @@ public class MenuController : AbstractBehavior
         //Unlock the mouse cursor
         UnlockMouseCursor();
         //Simply set the pause panel to active
-        pausePanel.gameObject.SetActive(true);
+        _pausePanel.gameObject.SetActive(true);
 		//Default select the main menu button
-		Transform menuButton = pausePanel.GetChild(1);
+		Transform menuButton = _pausePanel.GetChild(1);
 		menuButton.GetComponent<Selectable>().Select();
 	}
 
@@ -113,17 +113,17 @@ public class MenuController : AbstractBehavior
         //Lock the mouse cursor
         LockMouseCursor();
         //Simply set the pause panel to inactive
-        pausePanel.gameObject.SetActive(false);
+        _pausePanel.gameObject.SetActive(false);
 	}
 
 	public void ToggleOptionsMenu()
 	{
 		//Flip the flag
-		options = !options;
+		_options = !_options;
 		//Deselect any buttons that may have carried over
-		eventSystem.GetComponent<UnityEngine.EventSystems.EventSystem>().SetSelectedGameObject(null);
+		_eventSystem.GetComponent<UnityEngine.EventSystems.EventSystem>().SetSelectedGameObject(null);
 		//Show/Hide the Paused menu accordingly and update Game State
-		if(options)
+		if(_options)
 		{
 			ShowOptionsMenu();
 		}
@@ -140,9 +140,9 @@ public class MenuController : AbstractBehavior
         //Unlock the mouse cursor
         UnlockMouseCursor();
         //Simply set the Options menu to active
-        optionsPanel.gameObject.SetActive(true);
+        _optionsPanel.gameObject.SetActive(true);
 		//Default select the Close button
-		Transform closeButton = optionsPanel.transform.GetChild(4);
+		Transform closeButton = _optionsPanel.transform.GetChild(4);
 		closeButton.GetComponent<Selectable>().Select();
 	}
 
@@ -153,7 +153,7 @@ public class MenuController : AbstractBehavior
         //Unlock the mouse cursor
         UnlockMouseCursor();
         //Simply set the Options menu to active
-        optionsPanel.gameObject.SetActive(false);
+        _optionsPanel.gameObject.SetActive(false);
 	}
 
 	//Update the mouse sensitivity in the First Person Controller

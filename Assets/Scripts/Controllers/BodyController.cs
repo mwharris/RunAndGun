@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class BodyController : MonoBehaviour // Photon.MonoBehaviour
+public class BodyController : Photon.Pun.MonoBehaviourPun
 {
     private PlayerBodyData playerBodyData;
     public PlayerBodyData PlayerBodyData
@@ -26,8 +26,7 @@ public class BodyController : MonoBehaviour // Photon.MonoBehaviour
     void Awake()
     {
         playerBodyData = firstPersonArms;
-        /*
-        if (!photonView.isMine)
+        if (!photonView.IsMine)
         {
             playerBodyData = thirdPersonBody;
         }
@@ -35,7 +34,6 @@ public class BodyController : MonoBehaviour // Photon.MonoBehaviour
         {
             playerBodyData = firstPersonArms;
         }
-        */
     }
 
     public void ForceThird()
