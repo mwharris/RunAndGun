@@ -13,7 +13,7 @@ MonoBehaviour:
   m_Name: PhotonServerSettings
   m_EditorClassIdentifier: 
   AppSettings:
-    AppIdRealtime: 8e354203-b4b3-470a-9d54-e3d30fcfe718
+    AppIdRealtime: 
     AppIdChat: 
     AppIdVoice: 
     AppVersion: 
@@ -25,27 +25,27 @@ MonoBehaviour:
     AuthMode: 0
     EnableLobbyStatistics: 0
     NetworkLogging: 1
-  DevRegion: us
-  PunLogging: 2
+  DevRegion: 
+  PunLogging: 0
   EnableSupportLogger: 0
   RunInBackground: 1
   StartInOfflineMode: 0
   RpcList:
+  - BulletFX
   - ClickRpc
+  - DeathFX
   - DestroyRpc
   - DestroySpaceship
-  - Fire
-  - RespawnSpaceship
-  - BulletFX
-  - DeathFX
   - DoubleJumpFX
+  - Fire
   - FootstepFX
   - KillNotification
   - LandingFX
-  - TakeDamage
   - PlayerReloaded
   - PlayerShot
   - PlayerWeaponChange
+  - RespawnSpaceship
+  - TakeDamage
   DisableAutoOpenWizard: 1
   ShowSettings: 0
-  DevRegionSetOnce: 1
+  DevRegionSetOnce: 0
