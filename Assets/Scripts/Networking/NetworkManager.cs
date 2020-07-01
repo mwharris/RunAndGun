@@ -129,12 +129,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
     {
         HandlePlayerBody(myPlayer);
         //Enable various scripts that only run on the local player
-        //myPlayer.GetComponent<FirstPersonController>().enabled = true;
+        myPlayer.GetComponent<PlayerMovementStateMachine>().enabled = true;
+        myPlayer.GetComponent<PlayerLookController>().enabled = true;
+        myPlayer.GetComponent<CameraController>().enabled = true;
         myPlayer.GetComponent<ShootController>().enabled = true;
         myPlayer.GetComponent<AccuracyController>().enabled = true;
-        //myPlayer.GetComponent<WallRunController>().enabled = true;
-        //myPlayer.GetComponent<SprintController>().enabled = true;
-        //myPlayer.GetComponent<PlayerJump>().enabled = true;
         myPlayer.GetComponent<RecoilController>().enabled = true;
         myPlayer.GetComponent<RecoilController>().recoil = 0;
         myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
@@ -210,11 +209,11 @@ public class NetworkManager : MonoBehaviourPunCallbacks
 
 	void OnGUI()
 	{
-		// if (gm.GetGameState() != GameManager.GameState.playing)
-		// {
-		//DEBUG - Display the status of our connection on the screen
-		GUILayout.Label(PhotonNetwork.NetworkClientState.ToString());
-		// }
+		if (_gameManager.GetGameState() != GameManager.GameState.playing)
+		{
+			//DEBUG - Display the status of our connection on the screen
+			GUILayout.Label(PhotonNetwork.NetworkClientState.ToString());
+		}
 	}
 
 	public void SetUsername(string name)

@@ -21,8 +21,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     public bool PlayerIsGrounded => _characterController.isGrounded;
     public Vector3 PlayerVelocity => _stateParams.Velocity;
-    public bool WallRunningLeft => _stateParams.WallRunningLeft;
-    public bool WallRunningRight => _stateParams.WallRunningRight;
+    public bool PlayerIsWallRunningLeft => _stateParams.WallRunningLeft;
+    public bool PlayerIsWallRunningRight => _stateParams.WallRunningRight;
     public bool PlayerIsCrouching => _stateMachine.CurrentState.GetType() == typeof(Crouching);
     public bool PlayerIsSliding => _stateMachine.CurrentState.GetType() == typeof(Sliding);
     public bool PlayerIsJumping => _stateMachine.CurrentState.GetType() == typeof(Jumping);

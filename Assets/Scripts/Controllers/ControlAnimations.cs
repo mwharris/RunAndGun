@@ -58,8 +58,8 @@ public class ControlAnimations : AbstractBehavior
         anim.SetBool("JumpStart", JumpStart);
         anim.SetFloat("ForwardSpeed", fwdSpeed);
         anim.SetFloat("SideSpeed", sideSpeed);
-        anim.SetBool("WallRunningLeft", _playerMovementStateMachine.WallRunningLeft);
-        anim.SetBool("WallRunningRight", _playerMovementStateMachine.WallRunningRight);
+        anim.SetBool("WallRunningLeft", _playerMovementStateMachine.PlayerIsWallRunningLeft);
+        anim.SetBool("WallRunningRight", _playerMovementStateMachine.PlayerIsWallRunningRight);
         
         // TODO: REMOVE INPUT STATE
         anim.SetBool("Aiming", inputState.playerIsAiming);

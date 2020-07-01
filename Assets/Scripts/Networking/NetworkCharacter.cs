@@ -5,6 +5,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 {
     private InputState _inputState;
     private BodyController _bodyControl;
+    private PlayerMovementStateMachine _playerMovementStateMachine;
 
     //Player position and rotation need to be passed so preserve look rotations
     private Vector3 _realPos = Vector3.zero;
@@ -35,16 +36,17 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     private CharacterController _characterController;
     private CapsuleCollider _bodyCollider;
     private D_CrouchController _dCrouchController;
-    private D_PlayerJump _jumpController;
+    private D_PlayerJump _djumpController;
     private FixWallRunningAnimation _wrAnimFix;
 
     void Awake()
-	{
+    {
+	    _playerMovementStateMachine = GetComponent<PlayerMovementStateMachine>();
         _characterController = GetComponent<CharacterController>();
         _bodyCollider = GetComponent<CapsuleCollider>();
         _bodyControl = GetComponent<BodyController>();
         _dCrouchController = GetComponent<D_CrouchController>();
-        _jumpController = GetComponent<D_PlayerJump>();
+        _djumpController = GetComponent<D_PlayerJump>();
         _inputState = GetComponent<InputState>();
         _wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
@@ -54,24 +56,23 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 	 */
 	void Update()
     {
-        //Get the body components we need to update based on if we're Third or First person
-        PlayerBodyData playerBodyData = _bodyControl.PlayerBodyData;
-        Animator bodyAnimator = playerBodyData.GetBodyAnimator();
-
         //Only update a non-local player. Local players are updated by First Person Controller
         if (!photonView.IsMine)
         {
+	        PlayerBodyData playerBodyData = photonView.gameObject.GetComponent<BodyController>().ThirdPersonBody;
+	        Animator bodyAnimator = playerBodyData.GetBodyAnimator();
+	        
             float lerpSpeed = Time.deltaTime * 8f;
 
-            //Smooth our movement from the current position to the received position
             //TODO: PREDICTION
+            //Smooth our movement from the current position to the received position
             transform.position = SafeLerp(transform.position, _realPos, lerpSpeed);
             transform.rotation = SafeLerp(transform.rotation, _realRot, lerpSpeed);
 
             //Smooth our camera movement from the current position to the received position
             playerBodyData.playerCamera.localPosition = SafeLerp(playerBodyData.playerCamera.localPosition, _camRealPos, lerpSpeed);
             playerBodyData.playerCamera.localRotation = SafeLerp(playerBodyData.playerCamera.localRotation, _camRealRot, lerpSpeed);
-
+            
             //Animation variables
             bodyAnimator.SetBool("Sprinting", _isSprinting);
             bodyAnimator.SetBool("Aiming", _isAiming);
@@ -84,12 +85,22 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             bodyAnimator.SetFloat("JumpSpeed", _jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject, _isCrouching, !_isAirborne, _crouchReset);
+            //TODO: Update This
+            if (_dCrouchController != null)
+            {
+	            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject,
+		            _isCrouching, !_isAirborne, _crouchReset);
+            }
 
             //Set Capsule Collider and Character Controller variables for jumping
-            _jumpController.HandleHitboxes(gameObject, _isAirborne, _isCrouching, _jumpReset);
+            //TODO: Update This
+            if (_djumpController != null)
+            {
+	            _djumpController.HandleHitboxes(gameObject, _isAirborne, _isCrouching, _jumpReset);
+            }
 
             //Fix for wall-running animations being rotated incorrectly
+            //TODO: Update This
             _wrAnimFix.RunFix(_wallRunningLeft, _wallRunningRight, Time.deltaTime);
         }
 	}
@@ -115,19 +126,19 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             stream.SendNext(playerBodyData.playerCamera.localPosition);
             stream.SendNext(playerBodyData.playerCamera.localRotation);
             //Send animator variable information
-            stream.SendNext(_inputState.playerIsSprinting);
-            stream.SendNext(_inputState.playerIsAiming);
-            stream.SendNext(!_inputState.playerIsGrounded);
-            stream.SendNext(_inputState.playerIsCrouching);
-            stream.SendNext(_inputState.playerIsWallRunningRight);
-            stream.SendNext(_inputState.playerIsWallRunningLeft);
-            stream.SendNext(Vector3.Dot(_inputState.playerVelocity, transform.forward));
-            stream.SendNext(Vector3.Dot(_inputState.playerVelocity, transform.right));
-            stream.SendNext(_inputState.playerVelocity.y);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsSprinting);
+            stream.SendNext(_inputState.playerIsAiming);	// TODO: Remove input state
+            stream.SendNext(!_playerMovementStateMachine.PlayerIsGrounded);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsCrouching);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningRight);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningLeft);
+            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.forward));
+            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.right));
+            stream.SendNext(_playerMovementStateMachine.PlayerVelocity.y);
 		}
-		else
+		if (stream.IsReading) 
 		{
-            //This is a networked player, receive their position an update the player accordingly
+			//This is a networked player, receive their position an update the player accordingly
             _realPos = (Vector3)stream.ReceiveNext();
             _realRot = (Quaternion)stream.ReceiveNext();
             //Camera position and rotation
