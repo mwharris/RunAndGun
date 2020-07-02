@@ -32,8 +32,8 @@ public class D_CrouchController : AbstractBehavior
 
 	private float standardCamHeight;
 	private float standardCCHeight;
-    private float standardCCRadius;
     private Vector3 standardCCCenter;
+    private float standardCCRadius;
     private float standardBodyZ;
     private float standardHeadZ;
     private float standardHeadY;

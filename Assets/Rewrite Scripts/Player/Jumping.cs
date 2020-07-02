@@ -6,7 +6,7 @@ public class Jumping : IState
     private readonly Player _player;
     private readonly CharacterController _characterController;
     private CameraController _cameraController;
-    private ControlAnimations _animationController;
+    private AnimationController _animationController;
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
 
@@ -19,7 +19,7 @@ public class Jumping : IState
     private bool JumpDown => PlayerInput.Instance.SpaceDown;
     private bool JumpHeld => PlayerInput.Instance.SpaceHeld;
     
-    public Jumping(Player player, CameraController cameraController, ControlAnimations animationController)
+    public Jumping(Player player, CameraController cameraController, AnimationController animationController)
     {
         _player = player;
         _characterController = player.GetComponent<CharacterController>();

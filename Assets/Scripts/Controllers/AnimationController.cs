@@ -1,8 +1,6 @@
 ﻿using UnityEngine;
-using System.Collections;
-using System.Collections.Generic;
 
-public class ControlAnimations : AbstractBehavior
+public class AnimationController : AbstractBehavior
 {
     public AnimationPosInfo crouchPosition;
     public AnimationPosInfo dhPosition;

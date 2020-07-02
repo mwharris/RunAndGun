@@ -9,7 +9,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private WallRunHelper _wallRunHelper;
     private CharacterController _characterController;
     private CameraController _cameraController;
-    private ControlAnimations _animationController;
+    private AnimationController _animationController;
     private PlayerLookVars _playerLookVars;
     private GameManager _gameManager;
     
@@ -37,7 +37,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Player player = FindObjectOfType<Player>();
         _characterController = GetComponent<CharacterController>();
         _cameraController = GetComponent<CameraController>();
-        _animationController = GetComponent<ControlAnimations>();
+        _animationController = GetComponent<AnimationController>();
         _stateHelper = new PlayerMovementStateMachineHelper();
         _stateMachine = new BaseStateMachine();
         _playerLookVars = new PlayerLookVars();

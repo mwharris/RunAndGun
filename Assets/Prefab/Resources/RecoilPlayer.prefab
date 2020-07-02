@@ -6341,6 +6341,7 @@ GameObject:
   - component: {fileID: 65463297073340964}
   - component: {fileID: 2300425400551439292}
   - component: {fileID: 114224042911270550}
+  - component: {fileID: 2992812109324107539}
   - component: {fileID: 114652793396087608}
   - component: {fileID: 114213512381532568}
   - component: {fileID: 114251353295462996}
@@ -6460,6 +6461,25 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 1b3a41db2aefe914c8611e71aeb33959, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+--- !u!114 &2992812109324107539
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886960915426844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: d78e79d45e9b40b41957c6a3fd48e9dd, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  crouchCamHeight: 0
+  crouchCcHeight: 0
+  crouchCcRadius: 0
+  crouchCcCenter: {x: 0, y: 0, z: 0}
+  crouchBodyZ: 0
+  crouchHeadZ: 0
+  crouchHeadY: 0
 --- !u!114 &114652793396087608
 MonoBehaviour:
   m_ObjectHideFlags: 0

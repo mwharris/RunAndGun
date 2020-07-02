@@ -140,7 +140,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         myPlayer.GetComponent<FixWallRunningAnimation>().enabled = false;
         myPlayer.GetComponentInChildren<Camera>().enabled = true;
         myPlayer.GetComponentInChildren<AudioListener>().enabled = true;
-        myPlayer.GetComponentInChildren<ControlAnimations>().enabled = true;
+        myPlayer.GetComponentInChildren<AnimationController>().enabled = true;
         myPlayer.GetComponentInChildren<WeaponPickup>().enabled = true;
         //myPlayer.GetComponentInChildren<IKHandler>().enabled = true;
         myPlayer.GetComponentInChildren<Health>().lobbyCam = lobbyCamera;
