@@ -6473,13 +6473,13 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: d78e79d45e9b40b41957c6a3fd48e9dd, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  crouchCamHeight: 0
-  crouchCcHeight: 0
-  crouchCcRadius: 0
-  crouchCcCenter: {x: 0, y: 0, z: 0}
-  crouchBodyZ: 0
-  crouchHeadZ: 0
-  crouchHeadY: 0
+  crouchCamHeight: 1.5
+  crouchCcHeight: 1.12
+  crouchCcRadius: 0.35
+  crouchCcCenter: {x: 0, y: 0.7, z: 0}
+  crouchBodyZ: -0.3
+  crouchHeadZ: 0.2
+  crouchHeadY: 1.5
 --- !u!114 &114652793396087608
 MonoBehaviour:
   m_ObjectHideFlags: 0
