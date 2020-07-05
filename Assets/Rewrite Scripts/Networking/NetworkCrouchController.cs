@@ -1,5 +1,4 @@
 ﻿using UnityEngine;
-using UnityEngine.Serialization;
 
 public class NetworkCrouchController : MonoBehaviour
 {
@@ -14,7 +13,9 @@ public class NetworkCrouchController : MonoBehaviour
     private CharacterController _characterController;
     private CapsuleCollider _shotCollider;
     private BoxCollider _headCollider;
+    private BodyController _bodyController;
     private Transform _thirdPersonBody;
+    private Transform _playerCamera;
 
     private float _standardCamHeight;
     private float _standardCcHeight;
@@ -23,50 +24,41 @@ public class NetworkCrouchController : MonoBehaviour
     private float _standardBodyZ;
     private float _standardHeadZ;
     private float _standardHeadY;
-    
-    /**
-	 * Calculate some variables needed for crouching logic
-	 */
-    public void CalculateCrouchVars(GameObject player, GameObject playerCamera, float movementSpeed)
+
+    private void Awake()
     {
-        //Cache references to our two sphere colliders
-        _characterController = player.GetComponent<CharacterController>();
-        _shotCollider = player.GetComponent<CapsuleCollider>();
-        _headCollider = player.GetComponent<BoxCollider>();
-        //Store the standard camera heights and depths
-        _standardCamHeight = playerCamera.transform.localPosition.y;
-        //Store the standard body/character controller heights and depths
+        _shotCollider = GetComponent<CapsuleCollider>();
+        
+        _characterController = GetComponent<CharacterController>();
         _standardCcHeight = _characterController.height;
         _standardCcCenter = _characterController.center;
         _standardCcRadius = _characterController.radius;
-        _thirdPersonBody = player.transform.GetChild(1);
+
+        _bodyController = GetComponent<BodyController>();
+        _playerCamera = _bodyController.ThirdPersonBody.playerCamera;
+        _thirdPersonBody = _bodyController.ThirdPersonBody.body;
         _standardBodyZ = _thirdPersonBody.localPosition.z;
+        
+        _headCollider = GetComponent<BoxCollider>();
         _standardHeadZ = _headCollider.center.z;
         _standardHeadY = _headCollider.center.y;
-        // TODO: this needed? ... standardHeadScale = headCollider.size;
     }
     
-    public void HandleMultiplayerCrouch(GameObject player, GameObject playerCamera, bool isCrouching, bool isGrounded,
-        bool isCamResetting)
+    // Handle crouching for networked characters to cut down on sending this data across the network
+    public void HandleNetworkedCrouch(bool isCrouching, bool isGrounded, bool isCamResetting)
     {
-        //When coming from a multiplayer call, make sure our variables are instantiated
-        if (_characterController == null)
+        if (_standardCamHeight == 0f)
         {
-            CalculateCrouchVars(player, playerCamera, 1f);
+            _standardCamHeight = _playerCamera.localPosition.y;
         }
-
-        //Make this player crouch or stand
-        DoCrouch(playerCamera.transform, isCrouching, isGrounded, isCamResetting);
+        DoCrouch(_playerCamera, isCrouching, isGrounded, isCamResetting);
     }
     
-    /**
-	 * Handle the actual shrinking / expanding of the player and components when crouching / standing.
-     * Public because is called by NetworkCharacter.cs to cut down on sending these vars over the network.
-	 */
-    public void DoCrouch(Transform playerCamera, bool isCrouching, bool isGrounded, bool isCameraResetting)
+    // Handle the actual shrinking/expanding of the player and components when crouching or standing
+    private void DoCrouch(Transform playerCamera, bool isCrouching, bool isGrounded, bool isCameraResetting)
     {
         //Store the local position for modification
-        Vector3 camLocalPos = playerCamera.transform.localPosition;
+        Vector3 camLocalPos = playerCamera.localPosition;
         float ccHeight = _characterController.height;
         float ccRadius = _characterController.radius;
         Vector3 ccCenter = _characterController.center;
@@ -196,13 +188,13 @@ public class NetworkCrouchController : MonoBehaviour
                 }
             }
             //Special case: when we are standing, we need to mark the camera as being moved since other scripts try to adjust the camera's position while standing
-            if (allGood && isCameraResetting)
+            if (allGood)
             {
                 isCameraResetting = false;
             }
         }
         //Apply the local position updates
-        playerCamera.transform.localPosition = camLocalPos;
+        playerCamera.localPosition = camLocalPos;
         _characterController.height = ccHeight;
         _characterController.radius = ccRadius;
         _characterController.center = ccCenter;

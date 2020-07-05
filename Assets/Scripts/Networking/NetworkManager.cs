@@ -68,8 +68,6 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         PhotonNetwork.NickName = _username;
         //Mark this session as offline
         PhotonNetwork.OfflineMode = true;
-        //Unique string to identify our connection
-        PhotonNetwork.CreateRoom("OfflineRoom");
         //Hide the main menu
         menu.SetActive(false);
         //Mark our Game State as playing

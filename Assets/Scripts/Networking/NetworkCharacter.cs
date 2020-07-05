@@ -9,12 +9,10 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 
     //Player position and rotation need to be passed so preserve look rotations
     private Vector3 _realPos = Vector3.zero;
-    // TODO: Maybe only the y-rotation is needed here?...
-    private Quaternion _realRot = Quaternion.identity;
+    private Quaternion _realRot = Quaternion.identity;	// TODO: Maybe only the y-rotation is needed here?...
 
     //Camera position and rotations 
-    // TODO: POSITION MIGHT NOT BE NEEDED
-    private Vector3 _camRealPos = Vector3.zero;
+    private Vector3 _camRealPos = Vector3.zero;		// TODO: POSITION MIGHT NOT BE NEEDED
     private Quaternion _camRealRot = Quaternion.identity;
 
     //Animation variables
@@ -26,8 +24,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     private bool _wallRunningRight;
     private float _jumpSpeed;
 
-    // TODO: MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
-    private float _forwardSpeed;
+    private float _forwardSpeed;	// TODO: MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
     private float _sideSpeed;
     private bool _crouchReset;
     private bool _jumpReset;
@@ -35,7 +32,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     //Character Controller properties need to be passed due to Crouch animations
     private CharacterController _characterController;
     private CapsuleCollider _bodyCollider;
-    private D_CrouchController _dCrouchController;
+    private NetworkCrouchController _networkCrouchController;
     private D_PlayerJump _djumpController;
     private FixWallRunningAnimation _wrAnimFix;
 
@@ -45,7 +42,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
         _characterController = GetComponent<CharacterController>();
         _bodyCollider = GetComponent<CapsuleCollider>();
         _bodyControl = GetComponent<BodyController>();
-        _dCrouchController = GetComponent<D_CrouchController>();
+        _networkCrouchController = GetComponent<NetworkCrouchController>();
         _djumpController = GetComponent<D_PlayerJump>();
         _inputState = GetComponent<InputState>();
         _wrAnimFix = GetComponent<FixWallRunningAnimation>();
@@ -85,12 +82,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             bodyAnimator.SetFloat("JumpSpeed", _jumpSpeed);
 
             //Set Capsule Collider and Character Controller variables for crouching
-            //TODO: Update This
-            if (_dCrouchController != null)
-            {
-	            _dCrouchController.HandleMultiplayerCrouch(gameObject, playerBodyData.playerCamera.gameObject,
-		            _isCrouching, !_isAirborne, _crouchReset);
-            }
+            _networkCrouchController.HandleNetworkedCrouch(_isCrouching, !_isAirborne, _crouchReset);
 
             //Set Capsule Collider and Character Controller variables for jumping
             //TODO: Update This
@@ -155,7 +147,10 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             _isAirborne = nowAirborne;
             //Crouching requires some extra logic for the reset flag
             bool nowCrouching = (bool)stream.ReceiveNext();
-            if (_isCrouching && !nowCrouching) { _crouchReset = true; }
+            if (_isCrouching && !nowCrouching)
+            {
+	            _crouchReset = true;
+            }
             _isCrouching = nowCrouching;
             _wallRunningRight = (bool)stream.ReceiveNext();
             _wallRunningLeft = (bool)stream.ReceiveNext();
