@@ -2,3 +2,4 @@
 LightingData.asset filter=lfs diff=lfs merge=lfs -text
 1012_normal.png filter=lfs diff=lfs merge=lfs -text
 1012_baseColor.png filter=lfs diff=lfs merge=lfs -text
+*.so filter=lfs diff=lfs merge=lfs -text
