@@ -33,7 +33,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     private CharacterController _characterController;
     private CapsuleCollider _bodyCollider;
     private NetworkCrouchController _networkCrouchController;
-    private D_PlayerJump _djumpController;
+    private NetworkJumpController _networkJumpController;
     private FixWallRunningAnimation _wrAnimFix;
 
     void Awake()
@@ -43,7 +43,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
         _bodyCollider = GetComponent<CapsuleCollider>();
         _bodyControl = GetComponent<BodyController>();
         _networkCrouchController = GetComponent<NetworkCrouchController>();
-        _djumpController = GetComponent<D_PlayerJump>();
+        _networkJumpController = GetComponent<NetworkJumpController>();
         _inputState = GetComponent<InputState>();
         _wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
@@ -85,11 +85,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             _networkCrouchController.HandleNetworkedCrouch(_isCrouching, !_isAirborne, _crouchReset);
 
             //Set Capsule Collider and Character Controller variables for jumping
-            //TODO: Update This
-            if (_djumpController != null)
-            {
-	            _djumpController.HandleHitboxes(gameObject, _isAirborne, _isCrouching, _jumpReset);
-            }
+            _networkJumpController.HandleNetworkedJump(_isAirborne, _isCrouching, _jumpReset);
 
             //Fix for wall-running animations being rotated incorrectly
             //TODO: Update This

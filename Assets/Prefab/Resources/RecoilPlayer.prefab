@@ -6342,6 +6342,7 @@ GameObject:
   - component: {fileID: 2300425400551439292}
   - component: {fileID: 114224042911270550}
   - component: {fileID: 2992812109324107539}
+  - component: {fileID: 6856522631878536321}
   - component: {fileID: 114652793396087608}
   - component: {fileID: 114213512381532568}
   - component: {fileID: 114251353295462996}
@@ -6359,6 +6360,7 @@ GameObject:
   - component: {fileID: 114453981556085134}
   - component: {fileID: 5615678793227596208}
   - component: {fileID: 708090409}
+  - component: {fileID: 4511724890449018803}
   m_Layer: 10
   m_Name: RecoilPlayer
   m_TagString: Player
@@ -6480,6 +6482,21 @@ MonoBehaviour:
   crouchBodyZ: -0.3
   crouchHeadZ: 0.2
   crouchHeadY: 1.5
+--- !u!114 &6856522631878536321
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886960915426844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc3fe8e0f738f146ab351b88c3811f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpCapsuleColCenter: {x: 0, y: 1.56, z: 0.1}
+  jumpCapsuleColHeight: 1.7
+  jumpBoxColCenter: {x: 0, y: 2.55, z: 0.15}
 --- !u!114 &114652793396087608
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -6872,6 +6889,21 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   inputs: 0b000000
   bodyTransform: {fileID: 4466883030057088}
+--- !u!114 &4511724890449018803
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1886960915426844}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: acc3fe8e0f738f146ab351b88c3811f3, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  jumpCapsuleColCenter: {x: 0, y: 0, z: 0}
+  jumpCapsuleColHeight: 0
+  jumpBoxColCenter: {x: 0, y: 0, z: 0}
 --- !u!1 &1889116490370044
 GameObject:
   m_ObjectHideFlags: 0
