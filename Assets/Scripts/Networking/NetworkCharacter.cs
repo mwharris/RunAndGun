@@ -5,7 +5,13 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 {
     private InputState _inputState;
     private BodyController _bodyControl;
+    private PlayerBodyData _thirdPersonBody;
     private PlayerMovementStateMachine _playerMovementStateMachine;
+    private CharacterController _characterController;
+    private CapsuleCollider _bodyCollider;
+    private NetworkCrouchController _networkCrouchController;
+    private NetworkJumpController _networkJumpController;
+    private FixWallRunningAnimation _wrAnimFix;
 
     //Player position and rotation need to be passed so preserve look rotations
     private Vector3 _realPos = Vector3.zero;
@@ -23,18 +29,11 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     private bool _wallRunningLeft;
     private bool _wallRunningRight;
     private float _jumpSpeed;
-
+    
     private float _forwardSpeed;	// TODO: MAYBE COULD BE SEPARATED INTO BOOLEANS: Forward, Backward, Left, Right?...
     private float _sideSpeed;
     private bool _crouchReset;
     private bool _jumpReset;
-
-    //Character Controller properties need to be passed due to Crouch animations
-    private CharacterController _characterController;
-    private CapsuleCollider _bodyCollider;
-    private NetworkCrouchController _networkCrouchController;
-    private NetworkJumpController _networkJumpController;
-    private FixWallRunningAnimation _wrAnimFix;
 
     void Awake()
     {
@@ -42,12 +41,77 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
         _characterController = GetComponent<CharacterController>();
         _bodyCollider = GetComponent<CapsuleCollider>();
         _bodyControl = GetComponent<BodyController>();
+        _thirdPersonBody = _bodyControl.ThirdPersonBody;
         _networkCrouchController = GetComponent<NetworkCrouchController>();
         _networkJumpController = GetComponent<NetworkJumpController>();
         _inputState = GetComponent<InputState>();
         _wrAnimFix = GetComponent<FixWallRunningAnimation>();
     }
 
+    
+	void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	{
+		OnPhotonSerializeView(stream, info);
+	}
+
+	/**
+	 * Handle the actual sending / receiving of variables over the network
+	 */
+	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+    {
+        var playerBodyData = _bodyControl.PlayerBodyData;
+
+        if (stream.IsWriting)
+		{
+			//This is our local player, send our position to the network
+			stream.SendNext(transform.position);
+			stream.SendNext(transform.rotation);
+            //Camera position and rotation
+            // stream.SendNext(playerBodyData.playerCamera.localPosition);
+            stream.SendNext(playerBodyData.playerCamera.localRotation);
+            //Send animator variable information
+            stream.SendNext(_playerMovementStateMachine.PlayerIsSprinting);
+            stream.SendNext(_inputState.playerIsAiming);	// TODO: Remove input state
+            stream.SendNext(!_playerMovementStateMachine.PlayerIsGrounded);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsCrouching);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningRight);
+            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningLeft);
+            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.forward));
+            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.right));
+            stream.SendNext(_playerMovementStateMachine.PlayerVelocity.y);
+		}
+		if (stream.IsReading) 
+		{
+			//This is a networked player, receive their position an update the player accordingly
+            _realPos = (Vector3)stream.ReceiveNext();
+            _realRot = (Quaternion)stream.ReceiveNext();
+            //Camera position and rotation
+            // _camRealPos = (Vector3)stream.ReceiveNext();
+            _camRealRot = (Quaternion)stream.ReceiveNext();
+            //Receive animator variable information
+            _isSprinting = (bool)stream.ReceiveNext();
+            _isAiming = (bool)stream.ReceiveNext();
+            //Jumping requires some extra logic for the reset flag
+            bool nowAirborne = (bool)stream.ReceiveNext();
+            if (_isAirborne && !nowAirborne) {
+                _jumpReset = true;
+            }
+            _isAirborne = nowAirborne;
+            //Crouching requires some extra logic for the reset flag
+            bool nowCrouching = (bool)stream.ReceiveNext();
+            if (_isCrouching && !nowCrouching)
+            {
+	            _crouchReset = true;
+            }
+            _isCrouching = nowCrouching;
+            _wallRunningRight = (bool)stream.ReceiveNext();
+            _wallRunningLeft = (bool)stream.ReceiveNext();
+            _forwardSpeed = (float)stream.ReceiveNext();
+            _sideSpeed = (float)stream.ReceiveNext();
+            _jumpSpeed = (float)stream.ReceiveNext();
+        }
+	}
+    
 	/**
 	 * Handle updating non-local player's variables sent over the network
 	 */
@@ -56,19 +120,19 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
         //Only update a non-local player. Local players are updated by First Person Controller
         if (!photonView.IsMine)
         {
-	        PlayerBodyData playerBodyData = photonView.gameObject.GetComponent<BodyController>().ThirdPersonBody;
-	        Animator bodyAnimator = playerBodyData.GetBodyAnimator();
-	        
             float lerpSpeed = Time.deltaTime * 8f;
+	        Animator bodyAnimator = _thirdPersonBody.GetBodyAnimator();
 
             //TODO: PREDICTION
             //Smooth our movement from the current position to the received position
             transform.position = SafeLerp(transform.position, _realPos, lerpSpeed);
-            transform.rotation = SafeLerp(transform.rotation, _realRot, lerpSpeed);
+            if (!_wallRunningRight && !_wallRunningLeft)
+            {
+	            transform.rotation = SafeLerp(transform.rotation, _realRot, lerpSpeed);
+            }
 
             //Smooth our camera movement from the current position to the received position
-            playerBodyData.playerCamera.localPosition = SafeLerp(playerBodyData.playerCamera.localPosition, _camRealPos, lerpSpeed);
-            playerBodyData.playerCamera.localRotation = SafeLerp(playerBodyData.playerCamera.localRotation, _camRealRot, lerpSpeed);
+            HandleThirdPersonCamera(lerpSpeed);
             
             //Animation variables
             bodyAnimator.SetBool("Sprinting", _isSprinting);
@@ -93,67 +157,15 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
         }
 	}
 
-	void IPunObservable.OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
+	private void HandleThirdPersonCamera(float lerpSpeed)
 	{
-		OnPhotonSerializeView(stream, info);
-	}
-
-	/**
-	 * Handle the actual sending / receiving of variables over the network
-	 */
-	public void OnPhotonSerializeView(PhotonStream stream, PhotonMessageInfo info)
-    {
-        var playerBodyData = _bodyControl.PlayerBodyData;
-
-        if (stream.IsWriting)
+		Quaternion target = _camRealRot;
+		if (_wallRunningLeft || _wallRunningRight)
 		{
-			//This is our local player, send our position to the network
-			stream.SendNext(transform.position);
-			stream.SendNext(transform.rotation);
-            //Camera position and rotation
-            stream.SendNext(playerBodyData.playerCamera.localPosition);
-            stream.SendNext(playerBodyData.playerCamera.localRotation);
-            //Send animator variable information
-            stream.SendNext(_playerMovementStateMachine.PlayerIsSprinting);
-            stream.SendNext(_inputState.playerIsAiming);	// TODO: Remove input state
-            stream.SendNext(!_playerMovementStateMachine.PlayerIsGrounded);
-            stream.SendNext(_playerMovementStateMachine.PlayerIsCrouching);
-            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningRight);
-            stream.SendNext(_playerMovementStateMachine.PlayerIsWallRunningLeft);
-            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.forward));
-            stream.SendNext(Vector3.Dot(_playerMovementStateMachine.PlayerVelocity, transform.right));
-            stream.SendNext(_playerMovementStateMachine.PlayerVelocity.y);
+			target *= _realRot;
 		}
-		if (stream.IsReading) 
-		{
-			//This is a networked player, receive their position an update the player accordingly
-            _realPos = (Vector3)stream.ReceiveNext();
-            _realRot = (Quaternion)stream.ReceiveNext();
-            //Camera position and rotation
-            _camRealPos = (Vector3)stream.ReceiveNext();
-            _camRealRot = (Quaternion)stream.ReceiveNext();
-            //Receive animator variable information
-            _isSprinting = (bool)stream.ReceiveNext();
-            _isAiming = (bool)stream.ReceiveNext();
-            //Jumping requires some extra logic for the reset flag
-            bool nowAirborne = (bool)stream.ReceiveNext();
-            if (_isAirborne && !nowAirborne) {
-                _jumpReset = true;
-            }
-            _isAirborne = nowAirborne;
-            //Crouching requires some extra logic for the reset flag
-            bool nowCrouching = (bool)stream.ReceiveNext();
-            if (_isCrouching && !nowCrouching)
-            {
-	            _crouchReset = true;
-            }
-            _isCrouching = nowCrouching;
-            _wallRunningRight = (bool)stream.ReceiveNext();
-            _wallRunningLeft = (bool)stream.ReceiveNext();
-            _forwardSpeed = (float)stream.ReceiveNext();
-            _sideSpeed = (float)stream.ReceiveNext();
-            _jumpSpeed = (float)stream.ReceiveNext();
-        }
+		_thirdPersonBody.playerCamera.localRotation = SafeLerp(_thirdPersonBody.playerCamera.localRotation, target, lerpSpeed);
+		// _thirdPersonBody.playerCamera.localPosition = SafeLerp(_thirdPersonBody.playerCamera.localPosition, _camRealPos, lerpSpeed);
 	}
 
 	private Vector3 SafeLerp(Vector3 dest, Vector3 source, float speed)
