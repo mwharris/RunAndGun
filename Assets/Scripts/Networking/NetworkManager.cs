@@ -132,6 +132,7 @@ public class NetworkManager : MonoBehaviourPunCallbacks
         myPlayer.GetComponent<CameraController>().enabled = true;
         myPlayer.GetComponent<ShootController>().enabled = true;
         myPlayer.GetComponent<AccuracyController>().enabled = true;
+        myPlayer.GetComponent<BobController>().enabled = true;
         myPlayer.GetComponent<RecoilController>().enabled = true;
         myPlayer.GetComponent<RecoilController>().recoil = 0;
         myPlayer.GetComponent<RecoilController>().currentRecoil = 0;
