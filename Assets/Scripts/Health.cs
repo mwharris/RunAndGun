@@ -10,65 +10,64 @@ public class Health : MonoBehaviour {
 	public GameObject deathCam;
 	public Camera lobbyCam;
 
-	private AudioSource aSource;
-	private Image damageImage;
-	private float currentHitPoints;
+	[SerializeField] private Grayscale cameraGrayScale;
+
+	private AudioSource _audioSource;
+	private Image _damageImage;
+	private float _currentHitPoints;
 	private float flashSpeed = 2f;
-	private FXManager fxManager;
-	private GameObject deathOverlay;
-	private Grayscale gScale;
-	private float regenTimer = 5.0f;
+	private FXManager _fxManager;
+	private GameObject _deathOverlay;
+	private float _regenTimer = 5.0f;
 	private float regenTimerMax = 5.0f;
 	private float regenRate = 4.0f;
-	private bool regenerating = false;
-	private PhotonView pView;
+	private bool _regenerating = false;
+	private PhotonView _pView;
 
-	private GameObject damagedArrow;
-	private RectTransform rectDamagedArrow;
-	private Image imageDamagedArrow;
-	private float damagedArrowTime = 0f;
+	private GameObject _damagedArrow;
+	private RectTransform _rectDamagedArrow;
+	private Image _imageDamagedArrow;
+	private float _damagedArrowTime = 0f;
 	private float damagedArrowDelay = 1f;
 
 	void Start () 
 	{
 		//Store the current hit points
-		currentHitPoints = hitPoints;
+		_currentHitPoints = hitPoints;
 		//Get a reference to an image that will appear whenever we are damaged
-		damageImage = GameObject.FindGameObjectWithTag("DamageImage").GetComponent<Image>();
+		_damageImage = GameObject.FindGameObjectWithTag("DamageImage").GetComponent<Image>();
 		//Grab a reference to the audio source for hurt sounds
-		aSource = this.transform.GetComponent<AudioSource>();
+		_audioSource = this.transform.GetComponent<AudioSource>();
 		//Initialize a reference to the FXManager
-		fxManager = GameObject.FindObjectOfType<FXManager>();
+		_fxManager = GameObject.FindObjectOfType<FXManager>();
 		//Get a reference to the death overlay
-		deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
-		//Get a reference to the grayscale effect for when we get hit
-		gScale = this.transform.GetComponentInChildren<Grayscale>();
+		_deathOverlay = GameObject.FindGameObjectWithTag("DeathOverlay");
 		//Get the attached PhotonView
-		pView = GetComponent<PhotonView>();
+		_pView = GetComponent<PhotonView>();
 		//Get the arrow for when we are damaged
-		damagedArrow = GameObject.FindGameObjectWithTag("DamagedArrow");
-		rectDamagedArrow = damagedArrow.GetComponent<RectTransform>();
-		imageDamagedArrow = rectDamagedArrow.GetComponentInChildren<Image>();
+		_damagedArrow = GameObject.FindGameObjectWithTag("DamagedArrow");
+		_rectDamagedArrow = _damagedArrow.GetComponent<RectTransform>();
+		_imageDamagedArrow = _rectDamagedArrow.GetComponentInChildren<Image>();
 	}
 
 	void Update()
 	{
-		if(this.transform.GetComponent<PhotonView>().IsMine)
+		if(_pView.IsMine)
 		{
 			//Decrement the Regen timer
-			regenTimer -= Time.deltaTime;
+			_regenTimer -= Time.deltaTime;
 			//If we aren't regenerating
-			if(regenTimer <= 0)
+			if(_regenTimer <= 0)
 			{
 				RegenHealth();
 			}
 			//Slowly make the screen red the more hurt we are
-			Color newColor = new Color(1.0f, 0f, 0f, ((100 - currentHitPoints) / 100));
-			damageImage.color = Color.Lerp(damageImage.color, newColor, flashSpeed * Time.deltaTime);
+			Color newColor = new Color(1.0f, 0f, 0f, ((100 - _currentHitPoints) / 100));
+			_damageImage.color = Color.Lerp(_damageImage.color, newColor, flashSpeed * Time.deltaTime);
 			//If we are close to death also apply grayscale
-			gScale.effectAmount = ((100F - currentHitPoints) / 100F);
+			cameraGrayScale.effectAmount = ((100F - _currentHitPoints) / 100F);
 			//Fade out the arrow if the delay is over
-			if(Time.time - damagedArrowTime > damagedArrowDelay)
+			if(Time.time - _damagedArrowTime > damagedArrowDelay)
 			{
 				HideHitAngle(false);
 			}
@@ -78,16 +77,16 @@ public class Health : MonoBehaviour {
 	void RegenHealth()
 	{
 		//Mark us as regenerating
-		regenerating = true;
+		_regenerating = true;
 		//Slowly start regenerating health over time
-		if(currentHitPoints < hitPoints)
+		if(_currentHitPoints < hitPoints)
 		{
-			currentHitPoints += regenRate * Time.deltaTime;
+			_currentHitPoints += regenRate * Time.deltaTime;
 		}
 		//Make sure we don't go over max HP
-		if(currentHitPoints > hitPoints)
+		if(_currentHitPoints > hitPoints)
 		{
-			currentHitPoints = hitPoints;
+			_currentHitPoints = hitPoints;
 		}	
 	}
 
@@ -96,7 +95,7 @@ public class Health : MonoBehaviour {
 	{
         //Take the damage we received, doubled for headshot
         damage *= headshot ? 2 : 1;
-        currentHitPoints -= damage;
+        _currentHitPoints -= damage;
         //If this is our local player
 		if(GetComponent<PhotonView>().IsMine)
 		{
@@ -106,17 +105,17 @@ public class Health : MonoBehaviour {
 			ShowHitAngle(shooterPosition);
 		} 
 		//Die if our HP is below 0
-		if(currentHitPoints <= 0)
+		if(_currentHitPoints <= 0)
 		{
 			Die(enemyPhotonName, enemyPhotonID, headshot);
 		}
 		//If we didn't die, we're regenerating, and we were shot
-		if(currentHitPoints > 0 && regenerating)
+		if(_currentHitPoints > 0 && _regenerating)
 		{
 			//Stop regenerating
-			regenerating = false;
+			_regenerating = false;
 			//Restart the timer
-			regenTimer = regenTimerMax;
+			_regenTimer = regenTimerMax;
 		}
 	}
 
@@ -131,20 +130,20 @@ public class Health : MonoBehaviour {
 		{
 			rot = -rot;
 		}
-		rectDamagedArrow.localRotation = Quaternion.Euler(0,0,rot);
+		_rectDamagedArrow.localRotation = Quaternion.Euler(0,0,rot);
 		//Show the arrow
-		Color currCol = imageDamagedArrow.color;
+		Color currCol = _imageDamagedArrow.color;
 		currCol.a = 1;
-		imageDamagedArrow.color = currCol;
-		imageDamagedArrow.enabled = true;
+		_imageDamagedArrow.color = currCol;
+		_imageDamagedArrow.enabled = true;
 		//Start the timer to hide the arrow
-		damagedArrowTime = Time.time;
+		_damagedArrowTime = Time.time;
 	}
 
 	void HideHitAngle(bool immediate)
 	{
 		//Store the current color of the arrow
-		Color currCol = imageDamagedArrow.color;
+		Color currCol = _imageDamagedArrow.color;
 		//Immediately fade it out
 		if(immediate)
 		{
@@ -155,15 +154,15 @@ public class Health : MonoBehaviour {
 		{
 			currCol.a = Mathf.Lerp(currCol.a, 0, 0.05f);
 		}
-		imageDamagedArrow.color = currCol;
+		_imageDamagedArrow.color = currCol;
 		//Enable or disable the arrow when fading
 		if (currCol.a == 0) 
 		{
-			imageDamagedArrow.enabled = false;
+			_imageDamagedArrow.enabled = false;
 		}
 		else 
 		{
-			imageDamagedArrow.enabled = true;
+			_imageDamagedArrow.enabled = true;
 		}
 	}
 
@@ -182,7 +181,7 @@ public class Health : MonoBehaviour {
 				GetComponent<AccuracyController>().ResetReticles();
 				//Play effects on death
 				Vector3 deathEffectPos = new Vector3(transform.position.x, transform.position.y + 1.5f, transform.position.z);
-				fxManager.GetComponent<PhotonView>().RPC("DeathFX", RpcTarget.All, deathEffectPos);
+				_fxManager.GetComponent<PhotonView>().RPC("DeathFX", RpcTarget.All, deathEffectPos);
 				//Gray out the screen and display killer
 				ShowDeathOverlay(enemyPhotonName);
 				//Handle spawning a Death Camera
@@ -191,7 +190,7 @@ public class Health : MonoBehaviour {
 				HideHitAngle(true);
 			}
 			//Send out a notification this player was killed
-			fxManager.GetComponent<PhotonView>().RPC("KillNotification", RpcTarget.All, pView.Owner.NickName, enemyPhotonName, headshot);
+			_fxManager.GetComponent<PhotonView>().RPC("KillNotification", RpcTarget.All, _pView.Owner.NickName, enemyPhotonName, headshot);
 			//Delete it over the network
 			PhotonNetwork.Destroy(gameObject);
 		}
@@ -302,7 +301,7 @@ public class Health : MonoBehaviour {
 		//Pick & play a random footstep sound from the array,
 		int n = Random.Range(1, hurtSounds.Length);
 		clipToPlay = hurtSounds[n];
-		aSource.PlayOneShot(clipToPlay);
+		_audioSource.PlayOneShot(clipToPlay);
 
 		//Move picked sound to index 0 so it's not picked next time
 		hurtSounds[n] = hurtSounds[0];
@@ -312,10 +311,10 @@ public class Health : MonoBehaviour {
 	void ShowDeathOverlay(string enemyName)
 	{
 		//Unhide death overlay components
-		deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
-		deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
+		_deathOverlay.transform.GetChild(0).GetComponent<Text>().enabled = true;
+		_deathOverlay.transform.GetChild(1).GetComponent<Text>().enabled = true;
 		//Update the killer's name text
-		deathOverlay.transform.GetChild(1).GetComponent<Text>().text = enemyName;
+		_deathOverlay.transform.GetChild(1).GetComponent<Text>().text = enemyName;
 	}
 	
     /*

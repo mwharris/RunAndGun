@@ -6710,6 +6710,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: c30ba35b5774c1d4eadbe47b87141b8a, type: 3}
   deathCam: {fileID: 120380, guid: 1cf352d8c52dbd4468e7f1cca0c97bdf, type: 3}
   lobbyCam: {fileID: 0}
+  cameraGrayScale: {fileID: 114699973392014032}
 --- !u!114 &114707509812168992
 MonoBehaviour:
   m_ObjectHideFlags: 0

@@ -18,7 +18,6 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
     private Quaternion _realRot = Quaternion.identity;	// TODO: Maybe only the y-rotation is needed here?...
 
     //Camera position and rotations 
-    private Vector3 _camRealPos = Vector3.zero;		// TODO: POSITION MIGHT NOT BE NEEDED
     private Quaternion _camRealRot = Quaternion.identity;
 
     //Animation variables
@@ -67,8 +66,7 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 			stream.SendNext(transform.position);
 			stream.SendNext(transform.rotation);
             //Camera position and rotation
-            // stream.SendNext(playerBodyData.playerCamera.localPosition);
-            stream.SendNext(playerBodyData.playerCamera.localRotation);
+            stream.SendNext(playerBodyData.playerCamera.rotation);
             //Send animator variable information
             stream.SendNext(_playerMovementStateMachine.PlayerIsSprinting);
             stream.SendNext(_inputState.playerIsAiming);	// TODO: Remove input state
@@ -86,7 +84,6 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             _realPos = (Vector3)stream.ReceiveNext();
             _realRot = (Quaternion)stream.ReceiveNext();
             //Camera position and rotation
-            // _camRealPos = (Vector3)stream.ReceiveNext();
             _camRealRot = (Quaternion)stream.ReceiveNext();
             //Receive animator variable information
             _isSprinting = (bool)stream.ReceiveNext();
@@ -159,12 +156,11 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
 	private void HandleThirdPersonCamera(float lerpSpeed)
 	{
 		Quaternion target = _camRealRot;
-		if (_wallRunningLeft || _wallRunningRight)
+		/*if (_wallRunningLeft || _wallRunningRight)
 		{
 			target *= _realRot;
-		}
-		_thirdPersonBody.playerCamera.localRotation = SafeLerp(_thirdPersonBody.playerCamera.localRotation, target, lerpSpeed);
-		// _thirdPersonBody.playerCamera.localPosition = SafeLerp(_thirdPersonBody.playerCamera.localPosition, _camRealPos, lerpSpeed);
+		}*/
+		_thirdPersonBody.playerCamera.rotation = SafeLerp(_thirdPersonBody.playerCamera.rotation, target, lerpSpeed);
 	}
 
 	private Vector3 SafeLerp(Vector3 dest, Vector3 source, float speed)
