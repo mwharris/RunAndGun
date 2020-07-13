@@ -152,7 +152,6 @@ public class NetworkCharacter : MonoBehaviourPun, IPunObservable
             _networkJumpController.HandleNetworkedJump(_isAirborne, _isCrouching, _jumpReset);
 
             //Fix for wall-running animations being rotated incorrectly
-            //TODO: Update This
             _wrAnimFix.RunFix(_wallRunningLeft, _wallRunningRight, Time.deltaTime);
         }
 	}
