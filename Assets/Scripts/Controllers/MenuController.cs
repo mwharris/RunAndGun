@@ -1,41 +1,38 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
 using UnityEngine.UI;
-using UnityEngine.SceneManagement;
-using System.Collections;
-using TMPro;
 
 public class MenuController : AbstractBehavior 
 {
-	public float MouseSensitivity { get; set; } = 1f;
+	[SerializeField] private GameObject pauseMenu;
+	[SerializeField] private GameObject optionsMenu;
+	
+	public static float MouseSensitivity { get; private set; }
 	public bool InvertY { get; set; } = false;
 	public bool AimAssist { get; set; } = true;
 
     private bool _paused;
 	private bool _options;
-    private bool pickupAvailable = false;
 	private GameObject _eventSystem;
 	private NetworkManager _networkManager;
 	private GameManager _gameManager;
+    private bool _pickupAvailable = false;
 
-	private GameObject _pauseMenu;
-	private GameObject _optionsMenu;
 	private Transform _pausePanel;
 	private Transform _optionsPanel;
+	private Slider _sensitivitySlider;
 
 	void Start()
 	{
-		//Find the pause and options menu GameObjects and Panels
-		_pauseMenu = GameObject.FindGameObjectWithTag("PauseMenu");
-		_pausePanel = _pauseMenu.transform.GetChild(0);
-		_optionsMenu = GameObject.FindGameObjectWithTag("OptionsMenu");
-		_optionsPanel = _optionsMenu.transform.GetChild(0);
-        //Initialize a reference to the NetworkManager
-        _networkManager = FindObjectOfType<NetworkManager>();
-		//Initialize a reference to the GameManager
-		_gameManager = FindObjectOfType<GameManager>();
-		//Find the event system
 		_eventSystem = GameObject.Find("EventSystem");
-    }
+		_gameManager = GetComponent<GameManager>();
+        _networkManager = GetComponent<NetworkManager>();
+		_pausePanel = pauseMenu.transform.GetChild(0);
+		_optionsPanel = optionsMenu.transform.GetChild(0);
+		// Default our sensitivity to the starting value
+		_sensitivitySlider = _optionsPanel.GetComponentInChildren<Slider>();
+		MouseSensitivity = _sensitivitySlider.value;
+	}
 
 	void Update () 
 	{
@@ -56,7 +53,7 @@ public class MenuController : AbstractBehavior
 			//Back out of Options menu
 			if (_options) 
 			{
-				ToggleOptionsMenu();				
+				ToggleOptionsMenu();
 			}
 			//Back out of Pause menu
 			else 
@@ -65,7 +62,7 @@ public class MenuController : AbstractBehavior
 			}
 		}
 	    // TODO: Why is this here?...
-        else if (pickupAvailable)
+        else if (_pickupAvailable)
         {
         }
 	}

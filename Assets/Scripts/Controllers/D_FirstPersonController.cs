@@ -176,7 +176,7 @@ public class D_FirstPersonController : AbstractBehavior
     void GatherOptions()
 	{
 		if (menuController != null) {
-			mouseSensitivity = menuController.MouseSensitivity;
+			// mouseSensitivity = menuController.MouseSensitivity;
 			invertY = menuController.InvertY;
             aimAssist = menuController.AimAssist;
 		}

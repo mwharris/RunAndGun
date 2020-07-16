@@ -9,7 +9,6 @@ public class PlayerLookController : MonoBehaviour
     private PlayerMovementStateMachine _movementStateMachine;
 
     private GameManager _gameManager;    
-    private float _mouseSensitvity = 100f;
     private float _cameraXRotation = 0f;
     private bool _playerIsWallRunning = false;
     private float _wallRunZRotation = 0f;
@@ -17,7 +16,7 @@ public class PlayerLookController : MonoBehaviour
     private void Awake()
     {
         _movementStateMachine = GetComponent<PlayerMovementStateMachine>();
-        _gameManager = GameObject.FindObjectOfType<GameManager>();
+        _gameManager = FindObjectOfType<GameManager>();
     }
     
     private void Start()
@@ -31,10 +30,11 @@ public class PlayerLookController : MonoBehaviour
 
         if (_gameManager.GetGameState() == GameManager.GameState.playing)
         {
-            var cameraLocalRot = playerCamera.transform.localRotation;
+            Quaternion cameraLocalRot;
+            var mouseSensitivity = MenuController.MouseSensitivity;
 
-            float mouseX = PlayerInput.Instance.MouseX * _mouseSensitvity * Time.deltaTime;
-            float mouseY = PlayerInput.Instance.MouseY * _mouseSensitvity * Time.deltaTime;
+            float mouseX = PlayerInput.Instance.MouseX * mouseSensitivity * Time.deltaTime;
+            float mouseY = PlayerInput.Instance.MouseY * mouseSensitivity * Time.deltaTime;
 
             _cameraXRotation -= mouseY;
             _cameraXRotation = Mathf.Clamp(_cameraXRotation, -90f, 90f);

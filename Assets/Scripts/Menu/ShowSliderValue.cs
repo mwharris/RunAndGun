@@ -1,12 +1,10 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 using UnityEngine.UI;
 
 public class ShowSliderValue : MonoBehaviour
 {
-    private Text percentageText;
     [SerializeField] private Slider slider;
+    private Text percentageText;
 
 	void Start()
     {
@@ -21,6 +19,6 @@ public class ShowSliderValue : MonoBehaviour
 
     private void SetSliderText(float value)
     {
-		percentageText.text = Mathf.RoundToInt((value / slider.maxValue) * 100) + "%";
+		percentageText.text = ""+value;
     }
 }
