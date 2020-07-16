@@ -1,6 +1,8 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 using Photon.Pun;
 using TMPro;
+using Random = UnityEngine.Random;
 
 public class FXManager : MonoBehaviour {
 
@@ -10,20 +12,18 @@ public class FXManager : MonoBehaviour {
 	public GameObject enemyHitEffect;
 	public GameObject deathEffect;
 	public GameObject bullethole;
-	public AudioSource aSource;
 	public AudioClip[] footstepSounds;   
 	public AudioClip landingSound; 
 	public AudioClip doubleJumpSound;   
-	public AudioClip hitSound;
 	public AudioClip[] deathSounds;
 
-    [SerializeField] private GameObject killOverlay;
-    [SerializeField] private GameObject headshotOverlay;
-    private GameObject _displayedOverlay;
-    private float _overlayTimer = 0.0f;
-    
+	[SerializeField] private GameObject killOverlay;
+	[SerializeField] private GameObject headshotOverlay;
+	
     private GameManager _gameManager;
     private PlayerFinder _playerFinder;
+	private GameObject _displayedOverlay;
+    private float _overlayTimer = 0.0f;
 
     private void Awake()
     {
@@ -106,10 +106,8 @@ public class FXManager : MonoBehaviour {
             //Show FX
             if (hitEnemy)
             {
-                //Show some blood
+                //Show some hit effects
                 Instantiate(enemyHitEffect, endPos, Quaternion.identity);
-                //Play a sound
-                aSource.PlayOneShot(hitSound);
             }
             else if (hitRed)
             {

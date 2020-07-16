@@ -8,6 +8,7 @@ public class ShootController : AbstractBehavior
     //General global variables - Set by Unity
     [SerializeField] private float kickDampening = 0.25f;
     [SerializeField] private AudioSource aSource;
+    [SerializeField] private AudioClip hitSound;
 
     //General global variables - private
     private Camera _playerCamera;
@@ -259,6 +260,8 @@ public class ShootController : AbstractBehavior
                         info.headshot
                     );
 				}
+				// Play a sound that we hit someone
+				aSource.PlayOneShot(hitSound);
 			} 
 
 			//Show some bullet FX

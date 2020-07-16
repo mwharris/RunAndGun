@@ -6661,6 +6661,7 @@ MonoBehaviour:
   inputs: 0b0000000c0000000e000000
   kickDampening: 0.25
   aSource: {fileID: 82676235970011400}
+  hitSound: {fileID: 8300000, guid: d02ec8656eb50e24a90672c4cc2b06a6, type: 3}
 --- !u!114 &114304507959098304
 MonoBehaviour:
   m_ObjectHideFlags: 0
