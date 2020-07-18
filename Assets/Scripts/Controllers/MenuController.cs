@@ -5,12 +5,7 @@ using UnityEngine.UI;
 public class MenuController : AbstractBehavior 
 {
 	[SerializeField] private GameObject pauseMenu;
-	[SerializeField] private GameObject optionsMenu;
 	
-	public static float MouseSensitivity { get; private set; }
-	public bool InvertY { get; set; } = false;
-	public bool AimAssist { get; set; } = true;
-
     private bool _paused;
 	private bool _options;
 	private GameObject _eventSystem;
@@ -19,19 +14,15 @@ public class MenuController : AbstractBehavior
     private bool _pickupAvailable = false;
 
 	private Transform _pausePanel;
-	private Transform _optionsPanel;
-	private Slider _sensitivitySlider;
+	private OptionsController _optionsController;
 
 	void Start()
 	{
 		_eventSystem = GameObject.Find("EventSystem");
 		_gameManager = GetComponent<GameManager>();
         _networkManager = GetComponent<NetworkManager>();
+        _optionsController = GetComponent<OptionsController>();
 		_pausePanel = pauseMenu.transform.GetChild(0);
-		_optionsPanel = optionsMenu.transform.GetChild(0);
-		// Default our sensitivity to the starting value
-		_sensitivitySlider = _optionsPanel.GetComponentInChildren<Slider>();
-		MouseSensitivity = _sensitivitySlider.value;
 	}
 
 	void Update () 
@@ -136,11 +127,8 @@ public class MenuController : AbstractBehavior
 		HidePauseMenu();
         //Unlock the mouse cursor
         UnlockMouseCursor();
-        //Simply set the Options menu to active
-        _optionsPanel.gameObject.SetActive(true);
-		//Default select the Close button
-		Transform closeButton = _optionsPanel.transform.GetChild(4);
-		closeButton.GetComponent<Selectable>().Select();
+        //Tell the Options menu to display
+        _optionsController.ShowOptionsMenu();
 	}
 
 	void HideOptionsMenu()
@@ -149,27 +137,9 @@ public class MenuController : AbstractBehavior
 		ShowPauseMenu();
         //Unlock the mouse cursor
         UnlockMouseCursor();
-        //Simply set the Options menu to active
-        _optionsPanel.gameObject.SetActive(false);
+        //Tell the Options menu to hide
+        _optionsController.CloseOptionsMenu();
 	}
-
-	//Update the mouse sensitivity in the First Person Controller
-	public void ChangeMouseSensitivity(float newValue)
-	{
-		MouseSensitivity = newValue;
-	}
-
-	//Update the invert y setting in the First Person Controller
-	public void ChangeInvertY(bool newValue)
-	{
-		InvertY = newValue;
-    }
-
-    //Update whether aim assist to enabled or disabled in the First Person Controller
-    public void ChangeAimAssist(bool newValue)
-    {
-        AimAssist = newValue;
-    }
 
     private void LockMouseCursor()
     {

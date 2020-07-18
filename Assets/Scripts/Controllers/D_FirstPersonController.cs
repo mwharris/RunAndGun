@@ -177,8 +177,8 @@ public class D_FirstPersonController : AbstractBehavior
 	{
 		if (menuController != null) {
 			// mouseSensitivity = menuController.MouseSensitivity;
-			invertY = menuController.InvertY;
-            aimAssist = menuController.AimAssist;
+			// invertY = menuController.InvertY;
+            // aimAssist = menuController.AimAssist;
 		}
 	}
 

@@ -31,7 +31,7 @@ public class PlayerLookController : MonoBehaviour
         if (_gameManager.GetGameState() == GameManager.GameState.playing)
         {
             Quaternion cameraLocalRot;
-            var mouseSensitivity = MenuController.MouseSensitivity;
+            var mouseSensitivity = OptionsController.MouseSensitivity;
 
             float mouseX = PlayerInput.Instance.MouseX * mouseSensitivity * Time.deltaTime;
             float mouseY = PlayerInput.Instance.MouseY * mouseSensitivity * Time.deltaTime;
