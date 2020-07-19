@@ -115,7 +115,7 @@ public class MenuController : AbstractBehavior
 		{
 			ShowOptionsMenu();
 		}
-		else 
+		else
 		{
 			HideOptionsMenu();
 		}
@@ -133,10 +133,14 @@ public class MenuController : AbstractBehavior
 
 	void HideOptionsMenu()
 	{
-		//Hide the pause menu
-		ShowPauseMenu();
-        //Unlock the mouse cursor
-        UnlockMouseCursor();
+		if (_gameManager.GetGameState() == GameManager.GameState.playing ||
+		    _gameManager.GetGameState() == GameManager.GameState.paused)
+		{
+			//Hide the pause menu
+			ShowPauseMenu();
+			//Unlock the mouse cursor
+			UnlockMouseCursor();
+		}
         //Tell the Options menu to hide
         _optionsController.CloseOptionsMenu();
 	}
