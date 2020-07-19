@@ -10,6 +10,7 @@ public class OptionsController : MonoBehaviour
     [SerializeField] private TMP_Dropdown resolutionDropdown;
     [SerializeField] private TMP_Dropdown qualityDropdown;
     [SerializeField] private Toggle fullscreenToggle;
+    [SerializeField] private List<GameObject> postProcessingVolumes;
     
     public static float MouseSensitivity { get; private set; }
     public bool InvertY { get; set; } = false;
@@ -17,6 +18,7 @@ public class OptionsController : MonoBehaviour
 
     private Transform _optionsPanel;
     private Resolution[] _resolutions;
+    private bool _postProcessingActive = true;
 
     void Start()
     {
@@ -57,8 +59,7 @@ public class OptionsController : MonoBehaviour
         resolutionDropdown.value = selectedIndex;
         resolutionDropdown.RefreshShownValue();
     }
-
-
+    
     private void InitQualityOptions()
     {
         List<TMP_Dropdown.OptionData> options = new List<TMP_Dropdown.OptionData>();
@@ -101,8 +102,21 @@ public class OptionsController : MonoBehaviour
         Screen.SetResolution(r.width, r.height, Screen.fullScreen);
     }
 
+    // TODO: Maybe have more granular post processing settings?
+    // TODO: For example, a Bloom option, AO option, Color option, etc.
     public void SetQuality(int qualityIndex)
     {
+        // Disable post processing stack on Fastest quality
+        bool setPostProcessingActive = qualityIndex > 0;
+        if (_postProcessingActive != setPostProcessingActive)
+        {
+            _postProcessingActive = setPostProcessingActive;
+            foreach (GameObject volume in postProcessingVolumes)
+            {
+                volume.SetActive(_postProcessingActive);
+            }
+        }
+        // Tell Unity to change the quality setting
         QualitySettings.SetQualityLevel(qualityIndex);
     }
 

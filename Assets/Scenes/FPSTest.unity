@@ -9375,6 +9375,9 @@ MonoBehaviour:
   resolutionDropdown: {fileID: 758358818}
   qualityDropdown: {fileID: 1141410602}
   fullscreenToggle: {fileID: 827885907}
+  postProcessingVolumes:
+  - {fileID: 2042414042}
+  - {fileID: 2103422986}
 --- !u!114 &387291014
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -40779,7 +40782,7 @@ PrefabInstance:
     m_Modifications:
     - target: {fileID: 177638, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_IsActive
-      value: 0
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 22424132, guid: 0abab5bb77339e4428787a870eb31bd3, type: 3}
       propertyPath: m_AnchoredPosition.x
