@@ -4,18 +4,24 @@ public class Sprinting : IState
 {
     private readonly Player _player;
     private readonly CameraController _cameraController;
+    private AudioController _audioController;
     
-    // 5.1 m/s
-    private float _sprintingSpeed = 10.2f;
+    private float _sprintingSpeed = 10.2f;    // 5.1 m/s
+    private float _sprintTimer = 0.25f;
+    private readonly float _origSprintTimer;
 
-    public Sprinting(Player player, CameraController cameraController)
+    public Sprinting(Player player, CameraController cameraController, AudioController audioController)
     {
         _player = player;
         _cameraController = cameraController;
+        _audioController = audioController;
+        _origSprintTimer = _sprintTimer;
     }
 
     public IStateParams Tick(IStateParams stateParams)
     {
+        _sprintTimer -= Time.deltaTime;
+        
         var stateParamsVelocity = stateParams.Velocity;
 
         // Gather our vertical and horizontal input
@@ -28,6 +34,9 @@ public class Sprinting : IState
             
         // Make sure we're never moving faster than our walking speed
         tempVelocity = Vector3.ClampMagnitude(tempVelocity, _sprintingSpeed);
+        
+        // Play footstep audio
+        _sprintTimer = _audioController.PlayFootstep(_sprintTimer, _origSprintTimer, forwardSpeed, sideSpeed);
             
         // Update our stateParams velocity
         stateParamsVelocity.x = tempVelocity.x;

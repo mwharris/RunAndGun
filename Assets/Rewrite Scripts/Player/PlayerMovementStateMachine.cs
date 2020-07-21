@@ -3,21 +3,25 @@ using UnityEngine;
 
 public class PlayerMovementStateMachine : MonoBehaviour
 {
+    [SerializeField] private bool playerIsGrounded;
+    
     private BaseStateMachine _stateMachine;
     private IStateParams _stateParams;
     private PlayerMovementStateMachineHelper _stateHelper;
+    private GameManager _gameManager;
+    private FXManager _fxManager;
+    private AudioController _audioController;
+    private AnimationController _animationController;
     private WallRunHelper _wallRunHelper;
     private CharacterController _characterController;
     private CameraController _cameraController;
-    private AnimationController _animationController;
     private PlayerLookVars _playerLookVars;
-    private GameManager _gameManager;
     
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
     private float defaultGravity = -14f;
     private bool _isWallRunning = false;
-    
+
     public Type CurrentStateType => _stateMachine.CurrentState.GetType();
     public bool PlayerIsGrounded => _characterController.isGrounded;
     public Vector3 PlayerVelocity => _stateParams.Velocity;
@@ -29,17 +33,20 @@ public class PlayerMovementStateMachine : MonoBehaviour
     public bool PlayerIsSprinting => _stateMachine.CurrentState.GetType() == typeof(Sprinting);
     public bool PlayerIsSlideJumping => PlayerIsJumping && _stateParams.SlideJump;
 
-    [SerializeField] private bool playerIsGrounded;
 
     private void Awake()
     {
         _gameManager = FindObjectOfType<GameManager>();
-        Player player = FindObjectOfType<Player>();
+        _fxManager = _gameManager != null ? _gameManager.gameObject.GetComponent<FXManager>() : null;
+        
+        Player player = GetComponent<Player>();
         _characterController = GetComponent<CharacterController>();
         _cameraController = GetComponent<CameraController>();
         _animationController = GetComponent<AnimationController>();
-        _stateHelper = new PlayerMovementStateMachineHelper();
+        
         _stateMachine = new BaseStateMachine();
+        _stateHelper = new PlayerMovementStateMachineHelper();
+        _audioController = new AudioController(player, _fxManager);
         _playerLookVars = new PlayerLookVars();
         _wallRunHelper = new WallRunHelper();
 
@@ -53,9 +60,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
 
         // Create our states
         Idle idle = new Idle(player);
-        Walking walking = new Walking(player);
-        Sprinting sprinting = new Sprinting(player, _cameraController);
-        Jumping jumping = new Jumping(player, _cameraController, _animationController);
+        Walking walking = new Walking(player, _audioController);
+        Sprinting sprinting = new Sprinting(player, _cameraController, _audioController);
+        Jumping jumping = new Jumping(player, _cameraController, _animationController, _audioController);
         WallRunning wallRunning = new WallRunning(player, defaultGravity, _cameraController);
         Crouching crouching = new Crouching(player);
         Sliding sliding = new Sliding(player);

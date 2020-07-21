@@ -18,7 +18,7 @@ MonoBehaviour:
     AppIdVoice: 
     AppVersion: 
     UseNameServer: 1
-    FixedRegion: us
+    FixedRegion: 
     Server: 
     Port: 0
     Protocol: 0
@@ -46,6 +46,7 @@ MonoBehaviour:
   - PlayerWeaponChange
   - RespawnSpaceship
   - TakeDamage
+  - JumpFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

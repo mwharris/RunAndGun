@@ -13,7 +13,8 @@ public class FXManager : MonoBehaviour {
 	public GameObject deathEffect;
 	public GameObject bullethole;
 	public AudioClip[] footstepSounds;   
-	public AudioClip landingSound; 
+	public AudioClip landingSound;
+	public AudioClip jumpSound;
 	public AudioClip doubleJumpSound;   
 	public AudioClip[] deathSounds;
 
@@ -166,6 +167,15 @@ public class FXManager : MonoBehaviour {
 			//Move picked sound to index 0 so it's not picked next time
 			footstepSounds[n] = footstepSounds[0];
 			footstepSounds[0] = clipToPlay;
+		}
+	}
+
+	[PunRPC]
+	void JumpFX(Vector3 pos)
+	{
+		if (!float.IsNaN(pos.x) && !float.IsNaN(pos.y) && !float.IsNaN(pos.z))
+		{
+			AudioSource.PlayClipAtPoint(jumpSound, pos);
 		}
 	}
 

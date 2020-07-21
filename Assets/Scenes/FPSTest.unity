@@ -9227,6 +9227,7 @@ MonoBehaviour:
   - {fileID: 8300000, guid: 4aa53ceb6346d5546a3d895e3731eb3a, type: 3}
   - {fileID: 8300000, guid: 5dfc843cf2dc62c4e8f4632b8e28c20b, type: 3}
   landingSound: {fileID: 8300000, guid: b168c075ab537cc43b74f7fd710b62e3, type: 3}
+  jumpSound: {fileID: 8300000, guid: 4f753640ed96de4468425daf379222dc, type: 3}
   doubleJumpSound: {fileID: 8300000, guid: 7e7c1f236a020eb4ab3512789289939f, type: 3}
   deathSounds:
   - {fileID: 8300000, guid: 4c8d59a488d24c341aa2b7ce61d6591a, type: 3}

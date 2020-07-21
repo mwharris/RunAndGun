@@ -5,10 +5,11 @@ public class Jumping : IState
 {
     private readonly Player _player;
     private readonly CharacterController _characterController;
-    private CameraController _cameraController;
-    private AnimationController _animationController;
+    private readonly CameraController _cameraController;
+    private readonly AnimationController _animationController;
     private readonly InputState _inputState;
     private readonly Buttons[] _inputs;
+    private AudioController _audioController;
 
     private bool _doJump = false;
     private bool _doubleJumpAvailable = true;
@@ -19,12 +20,14 @@ public class Jumping : IState
     private bool JumpDown => PlayerInput.Instance.SpaceDown;
     private bool JumpHeld => PlayerInput.Instance.SpaceHeld;
     
-    public Jumping(Player player, CameraController cameraController, AnimationController animationController)
+    public Jumping(Player player, CameraController cameraController, AnimationController animationController, 
+        AudioController audioController)
     {
         _player = player;
         _characterController = player.GetComponent<CharacterController>();
         _cameraController = cameraController;
         _animationController = animationController;
+        _audioController = audioController;
     }
 
     public IStateParams Tick(IStateParams stateParams)
@@ -88,6 +91,7 @@ public class Jumping : IState
             velocity.y = JumpSpeed;
             _doJump = false;
             _animationController.JumpStart = true;
+            _audioController.PlayJump(false);
         }
         // Jump when we hit the ground if we're holding the jump button
         else if (_characterController.isGrounded && JumpHeld)
@@ -95,12 +99,14 @@ public class Jumping : IState
             velocity.y = JumpSpeed;
             _doubleJumpAvailable = true;
             _animationController.JumpStart = true;
+            _audioController.PlayJump(false);
         }
         // Jump if we have a double jump and we hit Jump button
         else if (_doubleJumpAvailable && JumpDown)
         {
             velocity = DoubleJump(velocity, inputVelocity);
             _animationController.JumpStart = true;
+            _audioController.PlayJump(true);
         }
         else
         {
@@ -115,6 +121,7 @@ public class Jumping : IState
         velocity = _player.transform.rotation * targetDir;
         velocity = velocity.normalized * WallJumpHorizontalSpeed;
         velocity.y = JumpSpeed;
+        _audioController.PlayJump(false);
         return velocity;
     }
 
