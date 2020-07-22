@@ -63,7 +63,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         Walking walking = new Walking(player, _audioController);
         Sprinting sprinting = new Sprinting(player, _cameraController, _audioController);
         Jumping jumping = new Jumping(player, _cameraController, _animationController, _audioController);
-        WallRunning wallRunning = new WallRunning(player, defaultGravity, _cameraController);
+        WallRunning wallRunning = new WallRunning(player, defaultGravity, _cameraController, _audioController);
         Crouching crouching = new Crouching(player);
         Sliding sliding = new Sliding(player);
 

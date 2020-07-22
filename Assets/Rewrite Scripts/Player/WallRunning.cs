@@ -8,27 +8,38 @@ public class WallRunning : IState
     private readonly Player _player;
     private readonly Transform _playerCamera;
     private readonly float _gravity;
-    private CameraController _cameraController;
+    private readonly CameraController _cameraController;
+    private AudioController _audioController;
     
-    // 6.8 m/s
-    private readonly float _wallRunSpeed = 13.6f;
-    private readonly float _wallRunSlowSpeed = 1f;
+    private readonly float _wallRunSpeed = 13.6f; // 6.8 m/s
     private readonly float _wallRunCameraTilt = 0.08f;
+
+    private float _fastFootstepTimer = 0.25f;     // same as sprinting
+    private readonly float _origFastFootstepTimer;
+    private float _slowFootstepTimer = 0.4f;     // same as walking
+    private readonly float _origSlowFootstepTimer;
     
     private Vector3 _wallRunMoveAxis = Vector3.zero;
 
-    public WallRunning(Player player, float defaultGravity, CameraController cameraController)
+    public WallRunning(Player player, float defaultGravity, CameraController cameraController, AudioController audioController)
     {
         _player = player;
         _playerCamera = player.PlayerCamera.transform;
         _gravity = defaultGravity;
         _cameraController = cameraController;
+        _audioController = audioController;
+        
+        _origFastFootstepTimer = _fastFootstepTimer;
+        _origSlowFootstepTimer = _slowFootstepTimer;
     }
 
     // TODO: THIS NEEDS TO BE ON THE SAME PAGE AS WallRunHelper.DoWallRunCheck()
     // SOMETIMES THIS FUNCTION CANNOT FIND A WALL-RUN SIDE DESPITE DoWallRunCheck() SAYING WE ARE WALL-RUNNING
     public IStateParams Tick(IStateParams stateParams)
     {
+        _fastFootstepTimer -= Time.deltaTime;
+        _slowFootstepTimer -= Time.deltaTime;
+        
         var stateParamsVelocity = stateParams.Velocity;
         var wallRunHitInfo = stateParams.WallRunHitInfo;
 
@@ -56,8 +67,10 @@ public class WallRunning : IState
             }
             else
             {
-                Debug.Log("WallRunning: This shouldn't happen!");
+                Debug.LogError("WallRunning: This shouldn't happen!");
             }
+            // Play a sound if we are moving
+            PlayAudio(forwardSpeed);
             // Apply our movement along the wall run axis we found above
             var moveAxis = _wallRunMoveAxis;
             moveAxis = (moveAxis * forwardSpeed);
@@ -66,10 +79,25 @@ public class WallRunning : IState
             // Update our stateParams velocity
             stateParamsVelocity.x = moveAxis.x;
             stateParamsVelocity.z = moveAxis.z;
-            stateParams.Velocity = stateParamsVelocity;   
+            stateParams.Velocity = stateParamsVelocity;
         }
         
         return SetGravity(stateParams);
+    }
+
+    // Play either sprinting or walking footsteps depending on speed
+    private void PlayAudio(float forwardSpeed)
+    {
+        if (forwardSpeed > 0)
+        {
+            _fastFootstepTimer =
+                _audioController.PlayWallRunFootstep(_fastFootstepTimer, _origFastFootstepTimer);
+        }
+        else
+        {
+            _slowFootstepTimer =
+                _audioController.PlayWallRunFootstep(_slowFootstepTimer, _origSlowFootstepTimer);
+        }
     }
 
     private void TiltCamera(IStateParams stateParams)

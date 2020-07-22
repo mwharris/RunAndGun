@@ -117,10 +117,12 @@ public class Jumping : IState
     
     private Vector3 HandleWallJumping(Vector3 velocity, float forwardSpeed, float sideSpeed)
     {
+        // Determine our target direction and update our velocity to it
         Vector3 targetDir = new Vector3(sideSpeed, 0f, forwardSpeed);
         velocity = _player.transform.rotation * targetDir;
         velocity = velocity.normalized * WallJumpHorizontalSpeed;
         velocity.y = JumpSpeed;
+        // Play a jump sound
         _audioController.PlayJump(false);
         return velocity;
     }
@@ -153,10 +155,13 @@ public class Jumping : IState
 
     public IStateParams OnExit(IStateParams stateParams)
     {
+        // Reset some jumping booleans we no longer need 
         _doubleJumpAvailable = true;
         stateParams.SlideJump = false;
         _cameraController.PlayerIsAirborneFast = false;
         _animationController.JumpStart = false;
+        // Play a landing sound
+        _audioController.PlayLand();
         return stateParams;
     }
 

@@ -24,9 +24,28 @@ public class AudioController
         return currTimer;
     }
 
+    public float PlayWallRunFootstep(float currTimer, float resetTimerValue)
+    {
+        // Play a sound when the associated timer is up, regardless of speed
+        if (currTimer <= 0)
+        {
+            // Reset the timer
+            currTimer = resetTimerValue;
+            // Play a networked sound via the FXManager
+            _fxPhotonView.RPC("FootstepFX", RpcTarget.All, _player.transform.position);
+        }
+        return currTimer;
+    }
+
     public void PlayJump(bool doubleJump)
     {
         string rpcName = doubleJump ? "DoubleJumpFX" : "JumpFX";
-        _fxPhotonView.RPC("JumpFX", RpcTarget.All, _player.transform.position);
+        _fxPhotonView.RPC(rpcName, RpcTarget.All, _player.transform.position);
     }
+
+    public void PlayLand()
+    {
+        _fxPhotonView.RPC("LandingFX", RpcTarget.All, _player.transform.position);
+    }
+
 }

@@ -39,6 +39,7 @@ MonoBehaviour:
   - DoubleJumpFX
   - Fire
   - FootstepFX
+  - JumpFX
   - KillNotification
   - LandingFX
   - PlayerReloaded
@@ -46,7 +47,6 @@ MonoBehaviour:
   - PlayerWeaponChange
   - RespawnSpaceship
   - TakeDamage
-  - JumpFX
   DisableAutoOpenWizard: 1
   ShowSettings: 1
   DevRegionSetOnce: 0

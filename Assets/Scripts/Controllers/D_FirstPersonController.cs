@@ -179,6 +179,7 @@ public class D_FirstPersonController : AbstractBehavior
 			// mouseSensitivity = menuController.MouseSensitivity;
 			// invertY = menuController.InvertY;
             // aimAssist = menuController.AimAssist;
+            // aimAssist = menuController.AimAssist;
 		}
 	}
 
