@@ -15,8 +15,9 @@ public class PlayerMovementStateMachine : MonoBehaviour
     private WallRunHelper _wallRunHelper;
     private CharacterController _characterController;
     private CameraController _cameraController;
+    private ShootController _shootController;
     private PlayerLookVars _playerLookVars;
-    
+
     private Vector3 _velocity = Vector3.zero;
     private Vector3 _horizontalVelocity = Vector3.zero;
     private float defaultGravity = -14f;
@@ -95,6 +96,8 @@ public class PlayerMovementStateMachine : MonoBehaviour
 
         // Sliding -> Crouching
         _stateMachine.AddTransition(sliding, crouching, () => !sliding.IsSliding);
+        // Sliding -> Sprinting
+        _stateMachine.AddTransition(sliding, sprinting, () => PlayerInput.Instance.ShiftDown);
         
         // Jumping -> Sliding
         _stateMachine.AddTransition(jumping, sliding, 

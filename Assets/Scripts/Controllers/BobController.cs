@@ -156,8 +156,8 @@ public class BobController : AbstractBehavior
     private void HandleBob(bool doubleHanded)
     {
         //While we are moving apply a head/body bob
-        if (_playerMovementStateMachine.PlayerIsGrounded 
-            && (HorizontalRaw != 0 || VerticalRaw != 0))
+        if (!_playerMovementStateMachine.PlayerIsSliding 
+            && _playerMovementStateMachine.PlayerIsGrounded && (HorizontalRaw != 0 || VerticalRaw != 0))
         {
             //Determine bob speed + amount depending on player movement state
             float bobSpeed = walkBobSpeed;

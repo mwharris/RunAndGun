@@ -20,9 +20,7 @@ public class Sliding : IState
     private const float CrouchThreshold = 1f;
     private const float CrouchCharacterHeight = 1.12f;
     private const float CrouchCameraHeight = 1.5f;
-
-    private Vector3 startPoint = Vector3.zero;
-
+    
     public Sliding(Player player)
     {
         _player = player;
@@ -37,14 +35,17 @@ public class Sliding : IState
     public IStateParams Tick(IStateParams stateParams)
     {
         var velocity = stateParams.Velocity;
+        
         // Lower into a crouch if we aren't lowered already
         if (_lowering)
         {
             Crouch();
         }
+        
         // Apply drag to our velocity
         velocity.x *= 1 - Time.deltaTime;
         velocity.z *= 1 - Time.deltaTime;
+        
         // Transition to Crouched state when velocity is under a threshold
         var horizontalVelocity = new Vector3(velocity.x, 0, velocity.z);
         if (horizontalVelocity.magnitude < CrouchThreshold)
@@ -52,6 +53,7 @@ public class Sliding : IState
             IsSliding = false;
             NoStand = true;
         }
+
         stateParams.Velocity = velocity;
         return stateParams;
     }

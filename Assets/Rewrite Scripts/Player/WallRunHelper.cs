@@ -7,7 +7,10 @@ public class WallRunHelper
     public bool DoWallRunCheck(IStateParams stateParams, Transform player, Vector3 velocity, bool isWallRunning, bool isGrounded)
     {
         float rayDistance = 1f;
-        int layerMask = ~(1 << 10);
+
+        int ignoreRaycastLayer = 2;
+        int playerLayer = 10;
+        int layerMask = ~((1 << ignoreRaycastLayer) | (1 << playerLayer));
         
         if (!isGrounded)
         {
