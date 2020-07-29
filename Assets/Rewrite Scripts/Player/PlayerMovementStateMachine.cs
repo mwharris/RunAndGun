@@ -79,7 +79,7 @@ public class PlayerMovementStateMachine : MonoBehaviour
         // Idle -> Walking
         _stateMachine.AddTransition(idle, walking, () => walking.IsWalking());
         // Walking -> Sprinting
-        _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown);
+        _stateMachine.AddTransition(walking, sprinting, () => PlayerInput.Instance.ShiftDown && !PlayerInput.Instance.AimHeld);
         // Sprinting -> Walking
         _stateMachine.AddTransition(sprinting, walking, () => !sprinting.IsStillSprinting());
 

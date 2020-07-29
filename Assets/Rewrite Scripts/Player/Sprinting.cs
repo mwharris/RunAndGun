@@ -49,13 +49,18 @@ public class Sprinting : IState
     // Decide when we are no longer sprinting
     public bool IsStillSprinting()
     {
-        // If we hit the shift button again, turn off sprint
+        // If we hit the shift button again
         if (PlayerInput.Instance.ShiftDown)
         {
             return false;
         }
-        // If we stop moving forward, turn off sprint
+        // If we stop moving forward
         if (PlayerInput.Instance.Vertical <= 0)
+        {
+            return false;
+        }
+        // If we start Aiming
+        if (PlayerInput.Instance.AimHeld)
         {
             return false;
         }

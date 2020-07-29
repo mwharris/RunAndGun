@@ -14,6 +14,7 @@ public class PlayerInput : MonoBehaviour, IPlayerInput
     
     public float MouseX => Input.GetAxis("Mouse X");
     public float MouseY => Input.GetAxis("Mouse Y");
+    public bool AimHeld => Input.GetButton("Aim");
     
     public bool ShiftDown => Input.GetKeyDown(KeyCode.LeftShift); 
     public bool ShiftHeld => Input.GetKey(KeyCode.LeftShift);

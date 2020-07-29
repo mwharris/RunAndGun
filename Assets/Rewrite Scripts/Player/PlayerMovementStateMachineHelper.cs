@@ -68,6 +68,6 @@ public class PlayerMovementStateMachineHelper
 
     public bool CrouchToSprint(Crouching crouching)
     {
-        return crouching.ToSprint && !crouching.IsCrouching && !crouching.Rising;
+        return crouching.ToSprint && !crouching.IsCrouching && !crouching.Rising && !PlayerInput.Instance.AimHeld;
     }
 }

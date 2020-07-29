@@ -7,6 +7,7 @@ public class Walking : IState
     private AudioController _audioController;
     
     private float _walkingSpeed = 6.8f;    // 3.4 m/s
+    private float _aimWalkSpeed = 3.4f; // 1.7 m/s
     private float _walkTimer = 0.4f;
     private readonly float _origWalkTimer;
 
@@ -30,7 +31,7 @@ public class Walking : IState
 
         // Apply these values to our player
         var tempVelocity = (_player.transform.forward * forwardSpeed) + (_player.transform.right * sideSpeed);
-        tempVelocity *= _walkingSpeed;
+        tempVelocity *= PlayerInput.Instance.AimHeld ? _aimWalkSpeed : _walkingSpeed;
         
         // Make sure we're never moving faster than our walking speed
         tempVelocity = Vector3.ClampMagnitude(tempVelocity, _walkingSpeed);

@@ -10,6 +10,7 @@
     
     float MouseX { get; }
     float MouseY { get; }
+    bool AimHeld { get; }
     
     bool ShiftDown { get; }
     bool ShiftHeld { get; }
